@@ -7,11 +7,22 @@ import { useNearbyQuests } from '@/hooks/useNearbyQuests'
 import AuthScreen from '@/components/AuthScreen'
 import QuestDetail from '@/components/QuestDetail'
 import PostQuest from '@/components/PostQuest'
+import SkillsScreen from '@/components/SkillsScreen'
+import TrustScreen from '@/components/TrustScreen'
 
 const QuestMap = dynamic(() => import('@/components/QuestMap'), {
   ssr: false,
   loading: () => (
     <div className="h-full w-full flex items-center justify-center" style={{ background: '#162814' }}>
+      <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.3)' }}>Loading map...</span>
+    </div>
+  ),
+})
+
+const MapScreen = dynamic(() => import('@/components/MapScreen'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-screen w-full flex items-center justify-center" style={{ background: '#0D1A0B' }}>
       <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.3)' }}>Loading map...</span>
     </div>
   ),
@@ -55,11 +66,14 @@ const typeLabel: Record<string, string> = {
   community: 'Gather', wellness: 'Wellness', learning: 'Learn',
 }
 
+type TabKey = 'quests' | 'map' | 'skills' | 'trust'
+
 export default function Home() {
   const { user, profile, loading: authLoading, signIn, signUp, signOut } = useAuth()
   const [selectedQuest, setSelectedQuest] = useState<any>(null)
   const [showAuthFromDetail, setShowAuthFromDetail] = useState(false)
   const [showPostQuest, setShowPostQuest] = useState(false)
+  const [activeTab, setActiveTab] = useState<TabKey>('quests')
 
   if (authLoading) {
     return (
@@ -118,6 +132,9 @@ export default function Home() {
   return (
     <QuestBoard
       profile={profile}
+      userId={user.id}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
       onSignOut={signOut}
       onSelectQuest={setSelectedQuest}
       onPostQuest={() => setShowPostQuest(true)}
@@ -125,14 +142,82 @@ export default function Home() {
   )
 }
 
+/* ── Bottom Nav ── */
+function BottomNav({
+  activeTab,
+  onTabChange,
+  onPostQuest,
+}: {
+  activeTab: TabKey
+  onTabChange: (tab: TabKey) => void
+  onPostQuest: () => void
+}) {
+  const tabs: { key: TabKey | 'post'; icon: string; label: string }[] = [
+    { key: 'quests', icon: '\u25C8', label: 'Quests' },
+    { key: 'map',    icon: '\u25C9', label: 'Map' },
+    { key: 'post',   icon: '+',      label: 'Post' },
+    { key: 'skills', icon: '\u25CE', label: 'Skills' },
+    { key: 'trust',  icon: '\u25CB', label: 'Trust' },
+  ]
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50" style={{ background: '#0D1A0B', borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
+      <div className="flex justify-around items-center px-2 pt-3 pb-6" style={{ maxWidth: 390, margin: '0 auto' }}>
+        {tabs.map(tab => {
+          if (tab.key === 'post') {
+            return (
+              <div key="post" className="flex flex-col items-center gap-1 cursor-pointer -mt-5" onClick={onPostQuest}>
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-xl font-light"
+                  style={{ background: '#C8913A', color: '#0D1A0B', boxShadow: '0 2px 12px rgba(200,145,58,0.35)' }}
+                >
+                  +
+                </div>
+                <span className="text-[8px]" style={{ color: '#C8913A', letterSpacing: '0.04em' }}>Post</span>
+              </div>
+            )
+          }
+          const isActive = activeTab === tab.key
+          return (
+            <div
+              key={tab.key}
+              className="flex flex-col items-center gap-1 cursor-pointer"
+              onClick={() => onTabChange(tab.key as TabKey)}
+            >
+              <span
+                className="text-[15px]"
+                style={{ color: isActive ? '#C8913A' : '#E8F2E0', opacity: isActive ? 1 : 0.3 }}
+              >
+                {tab.icon}
+              </span>
+              <span
+                className="text-[8px]"
+                style={{ color: isActive ? '#C8913A' : 'rgba(232,242,224,0.25)', letterSpacing: '0.04em' }}
+              >
+                {tab.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 /* ── Quest Board ── */
 function QuestBoard({
   profile,
+  userId,
+  activeTab,
+  onTabChange,
   onSignOut,
   onSelectQuest,
   onPostQuest,
 }: {
   profile: { first_name: string; last_name: string } | null
+  userId: string
+  activeTab: TabKey
+  onTabChange: (tab: TabKey) => void
   onSignOut: () => void
   onSelectQuest: (quest: any) => void
   onPostQuest: () => void
@@ -149,6 +234,35 @@ function QuestBoard({
   const initials = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() : '?'
   const displayName = profile?.first_name || 'Explorer'
 
+  // Render the active screen
+  if (activeTab === 'map') {
+    return (
+      <div className="min-h-screen" style={{ background: '#0D1A0B' }}>
+        <MapScreen quests={quests} userLocation={location} onSelectQuest={onSelectQuest} />
+        <BottomNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
+      </div>
+    )
+  }
+
+  if (activeTab === 'skills') {
+    return (
+      <div className="min-h-screen" style={{ background: '#0D1A0B' }}>
+        <SkillsScreen userId={userId} quests={quests} onSelectQuest={onSelectQuest} />
+        <BottomNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
+      </div>
+    )
+  }
+
+  if (activeTab === 'trust') {
+    return (
+      <div className="min-h-screen" style={{ background: '#0D1A0B' }}>
+        <TrustScreen userId={userId} profile={profile} />
+        <BottomNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
+      </div>
+    )
+  }
+
+  // Default: Quests tab
   return (
     <div className="min-h-screen bg-emerge-soil font-body flex justify-center">
       <div className="w-full" style={{ maxWidth: 390 }}>
@@ -298,39 +412,11 @@ function QuestBoard({
           </div>
         )}
 
+        {/* Spacer for fixed bottom nav */}
+        <div className="h-20" />
+
         {/* Bottom nav */}
-        <div className="flex justify-around items-center px-2 pt-3 pb-6 mt-1" style={{ borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
-          {/* Quests */}
-          <div className="flex flex-col items-center gap-1 cursor-pointer">
-            <span className="text-[15px]" style={{ color: '#C8913A' }}>{'\u25C8'}</span>
-            <span className="text-[8px]" style={{ color: '#C8913A', letterSpacing: '0.04em' }}>Quests</span>
-          </div>
-          {/* Map */}
-          <div className="flex flex-col items-center gap-1 cursor-pointer">
-            <span className="text-[15px]" style={{ opacity: 0.3, color: '#E8F2E0' }}>{'\u25C9'}</span>
-            <span className="text-[8px]" style={{ color: 'rgba(232,242,224,0.25)', letterSpacing: '0.04em' }}>Map</span>
-          </div>
-          {/* Post quest (+) */}
-          <div className="flex flex-col items-center gap-1 cursor-pointer -mt-5" onClick={onPostQuest}>
-            <div
-              className="w-11 h-11 rounded-full flex items-center justify-center text-xl font-light"
-              style={{ background: '#C8913A', color: '#0D1A0B', boxShadow: '0 2px 12px rgba(200,145,58,0.35)' }}
-            >
-              +
-            </div>
-            <span className="text-[8px]" style={{ color: '#C8913A', letterSpacing: '0.04em' }}>Post</span>
-          </div>
-          {/* Skills */}
-          <div className="flex flex-col items-center gap-1 cursor-pointer">
-            <span className="text-[15px]" style={{ opacity: 0.3, color: '#E8F2E0' }}>{'\u25CE'}</span>
-            <span className="text-[8px]" style={{ color: 'rgba(232,242,224,0.25)', letterSpacing: '0.04em' }}>Skills</span>
-          </div>
-          {/* Trust */}
-          <div className="flex flex-col items-center gap-1 cursor-pointer">
-            <span className="text-[15px]" style={{ opacity: 0.3, color: '#E8F2E0' }}>{'\u25CB'}</span>
-            <span className="text-[8px]" style={{ color: 'rgba(232,242,224,0.25)', letterSpacing: '0.04em' }}>Trust</span>
-          </div>
-        </div>
+        <BottomNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
 
       </div>
     </div>
