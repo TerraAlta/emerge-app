@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Fraunces, Outfit } from 'next/font/google'
 import './globals.css'
 
@@ -7,14 +7,56 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit', display: 
 
 export const metadata: Metadata = {
   title: 'Emerge — Regenerative Community Quests',
-  description: 'Discover regenerative events and quests near you',
+  description: 'Real quests. Real community. Real change. Discover regenerative events near you.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Emerge',
+  },
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' },
+      { url: '/icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.svg',
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0D1A0B',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${outfit.variable}`}>
+      <head>
+        {/* PWA meta tags not covered by Next.js metadata API */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="apple-touch-startup-image" href="/icons/icon-512.svg" />
+      </head>
       <body className="bg-emerge-soil font-body min-h-screen" style={{ color: '#E8F2E0' }}>
         {children}
+        {/* Service Worker registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(reg) { console.log('[SW] Registered:', reg.scope) },
+                    function(err) { console.log('[SW] Registration failed:', err) }
+                  );
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   )
