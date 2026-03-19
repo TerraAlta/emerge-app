@@ -455,6 +455,30 @@ function QuestBoard({
           </div>
         )}
 
+        {/* Footer / Disclaimer */}
+        <div className="px-4 pt-6 pb-4">
+          <div className="rounded-[12px] px-4 py-4" style={{ background: 'rgba(22,40,20,0.5)', border: '0.5px solid rgba(232,242,224,0.04)' }}>
+            <p className="text-[9px] leading-[1.7]" style={{ color: 'rgba(232,242,224,0.25)' }}>
+              Emerge is a community platform that aggregates publicly available event information from third-party sources.
+              We do not organise, host, or endorse any events listed. Event details are provided as-is and may change without notice.
+              Always verify event details directly with organisers before attending. Attend all events at your own risk.
+              Emerge is not liable for any loss, injury, or damages arising from attendance at listed events.
+            </p>
+            <p className="text-[9px] mt-2 leading-[1.7]" style={{ color: 'rgba(232,242,224,0.25)' }}>
+              Your location data is used only to show nearby quests and is never shared with other users or third parties.
+              We store only the minimum data needed to operate your account.
+            </p>
+            <div className="mt-3 pt-3" style={{ borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
+              <p className="text-[9px]" style={{ color: 'rgba(232,242,224,0.2)' }}>
+                Created by Pedro Valdjiu · <a href="https://terralta.org" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(200,145,58,0.4)', textDecoration: 'underline' }}>terralta.org</a>
+              </p>
+              <p className="text-[8px] mt-1" style={{ color: 'rgba(232,242,224,0.15)' }}>
+                &copy; {new Date().getFullYear()} Emerge. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+
           </div>)}
         </div>
 

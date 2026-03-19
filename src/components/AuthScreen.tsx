@@ -320,6 +320,14 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
             {mode === 'login' ? 'Sign up' : 'Log in'}
           </button>
         </p>
+
+        {/* Legal + credit */}
+        <p className="mt-10 text-[8px] text-center leading-[1.7] px-2" style={{ color: 'rgba(232,242,224,0.18)' }}>
+          By signing up you agree that Emerge is a community platform. We aggregate publicly available events and do not organise or endorse them. Attend at your own risk. Your data is stored securely and never shared.
+        </p>
+        <p className="mt-2 text-[8px] text-center" style={{ color: 'rgba(232,242,224,0.15)' }}>
+          Created by Pedro Valdjiu · <a href="https://terralta.org" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(200,145,58,0.35)', textDecoration: 'underline' }}>terralta.org</a>
+        </p>
       </div>
     </div>
   )
