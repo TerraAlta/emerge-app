@@ -22,6 +22,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -168,17 +169,31 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
             onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            minLength={6}
-            style={inputStyle}
-            onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              minLength={6}
+              style={{ ...inputStyle, paddingRight: 44 }}
+              onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
+              onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'rgba(200,145,58,0.5)', fontSize: 13, padding: 4,
+                fontFamily: 'var(--font-outfit), sans-serif',
+              }}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
 
           {/* Error */}
           {error && (

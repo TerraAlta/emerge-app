@@ -227,9 +227,9 @@ function QuestBoard({
   const [radiusKm, setRadiusKm] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('emerge-radius')
-      return saved ? parseInt(saved, 10) : 10
+      return saved ? parseInt(saved, 10) : 25
     }
-    return 10
+    return 25
   })
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
   const { quests, loading, error, location } = useNearbyQuests({ radiusKm })
