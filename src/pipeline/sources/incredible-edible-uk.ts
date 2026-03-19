@@ -6,13 +6,13 @@
 import type { RawEvent, SourceFetcher } from './types'
 import { stripHtml, hashStr, haversine } from './utils'
 
-const URL = 'https://www.incredibleedible.org.uk/find-a-group/'
+const SOURCE_URL = 'https://www.incredibleedible.org.uk/find-a-group/'
 
 export const incredibleEdibleUk: SourceFetcher = {
   name: 'incredible-edible-uk',
   async fetch({ lat, lng, radiusKm }) {
     try {
-      const res = await fetch(URL, {
+      const res = await fetch(SOURCE_URL, {
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
       })
       if (!res.ok) { console.warn(`[incredible-edible-uk] ${res.status}`); return [] }
@@ -82,7 +82,7 @@ export const incredibleEdibleUk: SourceFetcher = {
         events.push({
           source: 'incredible-edible-uk',
           source_id: `ie-${hashStr(title)}`,
-          source_url: titleMatch[1] ? new URL(titleMatch[1], 'https://www.incredibleedible.org.uk').toString() : URL,
+          source_url: titleMatch[1] ? new URL(titleMatch[1], 'https://www.incredibleedible.org.uk').toString() : SOURCE_URL,
           title: `Incredible Edible ${title}`,
           description: `Community food growing group. Volunteers welcome for planting days, harvests, and sharing.`,
           organizer: title,
