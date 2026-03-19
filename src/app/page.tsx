@@ -224,7 +224,15 @@ function QuestBoard({
 }) {
   const [showMap, setShowMap] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
-  const { quests, loading, error, location } = useNearbyQuests({ radiusKm: 50 })
+  const [radiusKm, setRadiusKm] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('emerge-radius')
+      return saved ? parseInt(saved, 10) : 10
+    }
+    return 10
+  })
+  const [showRadiusPicker, setShowRadiusPicker] = useState(false)
+  const { quests, loading, error, location } = useNearbyQuests({ radiusKm })
 
   const closestDist = useMemo(() => {
     if (quests.length === 0) return null
@@ -319,9 +327,59 @@ function QuestBoard({
           ))}
         </div>
 
-        {/* Section label */}
-        <div className="px-4 pb-2 text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
-          Open quests near you
+        {/* Section label + radius picker */}
+        <div className="px-4 pb-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
+              Open quests near you
+            </span>
+            <button
+              onClick={() => setShowRadiusPicker(!showRadiusPicker)}
+              className="text-[9px] px-2 py-0.5 rounded-full active:scale-95 transition-transform"
+              style={{
+                background: showRadiusPicker ? 'rgba(200,145,58,0.15)' : 'rgba(232,242,224,0.06)',
+                border: '0.5px solid rgba(200,145,58,0.25)',
+                color: '#C8913A',
+                letterSpacing: '0.03em',
+              }}
+            >
+              within {radiusKm}km
+            </button>
+          </div>
+          {showRadiusPicker && (
+            <div className="flex gap-1.5 mt-2">
+              {([
+                { km: 2,  label: 'walking' },
+                { km: 10, label: 'cycling' },
+                { km: 25, label: 'driving' },
+                { km: 50, label: 'regional' },
+              ] as const).map(preset => {
+                const isActive = radiusKm === preset.km
+                return (
+                  <button
+                    key={preset.km}
+                    onClick={() => {
+                      setRadiusKm(preset.km)
+                      localStorage.setItem('emerge-radius', String(preset.km))
+                      setShowRadiusPicker(false)
+                    }}
+                    className="flex-1 rounded-[10px] py-2 text-center active:scale-95 transition-all"
+                    style={{
+                      background: isActive ? 'rgba(200,145,58,0.18)' : '#162814',
+                      border: isActive ? '1px solid rgba(200,145,58,0.5)' : '0.5px solid rgba(200,145,58,0.1)',
+                    }}
+                  >
+                    <div className="text-[12px] font-semibold" style={{ color: isActive ? '#C8913A' : '#E8F2E0' }}>
+                      {preset.km}km
+                    </div>
+                    <div className="text-[8px] mt-0.5" style={{ color: isActive ? 'rgba(200,145,58,0.7)' : 'rgba(232,242,224,0.3)' }}>
+                      {preset.label}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Quest cards */}
