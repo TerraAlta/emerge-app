@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
 
 interface Props {
   onSignIn: (email: string, password: string) => Promise<any>
@@ -27,6 +28,8 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [confirmMessage, setConfirmMessage] = useState('')
+  const [showForgot, setShowForgot] = useState(false)
+  const [forgotSent, setForgotSent] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -227,7 +230,78 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
               : (mode === 'login' ? 'Log in' : 'Create account')
             }
           </button>
+          {/* Forgot password */}
+          {mode === 'login' && !showForgot && (
+            <button
+              type="button"
+              onClick={() => setShowForgot(true)}
+              className="w-full text-center text-[11px] mt-2"
+              style={{ color: 'rgba(200,145,58,0.5)', background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              Forgot password?
+            </button>
+          )}
         </form>
+
+        {/* Forgot password form */}
+        {showForgot && (
+          <div className="mt-4 rounded-[12px] px-4 py-4" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.2)' }}>
+            {forgotSent ? (
+              <div className="text-center">
+                <p className="text-[13px] font-medium" style={{ color: '#C8913A' }}>Check your email</p>
+                <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.45)' }}>
+                  We sent a password reset link to {email || 'your email'}.
+                </p>
+                <button
+                  onClick={() => { setShowForgot(false); setForgotSent(false) }}
+                  className="text-[11px] mt-3 underline"
+                  style={{ color: '#C8913A', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  Back to login
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="text-[12px] mb-3" style={{ color: 'rgba(232,242,224,0.55)' }}>
+                  Enter your email and we&apos;ll send you a reset link.
+                </p>
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  style={inputStyle}
+                />
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => setShowForgot(false)}
+                    className="flex-1 py-2.5 rounded-[8px] text-[11px]"
+                    style={{ background: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.4)', border: 'none', cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!email) { setError('Enter your email first'); return }
+                      setSubmitting(true)
+                      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+                        redirectTo: window.location.origin,
+                      })
+                      setSubmitting(false)
+                      if (resetErr) { setError(resetErr.message) }
+                      else { setForgotSent(true); setError('') }
+                    }}
+                    disabled={submitting}
+                    className="flex-1 py-2.5 rounded-[8px] text-[11px] font-semibold"
+                    style={{ background: '#C8913A', color: '#0D1A0B', border: 'none', cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}
+                  >
+                    {submitting ? 'Sending...' : 'Send reset link'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Footer */}
         <p
