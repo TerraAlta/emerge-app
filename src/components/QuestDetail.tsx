@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
+import SharePopup from './SharePopup'
 
 const DetailMap = dynamic(() => import('./DetailMap'), {
   ssr: false,
@@ -96,6 +97,7 @@ export default function QuestDetail({
   const [participants, setParticipants] = useState<Participant[]>([])
   const [loading, setLoading] = useState(true)
   const [animateIn, setAnimateIn] = useState(false)
+  const [showShare, setShowShare] = useState(false)
 
   // Slide-in animation
   useEffect(() => {
@@ -163,6 +165,23 @@ export default function QuestDetail({
     setTimeout(onBack, 200)
   }
 
+  async function handleShare() {
+    const dateStr = new Date(quest.starts_at).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+    const loc = approximateLocation(quest.address)
+    const shareUrl = `https://emerge.terralta.org/?quest=${quest.id}`
+    const shareText = `Join me for ${quest.title} on ${dateStr} \u2014 ${loc}. Discover regenerative quests on Emerge.`
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title: quest.title, text: shareText, url: shareUrl })
+      } catch {
+        // User cancelled or share failed — ignore
+      }
+    } else {
+      setShowShare(true)
+    }
+  }
+
   const count = participants.length
   const maxSpots = quest.max_participants
   const spotsLeft = maxSpots ? Math.max(0, maxSpots - count) : null
@@ -195,11 +214,12 @@ export default function QuestDetail({
             {typeEmoji[quest.category] ?? ''} {typeLabel[quest.category] ?? quest.category}
           </span>
 
-          {/* Report button */}
-          <button className="opacity-30 hover:opacity-60 transition-opacity" title="Report this quest">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8F2E0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-              <line x1="4" y1="22" x2="4" y2="15" />
+          {/* Share button */}
+          <button onClick={handleShare} className="opacity-50 hover:opacity-80 transition-opacity" title="Share this quest">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
             </svg>
           </button>
         </div>
@@ -440,6 +460,17 @@ export default function QuestDetail({
         </div>
 
       </div>
+
+      {/* Share popup (desktop fallback) */}
+      {showShare && (
+        <SharePopup
+          questId={quest.id}
+          questTitle={quest.title}
+          questDate={new Date(quest.starts_at).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+          questLocation={approximateLocation(quest.address)}
+          onClose={() => setShowShare(false)}
+        />
+      )}
     </div>
   )
 }

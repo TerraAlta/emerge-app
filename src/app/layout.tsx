@@ -9,6 +9,30 @@ export const metadata: Metadata = {
   title: 'Emerge — Regenerative Community Quests',
   description: 'Real quests. Real community. Real change. Discover regenerative events near you.',
   manifest: '/manifest.json',
+  metadataBase: new URL('https://emerge.terralta.org'),
+  openGraph: {
+    title: 'Emerge — Regenerative Community Quests',
+    description: 'Real quests. Real community. Real change. Discover regenerative events near you.',
+    url: 'https://emerge.terralta.org',
+    siteName: 'Emerge',
+    images: [
+      {
+        url: '/og-image.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Emerge — Regenerative Community Quests',
+        type: 'image/svg+xml',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Emerge — Regenerative Community Quests',
+    description: 'Real quests. Real community. Real change. Discover regenerative events near you.',
+    images: ['/og-image.svg'],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
