@@ -106,11 +106,10 @@ const SKILL_SECTIONS = [
       { key: 'interpret',      emoji: '\u{1F5E3}\u{FE0F}', label: 'Interpret',      questTypes: ['community'] },
     ],
   },
-] as const
+]
 
 // Flatten all skills for lookup
 const ALL_SKILLS = SKILL_SECTIONS.flatMap(s => s.skills)
-type SkillKey = typeof ALL_SKILLS[number]['key']
 
 export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
   const [userSkills, setUserSkills] = useState<string[]>([])
