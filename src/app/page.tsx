@@ -161,8 +161,8 @@ function BottomNav({
   ]
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50" style={{ background: '#0D1A0B', borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
-      <div className="flex justify-around items-center px-2 pt-3 pb-6" style={{ maxWidth: 390, margin: '0 auto' }}>
+    <div className="shrink-0 z-50" style={{ background: '#0D1A0B', borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
+      <div className="flex justify-around items-center px-2 pt-3 pb-6">
         {tabs.map(tab => {
           if (tab.key === 'post') {
             return (
@@ -234,38 +234,23 @@ function QuestBoard({
   const initials = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() : '?'
   const displayName = profile?.first_name || 'Explorer'
 
-  // Render the active screen
-  if (activeTab === 'map') {
-    return (
-      <div className="min-h-screen" style={{ background: '#0D1A0B' }}>
-        <MapScreen quests={quests} userLocation={location} onSelectQuest={onSelectQuest} />
-        <BottomNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
-      </div>
-    )
-  }
-
-  if (activeTab === 'skills') {
-    return (
-      <div className="min-h-screen" style={{ background: '#0D1A0B' }}>
-        <SkillsScreen userId={userId} quests={quests} onSelectQuest={onSelectQuest} />
-        <BottomNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
-      </div>
-    )
-  }
-
-  if (activeTab === 'trust') {
-    return (
-      <div className="min-h-screen" style={{ background: '#0D1A0B' }}>
-        <TrustScreen userId={userId} profile={profile} />
-        <BottomNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
-      </div>
-    )
-  }
-
-  // Default: Quests tab
+  // ── App Shell: all tabs inside 390px container with persistent bottom nav ──
   return (
-    <div className="min-h-screen bg-emerge-soil font-body flex justify-center">
-      <div className="w-full" style={{ maxWidth: 390 }}>
+    <div className="min-h-screen font-body flex justify-center" style={{ background: '#0D1A0B' }}>
+      <div className="w-full relative flex flex-col" style={{ maxWidth: 390, minHeight: '100dvh' }}>
+
+        {/* Tab content area — fills available space above nav */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingBottom: 72 }}>
+          {activeTab === 'map' && (
+            <MapScreen quests={quests} userLocation={location} onSelectQuest={onSelectQuest} />
+          )}
+          {activeTab === 'skills' && (
+            <SkillsScreen userId={userId} quests={quests} onSelectQuest={onSelectQuest} />
+          )}
+          {activeTab === 'trust' && (
+            <TrustScreen userId={userId} profile={profile} />
+          )}
+          {activeTab === 'quests' && (<div>
 
         {/* Hero */}
         <div className="relative overflow-hidden rounded-b-[24px]" style={{ background: '#0D1A0B', padding: '36px 24px 28px' }}>
@@ -412,10 +397,10 @@ function QuestBoard({
           </div>
         )}
 
-        {/* Spacer for fixed bottom nav */}
-        <div className="h-20" />
+          </div>)}
+        </div>
 
-        {/* Bottom nav */}
+        {/* Persistent bottom nav — always visible, inside the 390px container */}
         <BottomNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
 
       </div>

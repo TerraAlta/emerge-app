@@ -96,8 +96,8 @@ export default function TrustScreen({ userId, profile }: Props) {
   const displayName = profile?.first_name ?? 'Explorer'
 
   return (
-    <div className="min-h-screen font-body" style={{ background: '#0D1A0B' }}>
-      <div className="w-full" style={{ maxWidth: 390, margin: '0 auto' }}>
+    <div className="font-body" style={{ background: '#0D1A0B' }}>
+      <div className="w-full">
 
         {/* Header */}
         <div className="px-4 pt-5 pb-4">
