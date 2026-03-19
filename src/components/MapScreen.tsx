@@ -45,8 +45,8 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
         </p>
       </div>
 
-      {/* Full-screen map */}
-      <div className="flex-1 relative overflow-hidden" style={{ borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
+      {/* Map area — explicit height so Leaflet renders */}
+      <div className="relative overflow-hidden" style={{ height: 'calc(100dvh - 72px - 56px)', borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
         <style>{`
           .map-screen-container .leaflet-tile-pane {
             filter: none !important;
