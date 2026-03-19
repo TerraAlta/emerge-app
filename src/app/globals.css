@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'leaflet/dist/leaflet.css';
+
+/* Darken map tiles to match the dark theme */
+.leaflet-tile-pane {
+  filter: brightness(0.6) saturate(0.65) hue-rotate(15deg);
+}
+
+.leaflet-container {
+  background: #0D1A0B;
+}
+
+/* Custom scrollbar for quest list */
+.quest-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.quest-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.quest-scroll::-webkit-scrollbar-thumb {
+  background: #3A5A3A;
+  border-radius: 2px;
+}
+
+/* Category pill scroll */
+.pill-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Pulse animation for user location */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}

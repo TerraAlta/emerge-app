@@ -1,0 +1,14 @@
+{
+  "_instructions": "Copy this file, rename it, and fill in your farm details. Remove this _instructions field.",
+  "title": "Spring volunteer week — Your Farm Name",
+  "description": "What volunteers will do, what they'll learn, what's provided.",
+  "farm_name": "Your Farm Name",
+  "organizer": "Your name",
+  "location": "Village, Region, Country",
+  "lat": 0.0,
+  "lng": 0.0,
+  "starts_at": "2026-04-01T09:00:00Z",
+  "ends_at": "2026-04-07T17:00:00Z",
+  "url": "https://your-farm-website.com",
+  "image_url": null
+}
