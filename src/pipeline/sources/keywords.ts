@@ -339,6 +339,13 @@ export const KEYWORDS: string[] = [
   'ponovitev divjine',
   'divja hrana',
 
+  // Diaspora cultural feast keywords
+  'Nowruz', 'community iftar', 'open iftar', 'Eid celebration',
+  'Diwali feast', 'Lunar New Year feast', 'community feast',
+  'cultural potluck', 'Caribbean feast', 'African dinner community',
+  'harvest supper', 'Disco Soup', 'street feast', 'community dinner',
+  'Imbolc feast', 'solstice feast',
+
   // Hungarian keywords
   'átmenet',
   'ételerdő',

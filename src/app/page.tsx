@@ -124,12 +124,15 @@ const SOURCE_DISPLAY: Record<string, string> = {
   'slowfood.com': 'Slow Food',
   'greenpeace.org': 'Greenpeace',
   'umanotera.si': 'Umanotera',
+  'allevents.in': 'AllEvents',
 }
 
 function displaySourceName(sourceName: string, sourceUrl?: string | null): string {
   // Pipeline source names like "meetup-cities", "eventbrite-cities", "local-networks"
   if (sourceName === 'meetup-cities') return 'Meetup'
   if (sourceName === 'eventbrite-cities') return 'Eventbrite'
+  if (sourceName === 'eventbrite-cultural') return 'Eventbrite'
+  if (sourceName === 'allevents-cultural') return 'AllEvents'
   if (sourceName === 'local-networks' && sourceUrl) {
     try {
       const host = new URL(sourceUrl).hostname.replace(/^www\./, '')

@@ -234,6 +234,9 @@ import { meetupCities } from './sources/meetup-cities'
 import { eventbriteCities } from './sources/eventbrite-cities'
 import { localNetworks } from './sources/local-networks'
 import { eventbriteApi } from './sources/eventbrite-api'
+// Diaspora cultural feast sources
+import { eventbriteCultural } from './sources/eventbrite-cultural'
+import { alleventsCultural } from './sources/allevents-cultural'
 import { scoreQuest } from './score-quest'
 
 // All registered source fetchers
@@ -470,6 +473,9 @@ const SOURCES: SourceFetcher[] = [
   eventbriteCities,
   eventbriteApi,
   localNetworks,
+  // Diaspora cultural feast sources
+  eventbriteCultural,
+  alleventsCultural,
 ]
 
 export interface OrchestratorResult {

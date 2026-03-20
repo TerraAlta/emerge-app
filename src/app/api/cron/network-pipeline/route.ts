@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { localNetworks } from '@/pipeline/sources/local-networks'
 import { meetupCities } from '@/pipeline/sources/meetup-cities'
 import { eventbriteCities } from '@/pipeline/sources/eventbrite-cities'
+import { eventbriteCultural } from '@/pipeline/sources/eventbrite-cultural'
+import { alleventsCultural } from '@/pipeline/sources/allevents-cultural'
 import { scoreQuest } from '@/pipeline/score-quest'
 import type { RawEvent } from '@/pipeline/sources/types'
 
@@ -106,6 +108,10 @@ export async function GET(request: NextRequest) {
   // Meetup + Eventbrite with full keyword set
   results.push(await processFetcher('meetup-cities', () => meetupCities.fetch({})))
   results.push(await processFetcher('eventbrite-cities', () => eventbriteCities.fetch({})))
+
+  // Diaspora cultural feast sources
+  results.push(await processFetcher('eventbrite-cultural', () => eventbriteCultural.fetch({})))
+  results.push(await processFetcher('allevents-cultural', () => alleventsCultural.fetch({})))
 
   const totals = {
     fetched: results.reduce((s, r) => s + r.fetched, 0),
