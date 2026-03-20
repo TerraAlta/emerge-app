@@ -289,6 +289,42 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.mondragon.edu/en/events'],
   },
 
+  // ── Valencia, Spain ────────────────────────────────────────────────────────
+  {
+    name: 'Red Transición Valencia',
+    city: 'Valencia', country: 'Spain', lat: 39.4699, lng: -0.3763,
+    urls: ['https://www.reddetransicion.org/agenda/', 'https://www.reddetransicion.org/eventos/'],
+  },
+  {
+    name: 'Mercat Agroecològic Valencia',
+    city: 'Valencia', country: 'Spain', lat: 39.4699, lng: -0.3763,
+    urls: ['https://www.mercatagroecologic.org/eventos/', 'https://www.mercatagroecologic.org/agenda/'],
+  },
+  {
+    name: 'Repair Café Valencia',
+    city: 'Valencia', country: 'Spain', lat: 39.4699, lng: -0.3763,
+    urls: ['https://repaircafe.org/en/locations/?search=valencia'],
+  },
+
+  // ── Seville, Spain ────────────────────────────────────────────────────────
+  {
+    name: 'Transition Sevilla',
+    city: 'Seville', country: 'Spain', lat: 37.3891, lng: -5.9845,
+    urls: ['https://www.reddetransicion.org/sevilla/', 'https://transicionsevilla.org/eventos/'],
+  },
+  {
+    name: 'Mercado Agroecológico Sevilla',
+    city: 'Seville', country: 'Spain', lat: 37.3891, lng: -5.9845,
+    urls: ['https://www.ecomarketbcn.com/sevilla/', 'https://www.reddetransicion.org/sevilla/'],
+  },
+
+  // ── Santiago de Compostela, Spain ─────────────────────────────────────────
+  {
+    name: 'Transition Santiago',
+    city: 'Santiago de Compostela', country: 'Spain', lat: 42.8782, lng: -8.5448,
+    urls: ['https://www.reddetransicion.org/santiago/'],
+  },
+
   // ── Freiburg, Germany ─────────────────────────────────────────────────────
   {
     name: 'Ernährungsrat Freiburg',
