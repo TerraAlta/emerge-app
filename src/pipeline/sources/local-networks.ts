@@ -486,6 +486,57 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.csanetwerk.be/agenda/'],
   },
 
+  // ── Leuven, Belgium ────────────────────────────────────────────────────────
+  {
+    name: 'KU Leuven Sustainability Events',
+    city: 'Leuven', country: 'Belgium', lat: 50.8798, lng: 4.7005,
+    urls: ['https://www.kuleuven.be/duurzaamheid/activiteiten', 'https://www.kuleuven.be/sustainability/events'],
+  },
+  {
+    name: 'Transition Leuven',
+    city: 'Leuven', country: 'Belgium', lat: 50.8798, lng: 4.7005,
+    urls: ['https://transitieleuven.be/agenda/', 'https://transitieleuven.be/events/'],
+  },
+  {
+    name: 'Repair Café Leuven',
+    city: 'Leuven', country: 'Belgium', lat: 50.8798, lng: 4.7005,
+    urls: ['https://repaircafe.org/en/locations/?search=leuven'],
+  },
+
+  // ── Liège, Belgium ────────────────────────────────────────────────────────
+  {
+    name: 'Transition Liège',
+    city: 'Liège', country: 'Belgium', lat: 50.6326, lng: 5.5797,
+    urls: ['https://www.intransition.be/liege/', 'https://liege.entransition.be/agenda/'],
+  },
+  {
+    name: 'Repair Café Liège',
+    city: 'Liège', country: 'Belgium', lat: 50.6326, lng: 5.5797,
+    urls: ['https://repaircafe.org/en/locations/?search=liege'],
+  },
+  {
+    name: 'GASAP Liège',
+    city: 'Liège', country: 'Belgium', lat: 50.6326, lng: 5.5797,
+    urls: ['https://gasap.be/agenda/', 'https://gasap.be/events/'],
+  },
+
+  // ── Antwerp, Belgium ──────────────────────────────────────────────────────
+  {
+    name: 'Transitie Antwerpen',
+    city: 'Antwerp', country: 'Belgium', lat: 51.2194, lng: 4.4025,
+    urls: ['https://transitieantwerpen.be/agenda/', 'https://transitieantwerpen.be/events/'],
+  },
+  {
+    name: 'Repair Café Antwerpen',
+    city: 'Antwerp', country: 'Belgium', lat: 51.2194, lng: 4.4025,
+    urls: ['https://repaircafe.org/en/locations/?search=antwerp'],
+  },
+  {
+    name: 'CSA Antwerpen',
+    city: 'Antwerp', country: 'Belgium', lat: 51.2194, lng: 4.4025,
+    urls: ['https://www.csanetwerk.be/agenda/'],
+  },
+
   // ── Bologna, Italy ────────────────────────────────────────────────────────
   {
     name: 'WWOOF Italia Events',
