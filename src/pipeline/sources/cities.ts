@@ -43,6 +43,7 @@ export const CITIES: City[] = [
   { name: 'Marseille', country: 'France', lat: 43.2965, lng: 5.3698 },
   { name: 'Bordeaux', country: 'France', lat: 44.8378, lng: -0.5792 },
   { name: 'Toulouse', country: 'France', lat: 43.6047, lng: 1.4442 },
+  { name: 'Montpellier', country: 'France', lat: 43.6108, lng: 3.8767 },
 
   // Belgium
   { name: 'Brussels', country: 'Belgium', lat: 50.8503, lng: 4.3517 },

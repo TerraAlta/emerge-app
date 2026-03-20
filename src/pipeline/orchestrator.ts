@@ -232,6 +232,7 @@ import { aldeiasXistoPt } from './sources/aldeias-xisto-pt'
 // City-based scrapers (Meetup + Eventbrite across 50 cities)
 import { meetupCities } from './sources/meetup-cities'
 import { eventbriteCities } from './sources/eventbrite-cities'
+import { localNetworks } from './sources/local-networks'
 import { scoreQuest } from './score-quest'
 
 // All registered source fetchers
@@ -466,6 +467,7 @@ const SOURCES: SourceFetcher[] = [
   // City-based scrapers
   meetupCities,
   eventbriteCities,
+  localNetworks,
 ]
 
 export interface OrchestratorResult {

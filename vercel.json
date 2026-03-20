@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/city-pipeline",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/network-pipeline",
+      "schedule": "0 18 * * *"
     }
   ]
 }
