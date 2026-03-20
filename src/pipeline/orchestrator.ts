@@ -229,6 +229,9 @@ import { convergenciaPt } from './sources/convergencia-pt'
 import { biovillaPt } from './sources/biovilla-pt'
 import { regenerarPt } from './sources/regenerar-pt'
 import { aldeiasXistoPt } from './sources/aldeias-xisto-pt'
+// City-based scrapers (Meetup + Eventbrite across 50 cities)
+import { meetupCities } from './sources/meetup-cities'
+import { eventbriteCities } from './sources/eventbrite-cities'
 import { scoreQuest } from './score-quest'
 
 // All registered source fetchers
@@ -460,6 +463,9 @@ const SOURCES: SourceFetcher[] = [
   biovillaPt,
   regenerarPt,
   aldeiasXistoPt,
+  // City-based scrapers
+  meetupCities,
+  eventbriteCities,
 ]
 
 export interface OrchestratorResult {
