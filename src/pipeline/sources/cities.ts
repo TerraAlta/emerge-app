@@ -1,5 +1,5 @@
 /**
- * 86 cities across Europe and North America for event scraping.
+ * 97 cities across Europe and North America for event scraping.
  * Each city has a name, country, and coordinates.
  */
 
@@ -111,4 +111,16 @@ export const CITIES: City[] = [
   { name: 'Portland', country: 'United States', lat: 45.5152, lng: -122.6784 },
   { name: 'Seattle', country: 'United States', lat: 47.6062, lng: -122.3321 },
   { name: 'Austin', country: 'United States', lat: 30.2672, lng: -97.7431 },
+  { name: 'Chicago', country: 'United States', lat: 41.8781, lng: -87.6298 },
+  { name: 'Boston', country: 'United States', lat: 42.3601, lng: -71.0589 },
+  { name: 'Denver', country: 'United States', lat: 39.7392, lng: -104.9903 },
+  { name: 'Philadelphia', country: 'United States', lat: 39.9526, lng: -75.1652 },
+  { name: 'Minneapolis', country: 'United States', lat: 44.9778, lng: -93.2650 },
+  { name: 'Los Angeles', country: 'United States', lat: 34.0522, lng: -118.2437 },
+  { name: 'Detroit', country: 'United States', lat: 42.3314, lng: -83.0458 },
+  { name: 'Atlanta', country: 'United States', lat: 33.7490, lng: -84.3880 },
+  { name: 'New Orleans', country: 'United States', lat: 29.9511, lng: -90.0715 },
+  { name: 'Asheville', country: 'United States', lat: 35.5951, lng: -82.5515 },
+  { name: 'Burlington', country: 'United States', lat: 44.4759, lng: -73.2121 },
+  { name: 'Ithaca', country: 'United States', lat: 42.4440, lng: -76.5021 },
 ]

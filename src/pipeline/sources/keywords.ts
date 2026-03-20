@@ -109,10 +109,13 @@ export const KEYWORDS: string[] = [
   'économie du donut',
   'AMAP',
   'incroyables comestibles',
+
+  // Additional English
+  'mutual aid',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 91
+export const MAX_KEYWORDS_PER_CITY = 92

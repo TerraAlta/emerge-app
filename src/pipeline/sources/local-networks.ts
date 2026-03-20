@@ -425,6 +425,76 @@ const LOCAL_ORGS: LocalOrg[] = [
     city: 'Bologna', country: 'Italy', lat: 44.4949, lng: 11.3426,
     urls: ['https://www.legacoop.bologna.it/eventi/', 'https://www.legacoop.bologna.it/events/'],
   },
+
+  // ── Seattle, USA ──────────────────────────────────────────────────────────
+  {
+    name: 'Transition Seattle',
+    city: 'Seattle', country: 'United States', lat: 47.6062, lng: -122.3321,
+    urls: ['https://transitionseattle.org/events/'],
+  },
+  {
+    name: 'Tilth Alliance',
+    city: 'Seattle', country: 'United States', lat: 47.6062, lng: -122.3321,
+    urls: ['https://tilthalliance.org/events/', 'https://tilthalliance.org/upcoming-events/'],
+  },
+  {
+    name: 'Beacon Food Forest',
+    city: 'Seattle', country: 'United States', lat: 47.5620, lng: -122.3110,
+    urls: ['https://beaconfoodforest.org/events/', 'https://beaconfoodforest.org/volunteer/'],
+  },
+
+  // ── Chicago, USA ──────────────────────────────────────────────────────────
+  {
+    name: 'Transition Chicago',
+    city: 'Chicago', country: 'United States', lat: 41.8781, lng: -87.6298,
+    urls: ['https://transitionchicago.org/events/'],
+  },
+  {
+    name: 'Growing Power Chicago',
+    city: 'Chicago', country: 'United States', lat: 41.8781, lng: -87.6298,
+    urls: ['https://www.growingpower.org/events/'],
+  },
+  {
+    name: 'Repair Café Chicago',
+    city: 'Chicago', country: 'United States', lat: 41.8781, lng: -87.6298,
+    urls: ['https://repaircafe.org/en/locations/?search=chicago'],
+  },
+
+  // ── Philadelphia, USA ─────────────────────────────────────────────────────
+  {
+    name: 'Philadelphia Orchard Project',
+    city: 'Philadelphia', country: 'United States', lat: 39.9526, lng: -75.1652,
+    urls: ['https://www.phillyorchards.org/events/', 'https://www.phillyorchards.org/volunteer/'],
+  },
+  {
+    name: 'Transition Philly',
+    city: 'Philadelphia', country: 'United States', lat: 39.9526, lng: -75.1652,
+    urls: ['https://transitionphilly.org/events/'],
+  },
+  {
+    name: 'Repair Café Philly',
+    city: 'Philadelphia', country: 'United States', lat: 39.9526, lng: -75.1652,
+    urls: ['https://repaircafe.org/en/locations/?search=philadelphia'],
+  },
+
+  // ── Austin, USA ───────────────────────────────────────────────────────────
+  {
+    name: 'Transition Austin',
+    city: 'Austin', country: 'United States', lat: 30.2672, lng: -97.7431,
+    urls: ['https://transitionaustin.org/events/'],
+  },
+  {
+    name: 'Barton Springs Community Garden',
+    city: 'Austin', country: 'United States', lat: 30.2640, lng: -97.7710,
+    urls: ['https://www.sustainablefoodcenter.org/events/'],
+  },
+
+  // ── Asheville, USA ────────────────────────────────────────────────────────
+  {
+    name: 'Organic Growers School',
+    city: 'Asheville', country: 'United States', lat: 35.5951, lng: -82.5515,
+    urls: ['https://organicgrowersschool.org/events/', 'https://organicgrowersschool.org/conferences/'],
+  },
 ]
 
 // ─── Scraper Logic ──────────────────────────────────────────────────────────
