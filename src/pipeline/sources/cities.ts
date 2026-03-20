@@ -1,5 +1,5 @@
 /**
- * 75 cities across Europe and North America for event scraping.
+ * 86 cities across Europe and North America for event scraping.
  * Each city has a name, country, and coordinates.
  */
 
@@ -63,6 +63,14 @@ export const CITIES: City[] = [
   { name: 'Bordeaux', country: 'France', lat: 44.8378, lng: -0.5792 },
   { name: 'Toulouse', country: 'France', lat: 43.6047, lng: 1.4442 },
   { name: 'Montpellier', country: 'France', lat: 43.6108, lng: 3.8767 },
+  { name: 'Nantes', country: 'France', lat: 47.2184, lng: -1.5536 },
+  { name: 'Rennes', country: 'France', lat: 48.1173, lng: -1.6778 },
+  { name: 'Strasbourg', country: 'France', lat: 48.5734, lng: 7.7521 },
+  { name: 'Grenoble', country: 'France', lat: 45.1885, lng: 5.7245 },
+  { name: 'Lille', country: 'France', lat: 50.6292, lng: 3.0573 },
+  { name: 'Clermont-Ferrand', country: 'France', lat: 45.7797, lng: 3.0863 },
+  { name: 'Angers', country: 'France', lat: 47.4784, lng: -0.5632 },
+  { name: 'Dijon', country: 'France', lat: 47.3220, lng: 5.0415 },
 
   // Belgium
   { name: 'Brussels', country: 'Belgium', lat: 50.8503, lng: 4.3517 },

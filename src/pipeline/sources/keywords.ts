@@ -84,10 +84,35 @@ export const KEYWORDS: string[] = [
   'Kompost',
   'Wildpflanzen',
   'Solidarische Landwirtschaft',
+
+  // French keywords
+  'forêt comestible',
+  'échange de semences',
+  'construction naturelle',
+  'zéro déchet',
+  'théâtre de l\'opprimé',
+  'théâtre forum',
+  'playback théâtre',
+  'chorale communautaire',
+  'cercle de tambour',
+  'écothérapie',
+  'deuil climatique',
+  'cercle de naissance',
+  'cuisine communautaire',
+  'disco soupe',
+  'économie solidaire',
+  'décroissance',
+  'glanage',
+  'plantes sauvages',
+  'terre de liens',
+  'banque du temps',
+  'économie du donut',
+  'AMAP',
+  'incroyables comestibles',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 68
+export const MAX_KEYWORDS_PER_CITY = 91

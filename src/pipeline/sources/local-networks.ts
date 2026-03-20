@@ -185,6 +185,62 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.permaculture-france.fr/evenements/'],
   },
 
+  // ── Lyon, France ───────────────────────────────────────────────────────────
+  {
+    name: 'Colibris Lyon',
+    city: 'Lyon', country: 'France', lat: 45.7640, lng: 4.8357,
+    urls: ['https://colibris-lemouvement.org/agenda?field_departement_value=69'],
+  },
+  {
+    name: 'Incroyables Comestibles Lyon',
+    city: 'Lyon', country: 'France', lat: 45.7640, lng: 4.8357,
+    urls: ['https://lesincroyablescomestibles.fr/lyon/'],
+  },
+  {
+    name: 'Repair Café Lyon',
+    city: 'Lyon', country: 'France', lat: 45.7640, lng: 4.8357,
+    urls: ['https://repaircafe.org/en/locations/?search=lyon'],
+  },
+  {
+    name: 'AMAP Lyon',
+    city: 'Lyon', country: 'France', lat: 45.7640, lng: 4.8357,
+    urls: ['https://amap-aura.org/trouver-une-amap/', 'https://www.reseau-amap.org/recherche-amap.php'],
+  },
+
+  // ── Nantes, France ────────────────────────────────────────────────────────
+  {
+    name: 'Transition Nantes',
+    city: 'Nantes', country: 'France', lat: 47.2184, lng: -1.5536,
+    urls: ['https://transitionnantes.fr/evenements/', 'https://transitionnantes.fr/agenda/'],
+  },
+  {
+    name: 'Incroyables Comestibles Nantes',
+    city: 'Nantes', country: 'France', lat: 47.2184, lng: -1.5536,
+    urls: ['https://lesincroyablescomestibles.fr/nantes/'],
+  },
+  {
+    name: 'Repair Café Nantes',
+    city: 'Nantes', country: 'France', lat: 47.2184, lng: -1.5536,
+    urls: ['https://repaircafe.org/en/locations/?search=nantes'],
+  },
+
+  // ── Grenoble, France ──────────────────────────────────────────────────────
+  {
+    name: 'Transition Grenoble',
+    city: 'Grenoble', country: 'France', lat: 45.1885, lng: 5.7245,
+    urls: ['https://transitiongrenoble.fr/evenements/', 'https://transitiongrenoble.fr/agenda/'],
+  },
+  {
+    name: 'AMAP Grenoble',
+    city: 'Grenoble', country: 'France', lat: 45.1885, lng: 5.7245,
+    urls: ['https://amap-aura.org/trouver-une-amap/'],
+  },
+  {
+    name: 'Repair Café Grenoble',
+    city: 'Grenoble', country: 'France', lat: 45.1885, lng: 5.7245,
+    urls: ['https://repaircafe.org/en/locations/?search=grenoble'],
+  },
+
   // ── Bilbao, Spain ─────────────────────────────────────────────────────────
   {
     name: 'Red de Transición Bilbao',
