@@ -1,5 +1,5 @@
 /**
- * 97 cities across Europe and North America for event scraping.
+ * 107 cities across Europe and North America for event scraping.
  * Each city has a name, country, and coordinates.
  */
 
@@ -36,6 +36,16 @@ export const CITIES: City[] = [
   { name: 'Rotterdam', country: 'Netherlands', lat: 51.9225, lng: 4.4792 },
   { name: 'Utrecht', country: 'Netherlands', lat: 52.0907, lng: 5.1214 },
   { name: 'Wageningen', country: 'Netherlands', lat: 51.9692, lng: 5.6654 },
+  { name: 'Eindhoven', country: 'Netherlands', lat: 51.4416, lng: 5.4697 },
+  { name: 'Groningen', country: 'Netherlands', lat: 53.2194, lng: 6.5665 },
+  { name: 'Leiden', country: 'Netherlands', lat: 52.1601, lng: 4.4970 },
+  { name: 'Haarlem', country: 'Netherlands', lat: 52.3874, lng: 4.6462 },
+  { name: 'Nijmegen', country: 'Netherlands', lat: 51.8426, lng: 5.8546 },
+  { name: 'Tilburg', country: 'Netherlands', lat: 51.5555, lng: 5.0913 },
+  { name: 'Delft', country: 'Netherlands', lat: 52.0116, lng: 4.3571 },
+  { name: 'Breda', country: 'Netherlands', lat: 51.5719, lng: 4.7683 },
+  { name: 'Arnhem', country: 'Netherlands', lat: 51.9851, lng: 5.8987 },
+  { name: 'Zwolle', country: 'Netherlands', lat: 52.5168, lng: 6.0830 },
 
   // United Kingdom
   { name: 'London', country: 'United Kingdom', lat: 51.5074, lng: -0.1278 },

@@ -112,10 +112,32 @@ export const KEYWORDS: string[] = [
 
   // Additional English
   'mutual aid',
+
+  // Dutch keywords
+  'permacultuur',
+  'voedselbosbouw',
+  'zaadruil',
+  'natuurlijk bouwen',
+  'nul afval',
+  'forumtheater',
+  'speeltheater',
+  'gemeenschapskoor',
+  'trommelcirkel',
+  'ecotherapie',
+  'klimaatrouw',
+  'geboortecirkel',
+  'gemeenschapskeukens',
+  'disco soep',
+  'solidaire economie',
+  'stadslandbouw',
+  'composteren',
+  'fermentatie',
+  'zuurdesem',
+  'wilde planten',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 92
+export const MAX_KEYWORDS_PER_CITY = 112

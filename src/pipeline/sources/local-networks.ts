@@ -365,6 +365,52 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.herenboeren.nl/agenda/'],
   },
 
+  // ── Rotterdam, Netherlands ─────────────────────────────────────────────────
+  {
+    name: 'Repair Café Rotterdam',
+    city: 'Rotterdam', country: 'Netherlands', lat: 51.9244, lng: 4.4777,
+    urls: ['https://repaircafe.org/en/locations/?search=rotterdam'],
+  },
+  {
+    name: 'Transition Rotterdam',
+    city: 'Rotterdam', country: 'Netherlands', lat: 51.9244, lng: 4.4777,
+    urls: ['https://transitierotterdam.nl/agenda/', 'https://transitierotterdam.nl/events/'],
+  },
+  {
+    name: 'Herenboer Rotterdam',
+    city: 'Rotterdam', country: 'Netherlands', lat: 51.9244, lng: 4.4777,
+    urls: ['https://www.herenboeren.nl/agenda/'],
+  },
+
+  // ── Utrecht, Netherlands ──────────────────────────────────────────────────
+  {
+    name: 'Transition Utrecht',
+    city: 'Utrecht', country: 'Netherlands', lat: 52.0907, lng: 5.1214,
+    urls: ['https://transitieutrecht.nl/agenda/', 'https://transitieutrecht.nl/events/'],
+  },
+  {
+    name: 'Repair Café Utrecht',
+    city: 'Utrecht', country: 'Netherlands', lat: 52.0907, lng: 5.1214,
+    urls: ['https://repaircafe.org/en/locations/?search=utrecht'],
+  },
+  {
+    name: 'De Ceuvel Community',
+    city: 'Utrecht', country: 'Netherlands', lat: 52.0907, lng: 5.1214,
+    urls: ['https://deceuvel.nl/en/events/'],
+  },
+
+  // ── Groningen, Netherlands ────────────────────────────────────────────────
+  {
+    name: 'Transition Groningen',
+    city: 'Groningen', country: 'Netherlands', lat: 53.2194, lng: 6.5665,
+    urls: ['https://transitiegroningen.nl/agenda/', 'https://transitiegroningen.nl/events/'],
+  },
+  {
+    name: 'Stadslandbouw Groningen',
+    city: 'Groningen', country: 'Netherlands', lat: 53.2194, lng: 6.5665,
+    urls: ['https://www.stadslandbouwgroningen.nl/agenda/', 'https://www.stadslandbouwgroningen.nl/events/'],
+  },
+
   // ── Brighton, UK ──────────────────────────────────────────────────────────
   {
     name: 'Brighton Permaculture Trust',
