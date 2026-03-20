@@ -59,6 +59,7 @@ async function processFetcher(name: string, fetchFn: () => Promise<RawEvent[]>) 
         description: event.description,
         location: event.location_name,
       })
+      if (!scored) { result.errors++; continue }
 
       if (scored.ai_score < 50) { result.filtered++; continue }
 

@@ -7,6 +7,14 @@
     {
       "path": "/api/cron/network-pipeline",
       "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/cron/sync-luma",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/stale-check",
+      "schedule": "0 9 * * *"
     }
   ]
 }

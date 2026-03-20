@@ -113,7 +113,7 @@ async function processFetcher(
       })
       result.scored++
 
-      if (scored.ai_score < 50) {
+      if (!scored || scored.ai_score < 50) {
         result.filtered++
         continue
       }
@@ -123,15 +123,15 @@ async function processFetcher(
           {
             title: event.title,
             description: event.description,
-            category: scored.category,
+            category: scored!.category,
             geog: `POINT(${event.lng} ${event.lat})`,
             address: event.location_name,
             starts_at: event.starts_at,
             ends_at: event.ends_at ?? null,
             source_url: event.source_url,
             source_name: event.source,
-            ai_score: scored.ai_score,
-            ai_reasoning: scored.ai_reasoning,
+            ai_score: scored!.ai_score,
+            ai_reasoning: scored!.ai_reasoning,
             image_url: event.image_url ?? null,
             max_participants: event.max_participants ?? null,
           },

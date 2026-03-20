@@ -233,6 +233,7 @@ import { aldeiasXistoPt } from './sources/aldeias-xisto-pt'
 import { meetupCities } from './sources/meetup-cities'
 import { eventbriteCities } from './sources/eventbrite-cities'
 import { localNetworks } from './sources/local-networks'
+import { eventbriteApi } from './sources/eventbrite-api'
 import { scoreQuest } from './score-quest'
 
 // All registered source fetchers
@@ -467,6 +468,7 @@ const SOURCES: SourceFetcher[] = [
   // City-based scrapers
   meetupCities,
   eventbriteCities,
+  eventbriteApi,
   localNetworks,
 ]
 
@@ -552,6 +554,10 @@ export async function runPipeline(opts: OrchestratorOptions = {}): Promise<Orche
           description: event.description,
           location: event.location_name,
         })
+        if (!scored) {
+          result.errors++
+          continue
+        }
         result.scored++
 
         const passed = scored.ai_score >= scoreThreshold

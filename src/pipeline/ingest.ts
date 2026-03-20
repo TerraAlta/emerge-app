@@ -31,6 +31,11 @@ export async function ingestEvents(events: RawEvent[]) {
         location: event.location,
       })
 
+      if (!scored) {
+        results.push({ title: event.title, score: 0, ok: false })
+        continue
+      }
+
       const { error } = await supabase.from('quests').insert({
         title: event.title,
         description: event.description,

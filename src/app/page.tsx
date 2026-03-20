@@ -9,6 +9,9 @@ import QuestDetail from '@/components/QuestDetail'
 import PostQuest from '@/components/PostQuest'
 import SkillsScreen from '@/components/SkillsScreen'
 import TrustScreen from '@/components/TrustScreen'
+import OnboardingSplash from '@/components/OnboardingSplash'
+import SubmitEvent from '@/components/SubmitEvent'
+import ConnectLuma from '@/components/ConnectLuma'
 
 const QuestMap = dynamic(() => import('@/components/QuestMap'), {
   ssr: false,
@@ -66,6 +69,80 @@ const typeLabel: Record<string, string> = {
   community: 'Gather', wellness: 'Wellness', learning: 'Learn',
 }
 
+function daysUntil(iso: string): number {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const eventDay = new Date(iso)
+  const eventStart = new Date(eventDay.getFullYear(), eventDay.getMonth(), eventDay.getDate())
+  return Math.round((eventStart.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+function proximityPill(iso: string): { text: string; bg: string; color: string } | null {
+  const d = daysUntil(iso)
+  if (d === 0) return { text: 'Today', bg: '#FFF3E0', color: '#BF360C' }
+  if (d === 1) return { text: 'Tomorrow', bg: '#FFF8E1', color: '#A0522D' }
+  if (d >= 2 && d <= 6) return { text: `In ${d} days`, bg: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.45)' }
+  if (d >= 7 && d <= 13) return { text: 'Next week', bg: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.45)' }
+  if (d >= 14 && d <= 29) { const w = Math.floor(d / 7); return { text: `In ${w} week${w > 1 ? 's' : ''}`, bg: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.45)' } }
+  return null
+}
+
+function filterQuests(quests: any[], filter: 'today' | 'week' | 'all') {
+  if (filter === 'today') return quests.filter(q => daysUntil(q.starts_at) === 0)
+  if (filter === 'week') return quests.filter(q => { const d = daysUntil(q.starts_at); return d >= 0 && d <= 7 })
+  return quests
+}
+
+function groupQuests(quests: any[]): { label: string; quests: any[] }[] {
+  const groups: { label: string; quests: any[] }[] = []
+  const today: any[] = [], week: any[] = [], month: any[] = [], later: any[] = []
+  for (const q of quests) {
+    const d = daysUntil(q.starts_at)
+    if (d === 0) today.push(q)
+    else if (d >= 1 && d <= 7) week.push(q)
+    else if (d >= 8 && d <= 30) month.push(q)
+    else later.push(q)
+  }
+  if (today.length) groups.push({ label: 'Today', quests: today })
+  if (week.length) groups.push({ label: 'This week', quests: week })
+  if (month.length) groups.push({ label: 'This month', quests: month })
+  if (later.length) groups.push({ label: 'Later', quests: later })
+  return groups
+}
+
+const SOURCE_DISPLAY: Record<string, string> = {
+  'redeconvergir.pt': 'Rede Convergir',
+  'gaia.org.pt': 'GAIA Portugal',
+  'repaircafe.org': 'Repair Caf\u00e9 Network',
+  'transitionnetwork.org': 'Transition Network',
+  'permaculture.org.uk': 'Permaculture Association',
+  'findhorn.org': 'Findhorn Foundation',
+  'communitylandscotland.org.uk': 'Community Land Scotland',
+  'landvernd.is': 'Landvernd',
+  'slowfood.com': 'Slow Food',
+  'greenpeace.org': 'Greenpeace',
+  'umanotera.si': 'Umanotera',
+}
+
+function displaySourceName(sourceName: string, sourceUrl?: string | null): string {
+  // Pipeline source names like "meetup-cities", "eventbrite-cities", "local-networks"
+  if (sourceName === 'meetup-cities') return 'Meetup'
+  if (sourceName === 'eventbrite-cities') return 'Eventbrite'
+  if (sourceName === 'local-networks' && sourceUrl) {
+    try {
+      const host = new URL(sourceUrl).hostname.replace(/^www\./, '')
+      if (SOURCE_DISPLAY[host]) return SOURCE_DISPLAY[host]
+      // Check partial domain matches
+      for (const [domain, name] of Object.entries(SOURCE_DISPLAY)) {
+        if (host.endsWith(domain)) return name
+      }
+      return host
+    } catch { /* fall through */ }
+  }
+  // Fallback: clean up the source name
+  return sourceName.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
 type TabKey = 'quests' | 'map' | 'skills' | 'trust'
 
 export default function Home() {
@@ -73,6 +150,8 @@ export default function Home() {
   const [selectedQuest, setSelectedQuest] = useState<any>(null)
   const [showAuthFromDetail, setShowAuthFromDetail] = useState(false)
   const [showPostQuest, setShowPostQuest] = useState(false)
+  const [showSubmitEvent, setShowSubmitEvent] = useState(false)
+  const [showConnectLuma, setShowConnectLuma] = useState(false)
   const [activeTab, setActiveTab] = useState<TabKey>('quests')
 
   if (authLoading) {
@@ -104,6 +183,16 @@ export default function Home() {
         }}
       />
     )
+  }
+
+  // Submit event URL screen
+  if (showSubmitEvent) {
+    return <SubmitEvent onBack={() => setShowSubmitEvent(false)} />
+  }
+
+  // Connect Luma screen
+  if (showConnectLuma) {
+    return <ConnectLuma userId={user.id} onBack={() => setShowConnectLuma(false)} />
   }
 
   // Post quest screen
@@ -138,6 +227,8 @@ export default function Home() {
       onSignOut={signOut}
       onSelectQuest={setSelectedQuest}
       onPostQuest={() => setShowPostQuest(true)}
+      onSubmitEvent={() => setShowSubmitEvent(true)}
+      onConnectLuma={() => setShowConnectLuma(true)}
     />
   )
 }
@@ -249,6 +340,8 @@ function QuestBoard({
   onSignOut,
   onSelectQuest,
   onPostQuest,
+  onSubmitEvent,
+  onConnectLuma,
 }: {
   profile: { first_name: string; last_name: string } | null
   userId: string
@@ -257,6 +350,8 @@ function QuestBoard({
   onSignOut: () => void
   onSelectQuest: (quest: any) => void
   onPostQuest: () => void
+  onSubmitEvent: () => void
+  onConnectLuma: () => void
 }) {
   const [showMap, setShowMap] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
@@ -269,6 +364,7 @@ function QuestBoard({
   })
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
   const { quests, loading, error, location, locationName, locationDenied, locationLoading, setManualLocation } = useNearbyQuests({ radiusKm })
+  const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'all'>('all')
   const [citySearch, setCitySearch] = useState('')
   const [searchResults, setSearchResults] = useState<Array<{ lat: number; lng: number; name: string }>>([])
   const [searching, setSearching] = useState(false)
@@ -342,7 +438,7 @@ function QuestBoard({
               {getTimeGreeting()}
             </p>
             <h1 className="font-heading text-[20px] font-light leading-tight" style={{ color: '#E8F2E0' }}>
-              What will you <em className="text-emerge-dawn">do today?</em>
+              Quests <em className="text-emerge-dawn">near you</em>
             </h1>
           </div>
 
@@ -463,12 +559,30 @@ function QuestBoard({
           ))}
         </div>
 
-        {/* Section label + radius picker */}
+        {/* Filter strip + radius picker */}
         <div className="px-4 pb-2">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
-              Open quests near you
-            </span>
+            <div className="flex gap-1.5">
+              {([
+                { key: 'today' as const, label: 'Today' },
+                { key: 'week' as const, label: 'This week' },
+                { key: 'all' as const, label: 'All upcoming' },
+              ]).map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setTimeFilter(f.key)}
+                  className="text-[9px] px-2.5 py-1 rounded-full transition-all"
+                  style={{
+                    background: timeFilter === f.key ? 'rgba(200,145,58,0.18)' : 'rgba(232,242,224,0.04)',
+                    border: timeFilter === f.key ? '0.5px solid rgba(200,145,58,0.4)' : '0.5px solid rgba(232,242,224,0.06)',
+                    color: timeFilter === f.key ? '#C8913A' : 'rgba(232,242,224,0.4)',
+                    letterSpacing: '0.03em',
+                  }}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
             <button
               onClick={() => setShowRadiusPicker(!showRadiusPicker)}
               className="text-[9px] px-2 py-0.5 rounded-full active:scale-95 transition-transform"
@@ -528,43 +642,136 @@ function QuestBoard({
             </div>
           ))}
 
-          {!loading && quests.map((quest, i) => {
-            const isUrgent = i === 0
-            return (
-              <div
-                key={quest.id}
-                className="rounded-[14px] px-3.5 py-3 cursor-pointer active:scale-[0.98] transition-transform"
-                onClick={() => onSelectQuest(quest)}
-                style={{
-                  background: isUrgent ? 'rgba(200,145,58,0.10)' : '#162814',
-                  border: isUrgent ? '0.5px solid rgba(200,145,58,0.35)' : '0.5px solid rgba(200,145,58,0.12)',
-                }}
-              >
-                {isUrgent && (
-                  <span className="inline-block text-[8px] font-semibold uppercase px-1.5 py-0.5 rounded-full mb-1.5" style={{ background: '#C8913A', color: '#0D1A0B', letterSpacing: '0.05em' }}>
-                    Closest to you
-                  </span>
+          {!loading && (() => {
+            const filtered = filterQuests(quests, timeFilter)
+
+            // Empty states
+            if (filtered.length === 0) {
+              if (timeFilter === 'today' && quests.length > 0) {
+                return (
+                  <div className="rounded-[14px] px-4 py-10 text-center" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
+                    <p className="font-heading text-base" style={{ color: '#E8F2E0' }}>Nothing today</p>
+                    <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>
+                      There {quests.length === 1 ? 'is 1 quest' : `are ${quests.length} quests`} coming up near you.
+                    </p>
+                    <button
+                      onClick={() => setTimeFilter('all')}
+                      className="mt-3 text-[11px] font-medium"
+                      style={{ color: '#C8913A' }}
+                    >
+                      Show all upcoming &rarr;
+                    </button>
+                  </div>
+                )
+              }
+              if (timeFilter === 'week' && quests.length > 0) {
+                return (
+                  <div className="rounded-[14px] px-4 py-10 text-center" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
+                    <p className="font-heading text-base" style={{ color: '#E8F2E0' }}>Nothing this week</p>
+                    <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>
+                      There {quests.length === 1 ? 'is 1 quest' : `are ${quests.length} quests`} coming up near you.
+                    </p>
+                    <button
+                      onClick={() => setTimeFilter('all')}
+                      className="mt-3 text-[11px] font-medium"
+                      style={{ color: '#C8913A' }}
+                    >
+                      Show all upcoming &rarr;
+                    </button>
+                  </div>
+                )
+              }
+              return (
+                <div className="rounded-[14px] px-4 py-10 text-center" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
+                  <p className="font-heading text-base" style={{ color: '#E8F2E0' }}>No quests near you yet.</p>
+                  <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>Check back soon — or add your own.</p>
+                  <button
+                    onClick={onSubmitEvent}
+                    className="mt-3 text-[11px] font-medium"
+                    style={{ color: '#C8913A' }}
+                  >
+                    Add your event &rarr;
+                  </button>
+                </div>
+              )
+            }
+
+            // Grouped view for "All upcoming"
+            const groups = timeFilter === 'all' ? groupQuests(filtered) : [{ label: '', quests: filtered }]
+
+            return groups.map((group, gi) => (
+              <div key={gi}>
+                {group.label && (
+                  <div className="text-[9px] uppercase pt-2 pb-1.5 px-0.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
+                    {group.label}
+                  </div>
                 )}
-                <div className="text-[9px] font-medium uppercase mb-1" style={{ color: '#C8913A', letterSpacing: '0.08em' }}>
-                  {typeEmoji[quest.category] ?? ''} {typeLabel[quest.category] ?? quest.category}
-                </div>
-                <div className="text-[13px] font-medium leading-snug mb-1" style={{ color: '#E8F2E0' }}>
-                  {quest.title}
-                </div>
-                <div className="text-[10px]" style={{ color: 'rgba(232,242,224,0.4)' }}>
-                  {formatDate(quest.starts_at)} · {quest.distance_km.toFixed(1)}km
-                  {quest.source_name !== 'manual' && ` · via ${quest.source_name}`}
+                <div className="space-y-2">
+                  {group.quests.map((quest, i) => {
+                    const isFirst = gi === 0 && i === 0
+                    const pill = proximityPill(quest.starts_at)
+                    return (
+                      <div
+                        key={quest.id}
+                        className="rounded-[14px] px-3.5 py-3 cursor-pointer active:scale-[0.98] transition-transform"
+                        onClick={() => onSelectQuest(quest)}
+                        style={{
+                          background: isFirst ? 'rgba(200,145,58,0.10)' : '#162814',
+                          border: isFirst ? '0.5px solid rgba(200,145,58,0.35)' : '0.5px solid rgba(200,145,58,0.12)',
+                        }}
+                      >
+                        {isFirst && (
+                          <span className="inline-block text-[8px] font-semibold uppercase px-1.5 py-0.5 rounded-full mb-1.5" style={{ background: '#C8913A', color: '#0D1A0B', letterSpacing: '0.05em' }}>
+                            Closest to you
+                          </span>
+                        )}
+                        <div className="text-[9px] font-medium uppercase mb-1" style={{ color: '#C8913A', letterSpacing: '0.08em' }}>
+                          {typeEmoji[quest.category] ?? ''} {typeLabel[quest.category] ?? quest.category}
+                        </div>
+                        <div className="text-[13px] font-medium leading-snug mb-1" style={{ color: '#E8F2E0' }}>
+                          {quest.title}
+                        </div>
+                        <div className="text-[10px] flex items-center gap-1.5 flex-wrap" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                          {pill && (
+                            <span className="inline-block text-[8px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: pill.bg, color: pill.color, border: pill.bg.startsWith('rgba') ? '0.5px solid rgba(232,242,224,0.08)' : 'none' }}>
+                              {pill.text}
+                            </span>
+                          )}
+                          {formatDate(quest.starts_at)} · {quest.distance_km.toFixed(1)}km
+                        </div>
+                        {quest.source_name && quest.source_name !== 'manual' && (
+                          <div className="flex items-center gap-1.5 mt-2 pt-2" style={{ borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
+                            <span className="w-1.5 h-1.5 rounded-full flex-none" style={{ background: '#C8913A' }} />
+                            <span className="text-[10px] font-medium" style={{ color: '#C8913A' }}>
+                              via {displaySourceName(quest.source_name, quest.source_url)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
-            )
-          })}
+            ))
+          })()}
+        </div>
 
-          {!loading && !error && quests.length === 0 && (
-            <div className="rounded-[14px] px-4 py-10 text-center" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
-              <p className="font-heading text-base" style={{ color: '#E8F2E0' }}>No quests nearby... yet.</p>
-              <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>Something real is waiting to emerge.</p>
-            </div>
-          )}
+        {/* Organiser CTA */}
+        <div className="px-3 pt-3">
+          <button
+            onClick={onSubmitEvent}
+            className="w-full rounded-[14px] px-3.5 py-3 text-left cursor-pointer active:scale-[0.98] transition-transform"
+            style={{ background: 'rgba(200,145,58,0.06)', border: '0.5px dashed rgba(200,145,58,0.25)' }}
+          >
+            <span className="text-[10px] font-medium" style={{ color: '#C8913A' }}>Organiser?</span>
+            <span className="text-[10px] ml-1" style={{ color: 'rgba(232,242,224,0.4)' }}>Paste any event URL to add your quest &rarr;</span>
+          </button>
+          <button
+            onClick={onConnectLuma}
+            className="mt-1.5 w-full text-left px-3.5 py-1"
+          >
+            <span className="text-[9px]" style={{ color: 'rgba(232,242,224,0.25)' }}>Use Luma? <span style={{ color: 'rgba(200,145,58,0.5)' }}>Connect your calendar &rarr;</span></span>
+          </button>
         </div>
 
         {/* Living map */}
@@ -601,6 +808,7 @@ function QuestBoard({
         <BottomNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
 
       </div>
+      <OnboardingSplash />
     </div>
   )
 }

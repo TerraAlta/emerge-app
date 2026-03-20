@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
+import { isCreditError, isRateLimitError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
 
 let _client: Anthropic | null = null
 function getClient() {
@@ -53,22 +54,35 @@ RESPOND IN JSON ONLY — no markdown, no backticks, no explanation outside the J
 /**
  * Uses Claude to score a community event for regenerative alignment.
  * Reads the soul document from soul-document.txt as its system prompt.
- * Returns a category, score (0-100), and reasoning.
+ * Returns a category, score (0-100), and reasoning — or null if scoring fails due to credits/rate limits.
  */
-export async function scoreQuest(event: RawEvent): Promise<ScoredQuest> {
-  const message = await getClient().messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 200,
-    system: buildSystemPrompt(),
-    messages: [
-      {
-        role: 'user',
-        content: `Event: "${event.title}"
+export async function scoreQuest(event: RawEvent): Promise<ScoredQuest | null> {
+  let message
+  try {
+    message = await getClient().messages.create({
+      model: 'claude-haiku-4-5-20241022',
+      max_tokens: 200,
+      system: buildSystemPrompt(),
+      messages: [
+        {
+          role: 'user',
+          content: `Event: "${event.title}"
 Description: "${event.description}"
 Location: "${event.location ?? 'unknown'}"`,
-      },
-    ],
-  })
+        },
+      ],
+    })
+  } catch (err) {
+    if (isCreditError(err)) {
+      await notifyPipelineFailure('credits_exhausted', { event: event.title })
+      return null
+    }
+    if (isRateLimitError(err)) {
+      console.warn(`[score-quest] Rate limited, skipping: "${event.title}"`)
+      return null
+    }
+    throw err
+  }
 
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
   // Strip any markdown fencing the model might add despite instructions
