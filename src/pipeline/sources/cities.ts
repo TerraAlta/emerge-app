@@ -1,5 +1,5 @@
 /**
- * 194 cities across Europe, North America, Scandinavia, and the British Isles for event scraping.
+ * 201 cities across Europe, North America, Scandinavia, and the British Isles for event scraping.
  * Each city has a name, country, and coordinates.
  */
 
@@ -82,6 +82,14 @@ export const CITIES: City[] = [
   { name: 'Bangor', country: 'United Kingdom', lat: 53.2282, lng: -4.1293 },
   { name: 'Brecon', country: 'United Kingdom', lat: 51.9465, lng: -3.3888 },
   { name: 'Caernarfon', country: 'United Kingdom', lat: 53.1388, lng: -4.2732 },
+  // Scotland
+  { name: 'Inverness', country: 'United Kingdom', lat: 57.4778, lng: -4.2247 },
+  { name: 'Stirling', country: 'United Kingdom', lat: 56.1165, lng: -3.9369 },
+  { name: 'Perth', country: 'United Kingdom', lat: 56.3950, lng: -3.4312 },
+  { name: 'Dundee', country: 'United Kingdom', lat: 56.4620, lng: -2.9707 },
+  { name: 'Forres', country: 'United Kingdom', lat: 57.6137, lng: -3.6227 },
+  { name: 'Isle of Arran', country: 'United Kingdom', lat: 55.5745, lng: -5.2427 },
+  { name: 'Aberdeen', country: 'United Kingdom', lat: 57.1497, lng: -2.0943 },
 
   // France
   { name: 'Paris', country: 'France', lat: 48.8566, lng: 2.3522 },

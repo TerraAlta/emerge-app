@@ -276,10 +276,19 @@ export const KEYWORDS: string[] = [
   'fermentatie',
   'zuurdesem',
   'wilde planten',
+
+  // Scots Gaelic keywords
+  'permacultar',
+  'coille-bìdh',
+  'iomlaid sìl',
+  'còisir choimhearsnachd',
+  'ath-fhiadhachadh',
+  'coimhearsnachd fearainn',
+  'eag-olaigheachd',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 240
+export const MAX_KEYWORDS_PER_CITY = 250

@@ -426,6 +426,59 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://transitioncaernarfon.org/events/'],
   },
 
+  // ── Forres / Findhorn, Scotland ───────────────────────────────────────────
+  {
+    name: 'Findhorn Foundation',
+    city: 'Forres', country: 'United Kingdom', lat: 57.6137, lng: -3.6227,
+    urls: ['https://www.findhorn.org/events/'],
+  },
+
+  // ── Edinburgh, Scotland ─────────────────────────────────────────────────
+  {
+    name: 'Lauriston Farm Edinburgh',
+    city: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lng: -3.1883,
+    urls: ['https://lauristonfarm.scot/events/'],
+  },
+
+  // ── Glasgow, Scotland ───────────────────────────────────────────────────
+  {
+    name: 'Urban Roots Glasgow',
+    city: 'Glasgow', country: 'United Kingdom', lat: 55.8642, lng: -4.2518,
+    urls: ['https://www.concretegarden.org.uk/events/'],
+  },
+
+  // ── Scotland-wide ───────────────────────────────────────────────────────
+  {
+    name: 'Permaculture Scotland',
+    city: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lng: -3.1883,
+    urls: ['https://scotland.permaculture.org.uk/activities-map'],
+  },
+  {
+    name: 'Transition Scotland',
+    city: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lng: -3.1883,
+    urls: ['https://www.transitionscotland.org/events/'],
+  },
+  {
+    name: 'Repair Café Scotland',
+    city: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lng: -3.1883,
+    urls: ['https://repaircafe.org/en/locations/?search=scotland'],
+  },
+  {
+    name: 'Community Land Scotland',
+    city: 'Inverness', country: 'United Kingdom', lat: 57.4778, lng: -4.2247,
+    urls: ['https://www.communitylandscotland.org.uk/events/'],
+  },
+  {
+    name: 'Incredible Edible Scotland',
+    city: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lng: -3.1883,
+    urls: ['https://www.incredibleedible.org.uk/find-your-nearest-group/?_groups_location=scotland'],
+  },
+  {
+    name: 'Grassroots Remedies Co-op',
+    city: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lng: -3.1883,
+    urls: ['https://grassrootsremedies.co.uk/events/'],
+  },
+
   // ── Toulouse, France ──────────────────────────────────────────────────────
   {
     name: 'Colibris Toulouse',
