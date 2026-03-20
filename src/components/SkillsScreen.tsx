@@ -106,6 +106,20 @@ const SKILL_SECTIONS = [
       { key: 'interpret',      emoji: '\u{1F5E3}\u{FE0F}', label: 'Interpret',      questTypes: ['community'] },
     ],
   },
+  {
+    key: 'movements', emoji: '\u{1F30D}', title: 'Movements & Ideas',
+    skills: [
+      { key: 'ecocide',        emoji: '\u{2696}\u{FE0F}', label: 'Nature Rights',     questTypes: ['community', 'learning'] },
+      { key: 'degrowth',       emoji: '\u{1F331}', label: 'Degrowth',         questTypes: ['community', 'learning'] },
+      { key: 'doughnut',       emoji: '\u{1F369}', label: 'Doughnut Econ',    questTypes: ['community', 'learning'] },
+      { key: 'circular',       emoji: '\u{267B}\u{FE0F}', label: 'Circular Econ',    questTypes: ['craft', 'community'] },
+      { key: 'ecofeminist',    emoji: '\u{1F338}', label: 'Ecofeminism',      questTypes: ['community', 'wellness'] },
+      { key: 'activist-art',   emoji: '\u{1F3A8}', label: 'Activist Art',     questTypes: ['community'] },
+      { key: 'food-sovereign', emoji: '\u{1F33E}', label: 'Food Sovereignty', questTypes: ['food', 'community'] },
+      { key: 'localisation',   emoji: '\u{1F3D8}\u{FE0F}', label: 'Localisation',    questTypes: ['community', 'learning'] },
+      { key: 'transition',     emoji: '\u{1F504}', label: 'Transition',       questTypes: ['community'] },
+    ],
+  },
 ]
 
 // Flatten all skills for lookup
