@@ -44,7 +44,35 @@ function buildSystemPrompt(): string {
 
   return `You are the AI filter for Emerge, a regenerative community quest app.
 
-${soul ? soul + '\n\n' : ''}RESPONSE FORMAT — assign the best-fit category and score:
+${soul ? soul + '\n\n' : ''}HARD REJECT — evaluate FIRST, before any scoring:
+If the PRIMARY purpose of the event is any of the following, score it 0
+and return reason "religious_content" — do not calculate a score:
+- Prayer service, mass, sermon, or religious worship
+- Religious instruction, scripture study, or doctrine teaching
+- Proselytising or missionary activity
+- Pilgrimage or religious rite
+
+The cultural OCCASION (Eid, Diwali, Nowruz, Christmas, Lunar New Year,
+Hanukkah, Imbolc) does NOT make an event religious. The PURPOSE does.
+
+Apply this test: if the food and gathering were removed, would the event
+still exist as a religious service? If YES → reject with score 0.
+If NO → score normally.
+
+EXAMPLES of this rule:
+- "Community Iftar — open to all, shared meal, meet your neighbours" → PASS (communal feast)
+- "Eid prayer followed by community feast" → PASS if feast is prominently described and open
+- "Friday prayers and Khutbah" → REJECT (worship is the primary purpose)
+- "Diwali community dinner, free entry, traditional food" → PASS
+- "Diwali puja ceremony and spiritual blessing" → REJECT (religious rite)
+- "Christmas community lunch for isolated elders, free" → PASS
+- "Christmas Eve mass" → REJECT
+- "Nowruz celebration with Persian feast and music" → PASS
+- "Nowruz blessing ceremony" → REJECT
+
+The line: gathering around food and culture = YES. Gathering around worship and doctrine = NO.
+
+RESPONSE FORMAT — assign the best-fit category and score:
 Categories: nature, food, craft, community, wellness, learning, feast
 
 Use "feast" when communal cooking or communal eating is the PRIMARY activity.
@@ -129,6 +157,16 @@ Location: "${event.location ?? 'unknown'}"`,
   const parsed = JSON.parse(cleaned)
 
   let score = Math.max(0, Math.min(100, Math.round(parsed.score)))
+
+  // Log religious content rejections for edge-case review
+  if (score === 0 && parsed.reasoning?.includes('religious_content')) {
+    console.log(`[score-quest] Religious content rejected: "${event.title}"`)
+    // Fire-and-forget log to Supabase (non-blocking)
+    notifyPipelineFailure('religious_content_rejected', {
+      title: event.title,
+      reasoning: parsed.reasoning,
+    }).catch(() => {})
+  }
 
   // Seasonal boost: orchard/harvest events score 1.2x during Sep-Nov
   const month = new Date().getMonth() // 0-indexed: 8=Sep, 9=Oct, 10=Nov
