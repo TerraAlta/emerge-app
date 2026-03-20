@@ -646,6 +646,54 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.legacoop.bologna.it/eventi/', 'https://www.legacoop.bologna.it/events/'],
   },
 
+  // ── Victoria, Canada ───────────────────────────────────────────────────────
+  {
+    name: 'Transition Victoria',
+    city: 'Victoria', country: 'Canada', lat: 48.4284, lng: -123.3656,
+    urls: ['https://transitionvictoria.ning.com/events/'],
+  },
+
+  // ── Ottawa, Canada ────────────────────────────────────────────────────────
+  {
+    name: 'Transition Ottawa',
+    city: 'Ottawa', country: 'Canada', lat: 45.4215, lng: -75.6972,
+    urls: ['https://transitionottawa.ca/events/'],
+  },
+  {
+    name: 'Ecology Ottawa',
+    city: 'Ottawa', country: 'Canada', lat: 45.4215, lng: -75.6972,
+    urls: ['https://ecologyottawa.ca/events/', 'https://ecologyottawa.ca/upcoming-events/'],
+  },
+  {
+    name: 'Repair Café Ottawa',
+    city: 'Ottawa', country: 'Canada', lat: 45.4215, lng: -75.6972,
+    urls: ['https://repaircafe.org/en/locations/?search=ottawa'],
+  },
+
+  // ── Halifax, Canada ───────────────────────────────────────────────────────
+  {
+    name: 'Ecology Action Centre Halifax',
+    city: 'Halifax', country: 'Canada', lat: 44.6488, lng: -63.5752,
+    urls: ['https://ecologyaction.ca/events/', 'https://ecologyaction.ca/upcoming-events/'],
+  },
+  {
+    name: 'Transition Halifax',
+    city: 'Halifax', country: 'Canada', lat: 44.6488, lng: -63.5752,
+    urls: ['https://transitionhalifax.ca/events/'],
+  },
+
+  // ── Quebec City, Canada ───────────────────────────────────────────────────
+  {
+    name: 'Transition Quebec City',
+    city: 'Quebec City', country: 'Canada', lat: 46.8139, lng: -71.2080,
+    urls: ['https://www.intransition.ca/quebec/'],
+  },
+  {
+    name: 'Incroyables Comestibles Quebec',
+    city: 'Quebec City', country: 'Canada', lat: 46.8139, lng: -71.2080,
+    urls: ['https://lesincroyablescomestibles.fr/quebec/'],
+  },
+
   // ── Turin, Italy ───────────────────────────────────────────────────────────
   {
     name: 'Transition Torino',

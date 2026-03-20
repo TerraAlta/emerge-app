@@ -1,5 +1,5 @@
 /**
- * 141 cities across Europe and North America for event scraping.
+ * 152 cities across Europe and North America for event scraping.
  * Each city has a name, country, and coordinates.
  */
 
@@ -153,6 +153,17 @@ export const CITIES: City[] = [
   { name: 'Vancouver', country: 'Canada', lat: 49.2827, lng: -123.1207 },
   { name: 'Toronto', country: 'Canada', lat: 43.6532, lng: -79.3832 },
   { name: 'Montreal', country: 'Canada', lat: 45.5017, lng: -73.5673 },
+  { name: 'Ottawa', country: 'Canada', lat: 45.4215, lng: -75.6972 },
+  { name: 'Calgary', country: 'Canada', lat: 51.0447, lng: -114.0719 },
+  { name: 'Edmonton', country: 'Canada', lat: 53.5461, lng: -113.4938 },
+  { name: 'Winnipeg', country: 'Canada', lat: 49.8951, lng: -97.1384 },
+  { name: 'Halifax', country: 'Canada', lat: 44.6488, lng: -63.5752 },
+  { name: 'Victoria', country: 'Canada', lat: 48.4284, lng: -123.3656 },
+  { name: 'Quebec City', country: 'Canada', lat: 46.8139, lng: -71.2080 },
+  { name: 'Saskatoon', country: 'Canada', lat: 52.1332, lng: -106.6700 },
+  { name: 'Regina', country: 'Canada', lat: 50.4452, lng: -104.6189 },
+  { name: 'Hamilton', country: 'Canada', lat: 43.2557, lng: -79.8711 },
+  { name: 'Kingston', country: 'Canada', lat: 44.2312, lng: -76.4860 },
 
   // United States
   { name: 'New York', country: 'United States', lat: 40.7128, lng: -74.0060 },
