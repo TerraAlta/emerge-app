@@ -323,10 +323,25 @@ export const KEYWORDS: string[] = [
   'fermentacija',
   'divlja hrana',
   'lokalizacija',
+
+  // Slovenian keywords
+  'prehod',
+  'prehranska gozd',
+  'izmenjava semen',
+  'naravna gradnja',
+  'nič odpadkov',
+  'gledališče zatiranih',
+  'skupnostni zbor',
+  'podnebna žalost',
+  'rojstni krog',
+  'skupnostna kuhinja',
+  'solidarnostno gospodarstvo',
+  'ponovitev divjine',
+  'divja hrana',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 290
+export const MAX_KEYWORDS_PER_CITY = 305

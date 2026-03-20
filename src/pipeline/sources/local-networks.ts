@@ -557,6 +557,43 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://eko.rs/'],
   },
 
+  // ── Ljubljana, Slovenia ──────────────────────────────────────────────────
+  {
+    name: 'Umanotera Foundation',
+    city: 'Ljubljana', country: 'Slovenia', lat: 46.0569, lng: 14.5058,
+    urls: ['https://www.umanotera.si/dogodki/'],
+  },
+  {
+    name: 'Ekologi Brez Meja (Zero Waste Slovenia)',
+    city: 'Ljubljana', country: 'Slovenia', lat: 46.0569, lng: 14.5058,
+    urls: ['https://ebm.si/events/'],
+  },
+  {
+    name: 'Transition Slovenia',
+    city: 'Ljubljana', country: 'Slovenia', lat: 46.0569, lng: 14.5058,
+    urls: ['https://transitionnetwork.org/transition-near-me/?country=slovenia'],
+  },
+  {
+    name: 'Repair Café Slovenia',
+    city: 'Ljubljana', country: 'Slovenia', lat: 46.0569, lng: 14.5058,
+    urls: ['https://repaircafe.org/en/locations/?search=slovenia'],
+  },
+  {
+    name: 'GEN Slovenia Ecovillage Network',
+    city: 'Ljubljana', country: 'Slovenia', lat: 46.0569, lng: 14.5058,
+    urls: ['https://ecovillage.org/our-work/regions/gen-europe/?fwp_country=slovenia'],
+  },
+  {
+    name: 'Slow Food Slovenia',
+    city: 'Ljubljana', country: 'Slovenia', lat: 46.0569, lng: 14.5058,
+    urls: ['https://www.slowfood.si/events/'],
+  },
+  {
+    name: 'Biotehniška fakulteta Ljubljana',
+    city: 'Ljubljana', country: 'Slovenia', lat: 46.0569, lng: 14.5058,
+    urls: ['https://www.bf.uni-lj.si/en/events/'],
+  },
+
   // ── Toulouse, France ──────────────────────────────────────────────────────
   {
     name: 'Colibris Toulouse',
