@@ -594,6 +594,38 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.bf.uni-lj.si/en/events/'],
   },
 
+  // ── Budapest, Hungary ────────────────────────────────────────────────────
+  {
+    name: 'MagosVölgy Ecological Farm',
+    city: 'Budapest', country: 'Hungary', lat: 47.4979, lng: 19.0402,
+    urls: ['https://magosvolgyfarm.hu/events/'],
+  },
+  {
+    name: 'Transition Hungary',
+    city: 'Budapest', country: 'Hungary', lat: 47.4979, lng: 19.0402,
+    urls: ['https://transitionnetwork.org/transition-near-me/?country=hungary'],
+  },
+  {
+    name: 'Repair Café Hungary',
+    city: 'Budapest', country: 'Hungary', lat: 47.4979, lng: 19.0402,
+    urls: ['https://repaircafe.org/en/locations/?search=hungary'],
+  },
+  {
+    name: 'Védegylet Environmental NGO',
+    city: 'Budapest', country: 'Hungary', lat: 47.4979, lng: 19.0402,
+    urls: ['https://vedegylet.hu/esemenyek/'],
+  },
+  {
+    name: 'Slow Food Hungary',
+    city: 'Budapest', country: 'Hungary', lat: 47.4979, lng: 19.0402,
+    urls: ['https://www.slowfood.hu/esemenyek/'],
+  },
+  {
+    name: 'Ökológiai Gazdálkodók Szövetsége',
+    city: 'Budapest', country: 'Hungary', lat: 47.4979, lng: 19.0402,
+    urls: ['https://www.biokontroll.hu/esemenyek/'],
+  },
+
   // ── Toulouse, France ──────────────────────────────────────────────────────
   {
     name: 'Colibris Toulouse',

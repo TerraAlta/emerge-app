@@ -338,10 +338,29 @@ export const KEYWORDS: string[] = [
   'solidarnostno gospodarstvo',
   'ponovitev divjine',
   'divja hrana',
+
+  // Hungarian keywords
+  'átmenet',
+  'ételerdő',
+  'magcsere',
+  'természetes építés',
+  'zero hulladék',
+  'elnyomottak színháza',
+  'fórum színház',
+  'közösségi kórus',
+  'ökoterápia',
+  'klímasmárás',
+  'szülési kör',
+  'közösségi konyha',
+  'szolidáris gazdaság',
+  'vadon visszaállítása',
+  'erjesztés',
+  'vadételek',
+  'lokalizáció',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 305
+export const MAX_KEYWORDS_PER_CITY = 325

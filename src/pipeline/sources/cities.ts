@@ -1,5 +1,5 @@
 /**
- * 216 cities across Europe, North America, Scandinavia, Iceland, the Balkans, and the British Isles for event scraping.
+ * 223 cities across Europe, North America, Scandinavia, Iceland, the Balkans, and the British Isles for event scraping.
  * Each city has a name, country, and coordinates.
  */
 
@@ -111,6 +111,15 @@ export const CITIES: City[] = [
   { name: 'Kranj', country: 'Slovenia', lat: 46.2389, lng: 14.3556 },
   { name: 'Novo Mesto', country: 'Slovenia', lat: 45.7993, lng: 15.1729 },
   { name: 'Bled', country: 'Slovenia', lat: 46.3683, lng: 14.1139 },
+
+  // Hungary
+  { name: 'Budapest', country: 'Hungary', lat: 47.4979, lng: 19.0402 },
+  { name: 'Debrecen', country: 'Hungary', lat: 47.5316, lng: 21.6273 },
+  { name: 'Pécs', country: 'Hungary', lat: 46.0727, lng: 18.2330 },
+  { name: 'Győr', country: 'Hungary', lat: 47.6875, lng: 17.6504 },
+  { name: 'Miskolc', country: 'Hungary', lat: 48.1035, lng: 20.7784 },
+  { name: 'Eger', country: 'Hungary', lat: 47.9025, lng: 20.3772 },
+  { name: 'Sopron', country: 'Hungary', lat: 47.6817, lng: 16.5845 },
 
   // France
   { name: 'Paris', country: 'France', lat: 48.8566, lng: 2.3522 },
