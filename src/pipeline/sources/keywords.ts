@@ -85,6 +85,10 @@ export const KEYWORDS: string[] = [
   'Wildpflanzen',
   'Solidarische Landwirtschaft',
   'Waldgarten',
+  'Schnippeldisko',
+  'Lokalisierung',
+  'Gemeinschaftsgarten',
+  'Ökozid',
 
   // French keywords
   'forêt comestible',
@@ -229,4 +233,4 @@ export const KEYWORDS: string[] = [
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 193
+export const MAX_KEYWORDS_PER_CITY = 197

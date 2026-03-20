@@ -61,6 +61,48 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.goodgriefnetwork.org/events/'],
   },
 
+  // ── Vienna, Austria ────────────────────────────────────────────────────────
+  {
+    name: 'Transition Wien',
+    city: 'Vienna', country: 'Austria', lat: 48.2082, lng: 16.3738,
+    urls: ['https://transition-wien.at/veranstaltungen/', 'https://transition-wien.at/events/'],
+  },
+  {
+    name: 'Permakultur Austria',
+    city: 'Vienna', country: 'Austria', lat: 48.2082, lng: 16.3738,
+    urls: ['https://permakultur-austria.at/veranstaltungen/', 'https://permakultur-austria.at/events/'],
+  },
+  {
+    name: 'Degrowth Austria',
+    city: 'Vienna', country: 'Austria', lat: 48.2082, lng: 16.3738,
+    urls: ['https://degrowth.at/events/', 'https://degrowth.at/veranstaltungen/'],
+  },
+  {
+    name: 'Repair Café Austria',
+    city: 'Vienna', country: 'Austria', lat: 48.2082, lng: 16.3738,
+    urls: ['https://repaircafe.org/en/locations/?search=vienna'],
+  },
+  {
+    name: 'ÖkoEvent Wien',
+    city: 'Vienna', country: 'Austria', lat: 48.2082, lng: 16.3738,
+    urls: ['https://www.oekoevent.at/veranstaltungen/', 'https://www.oekoevent.at/events/'],
+  },
+  {
+    name: 'Foodsharing Wien',
+    city: 'Vienna', country: 'Austria', lat: 48.2082, lng: 16.3738,
+    urls: ['https://foodsharing.at/events/', 'https://foodsharing.at/veranstaltungen/'],
+  },
+  {
+    name: 'Slow Food Austria',
+    city: 'Vienna', country: 'Austria', lat: 48.2082, lng: 16.3738,
+    urls: ['https://www.slowfood.at/events/', 'https://www.slowfood.at/veranstaltungen/'],
+  },
+  {
+    name: 'SoLaWi Austria',
+    city: 'Vienna', country: 'Austria', lat: 48.2082, lng: 16.3738,
+    urls: ['https://www.solidarische-landwirtschaft.org/solawis-finden/?L=0&tx_solawi_map%5Bcountry%5D=AT'],
+  },
+
   // ── Luxembourg City, Luxembourg ────────────────────────────────────────────
   {
     name: 'Mouvement Écologique Luxembourg',
