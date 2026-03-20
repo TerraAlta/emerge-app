@@ -89,7 +89,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
       className="min-h-screen flex justify-center font-body"
       style={{ background: '#0D1A0B', color: '#E8F2E0' }}
     >
-      <div className="w-full flex flex-col items-center px-6 pt-16" style={{ maxWidth: 390 }}>
+      <div className="w-full flex flex-col items-center px-6" style={{ maxWidth: 390, paddingTop: 'calc(16px + var(--sat, 0px))' }}>
 
         {/* Hero with glow */}
         <div className="relative mb-10">

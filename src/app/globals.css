@@ -4,6 +4,14 @@
 
 @import 'leaflet/dist/leaflet.css';
 
+/* iPhone safe area insets */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
 /* Darken map tiles to match the dark theme */
 .leaflet-tile-pane {
   filter: brightness(0.6) saturate(0.65) hue-rotate(15deg);

@@ -100,7 +100,7 @@ export default function TrustScreen({ userId, profile }: Props) {
       <div className="w-full">
 
         {/* Header */}
-        <div className="px-4 pt-5 pb-4">
+        <div className="px-4 pb-4" style={{ paddingTop: 'calc(20px + var(--sat, 0px))' }}>
           <h1 className="font-heading text-[20px] font-light" style={{ color: '#E8F2E0' }}>
             Trust <em style={{ color: '#C8913A' }}>Journey</em>
           </h1>

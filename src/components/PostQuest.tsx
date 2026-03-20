@@ -116,7 +116,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
       <div className="w-full pb-10" style={{ maxWidth: 390 }}>
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-4 pt-5 pb-2 sticky top-0 z-10" style={{ background: '#0D1A0B' }}>
+        <div className="flex items-center justify-between px-4 pb-2 sticky top-0 z-10" style={{ background: '#0D1A0B', paddingTop: 'calc(20px + var(--sat, 0px))' }}>
           <button onClick={handleBack} className="flex items-center gap-1.5">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />

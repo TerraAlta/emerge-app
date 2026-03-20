@@ -36,7 +36,7 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
   return (
     <div className="flex flex-col w-full" style={{ background: '#0D1A0B', minHeight: 'calc(100dvh - 72px)' }}>
       {/* Header */}
-      <div className="shrink-0 px-4 pt-4 pb-3" style={{ background: '#0D1A0B' }}>
+      <div className="shrink-0 px-4 pb-3" style={{ background: '#0D1A0B', paddingTop: 'calc(16px + var(--sat, 0px))' }}>
         <h1 className="font-heading text-[20px] font-light" style={{ color: '#E8F2E0' }}>
           Living <em style={{ color: '#C8913A' }}>Map</em>
         </h1>

@@ -156,7 +156,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
       <div className="w-full">
 
         {/* ── Intro / Invitation ── */}
-        <div className="px-4 pt-5 pb-2">
+        <div className="px-4 pb-2" style={{ paddingTop: 'calc(20px + var(--sat, 0px))' }}>
           <h1 className="font-heading text-[20px] font-light" style={{ color: '#E8F2E0' }}>
             Your <em style={{ color: '#C8913A' }}>Skills</em>
           </h1>

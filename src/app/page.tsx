@@ -162,7 +162,7 @@ function BottomNav({
 
   return (
     <div className="shrink-0 z-50" style={{ background: '#0D1A0B', borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
-      <div className="flex justify-around items-center px-2 pt-3 pb-6">
+      <div className="flex justify-around items-center px-2 pt-3" style={{ paddingBottom: 'calc(6px + var(--sab, 0px))' }}>
         {tabs.map(tab => {
           if (tab.key === 'post') {
             return (
@@ -322,7 +322,7 @@ function QuestBoard({
           {activeTab === 'quests' && (<div>
 
         {/* Hero */}
-        <div className="relative overflow-hidden rounded-b-[24px]" style={{ background: '#0D1A0B', padding: '36px 24px 28px' }}>
+        <div className="relative overflow-hidden rounded-b-[24px]" style={{ background: '#0D1A0B', padding: 'calc(36px + var(--sat, 0px)) 24px 28px' }}>
           <div className="absolute pointer-events-none" style={{ bottom: -60, left: '50%', transform: 'translateX(-50%)', width: 340, height: 340, background: 'radial-gradient(circle, rgba(200,145,58,0.16) 0%, transparent 70%)' }} />
           <div className="flex items-center justify-center gap-2.5 relative z-10">
             <SeedlingIcon size={34} />
