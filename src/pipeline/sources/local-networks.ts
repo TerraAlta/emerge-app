@@ -61,6 +61,23 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.goodgriefnetwork.org/events/'],
   },
 
+  // ── Malta ──────────────────────────────────────────────────────────────────
+  {
+    name: 'Gozo Sustainability Events',
+    city: 'Gozo', country: 'Malta', lat: 36.0441, lng: 14.2394,
+    urls: ['https://www.gozo.gov.mt/events/', 'https://gozo.gov.mt/en/Pages/Events.aspx'],
+  },
+  {
+    name: 'Flimkien għal Ambjent Aħjar',
+    city: 'Valletta', country: 'Malta', lat: 35.8989, lng: 14.5146,
+    urls: ['https://www.ambjent.org/events/', 'https://www.ambjent.org/activities/'],
+  },
+  {
+    name: 'Koperattiva Kummerċ Ġust',
+    city: 'Valletta', country: 'Malta', lat: 35.8989, lng: 14.5146,
+    urls: ['https://www.fairtrade.org.mt/events/'],
+  },
+
   // ── Vienna, Austria ────────────────────────────────────────────────────────
   {
     name: 'Transition Wien',
