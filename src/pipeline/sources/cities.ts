@@ -1,5 +1,5 @@
 /**
- * 152 cities across Europe and North America for event scraping.
+ * 159 cities across Europe, North America, and Scandinavia for event scraping.
  * Each city has a name, country, and coordinates.
  */
 
@@ -145,6 +145,15 @@ export const CITIES: City[] = [
   { name: 'St. Gallen', country: 'Switzerland', lat: 47.4245, lng: 9.3767 },
   { name: 'Lucerne', country: 'Switzerland', lat: 47.0502, lng: 8.3093 },
   { name: 'Lugano', country: 'Switzerland', lat: 46.0037, lng: 8.9511 },
+
+  // Finland
+  { name: 'Helsinki', country: 'Finland', lat: 60.1699, lng: 24.9384 },
+  { name: 'Tampere', country: 'Finland', lat: 61.4978, lng: 23.7610 },
+  { name: 'Turku', country: 'Finland', lat: 60.4518, lng: 22.2666 },
+  { name: 'Oulu', country: 'Finland', lat: 65.0121, lng: 25.4651 },
+  { name: 'Jyväskylä', country: 'Finland', lat: 62.2415, lng: 25.7209 },
+  { name: 'Espoo', country: 'Finland', lat: 60.2055, lng: 24.6559 },
+  { name: 'Lahti', country: 'Finland', lat: 60.9827, lng: 25.6612 },
 
   // Malta
   { name: 'Valletta', country: 'Malta', lat: 35.8989, lng: 14.5146 },

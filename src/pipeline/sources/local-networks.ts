@@ -61,6 +61,40 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.goodgriefnetwork.org/events/'],
   },
 
+  // ── Helsinki, Finland ──────────────────────────────────────────────────────
+  {
+    name: 'Dodo ry Helsinki',
+    city: 'Helsinki', country: 'Finland', lat: 60.1699, lng: 24.9384,
+    urls: ['https://dodo.fi/tapahtumat/', 'https://dodo.fi/events/'],
+  },
+  {
+    name: 'Permakulttuuriyhdistys ry',
+    city: 'Helsinki', country: 'Finland', lat: 60.1699, lng: 24.9384,
+    urls: ['https://permakultuuri.fi/tapahtumat/', 'https://permakultuuri.fi/events/'],
+  },
+  {
+    name: 'Nordic Permaculture Finland',
+    city: 'Helsinki', country: 'Finland', lat: 60.1699, lng: 24.9384,
+    urls: ['https://nordicpermaculture.org/en/events/', 'https://nordicpermaculture.org/events/'],
+  },
+  {
+    name: 'Repair Café Finland',
+    city: 'Helsinki', country: 'Finland', lat: 60.1699, lng: 24.9384,
+    urls: ['https://repaircafe.org/en/locations/?search=helsinki'],
+  },
+  {
+    name: 'Nordic Permaculture Festival',
+    city: 'Helsinki', country: 'Finland', lat: 60.1699, lng: 24.9384,
+    urls: ['https://nordicpermaculturefestival.org/events/', 'https://nordicpermaculturefestival.org/'],
+  },
+
+  // ── Turku, Finland ────────────────────────────────────────────────────────
+  {
+    name: 'Koroinen Farm Turku',
+    city: 'Turku', country: 'Finland', lat: 60.4518, lng: 22.2666,
+    urls: ['https://www.koroinen.fi/tapahtumat/', 'https://www.koroinen.fi/events/'],
+  },
+
   // ── Porto, Portugal ────────────────────────────────────────────────────────
   {
     name: 'Transition Porto',
