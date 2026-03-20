@@ -111,6 +111,24 @@ export const KEYWORDS: string[] = [
   'AMAP',
   'incroyables comestibles',
 
+  // Danish keywords
+  'omstilling',
+  'madkovskov',
+  'frøbytte',
+  'naturbyggeri',
+  'nul affald',
+  'de undertryktes teater',
+  'fællessang',
+  'økoterapi',
+  'klimasorg',
+  'fødselscirkel',
+  'fælles køkken',
+  'solidaritetsøkonomi',
+  'genopretning',
+  'vilde urter',
+  'økolandsby',
+  'lokalisering',
+
   // Finnish keywords
   'permakultuuri',
   'siirtymä',
@@ -211,4 +229,4 @@ export const KEYWORDS: string[] = [
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 177
+export const MAX_KEYWORDS_PER_CITY = 193

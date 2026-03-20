@@ -61,6 +61,40 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.goodgriefnetwork.org/events/'],
   },
 
+  // ── Copenhagen, Denmark ────────────────────────────────────────────────────
+  {
+    name: 'Permakultur Danmark',
+    city: 'Copenhagen', country: 'Denmark', lat: 55.6761, lng: 12.5683,
+    urls: ['https://permakulturdk.dk/arrangementer/', 'https://permakulturdk.dk/events/'],
+  },
+  {
+    name: 'LØS — Landsforeningen for Økosamfund',
+    city: 'Copenhagen', country: 'Denmark', lat: 55.6761, lng: 12.5683,
+    urls: ['https://los.dk/arrangementer/', 'https://los.dk/events/'],
+  },
+  {
+    name: 'Omstilling Nu',
+    city: 'Copenhagen', country: 'Denmark', lat: 55.6761, lng: 12.5683,
+    urls: ['https://omstillingnu.dk/arrangementer/', 'https://omstillingnu.dk/events/'],
+  },
+  {
+    name: 'Repair Café Denmark',
+    city: 'Copenhagen', country: 'Denmark', lat: 55.6761, lng: 12.5683,
+    urls: ['https://repaircafe.org/en/locations/?search=copenhagen'],
+  },
+  {
+    name: 'Christiania Community Events',
+    city: 'Copenhagen', country: 'Denmark', lat: 55.6734, lng: 12.5964,
+    urls: ['https://www.christiania.org/events/', 'https://www.christiania.org/arrangementer/'],
+  },
+
+  // ── Vejle, Denmark ────────────────────────────────────────────────────────
+  {
+    name: 'Vejle Doughnut City',
+    city: 'Vejle', country: 'Denmark', lat: 55.7113, lng: 9.5360,
+    urls: ['https://www.vejle.dk/borger/baeredygtighed/', 'https://www.vejle.dk/om-kommunen/baeredygtighed/'],
+  },
+
   // ── Helsinki, Finland ──────────────────────────────────────────────────────
   {
     name: 'Dodo ry Helsinki',
