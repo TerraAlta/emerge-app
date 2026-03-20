@@ -385,6 +385,47 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://campus.dartington.org/whats-on/', 'https://www.schumachercollege.org.uk/events/'],
   },
 
+  // ── Cardiff, Wales ─────────────────────────────────────────────────────────
+  {
+    name: 'Permaculture Wales',
+    city: 'Cardiff', country: 'United Kingdom', lat: 51.4816, lng: -3.1791,
+    urls: ['https://www.permaculture.org.uk/wales/', 'https://www.permaculture.org.uk/events/?region=wales'],
+  },
+  {
+    name: 'Incredible Edible Wales',
+    city: 'Cardiff', country: 'United Kingdom', lat: 51.4816, lng: -3.1791,
+    urls: ['https://www.incredibleedible.org.uk/find-a-group/?country=wales'],
+  },
+  {
+    name: 'Wales Real Food and Farming Conference',
+    city: 'Cardiff', country: 'United Kingdom', lat: 51.4816, lng: -3.1791,
+    urls: ['https://www.wrffc.org.uk/events/', 'https://www.wrffc.org.uk/'],
+  },
+  {
+    name: 'Repair Café Wales',
+    city: 'Cardiff', country: 'United Kingdom', lat: 51.4816, lng: -3.1791,
+    urls: ['https://repaircafe.org/en/locations/?search=cardiff', 'https://repaircafe.org/en/locations/?search=swansea'],
+  },
+
+  // ── Machynlleth, Wales ────────────────────────────────────────────────────
+  {
+    name: 'Centre for Alternative Technology',
+    city: 'Machynlleth', country: 'United Kingdom', lat: 52.5849, lng: -3.8525,
+    urls: ['https://cat.org.uk/events/', 'https://cat.org.uk/events-ede/'],
+  },
+  {
+    name: 'Coed Hills Rural Artspace',
+    city: 'Machynlleth', country: 'United Kingdom', lat: 51.4545, lng: -3.4200,
+    urls: ['https://www.coedhills.org.uk/events/', 'https://www.coedhills.org.uk/whats-on/'],
+  },
+
+  // ── Caernarfon, Wales ─────────────────────────────────────────────────────
+  {
+    name: 'Transition Caernarfon',
+    city: 'Caernarfon', country: 'United Kingdom', lat: 53.1388, lng: -4.2732,
+    urls: ['https://transitioncaernarfon.org/events/'],
+  },
+
   // ── Toulouse, France ──────────────────────────────────────────────────────
   {
     name: 'Colibris Toulouse',

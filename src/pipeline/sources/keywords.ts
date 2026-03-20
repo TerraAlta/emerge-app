@@ -115,6 +115,26 @@ export const KEYWORDS: string[] = [
   'AMAP',
   'incroyables comestibles',
 
+  // Welsh keywords
+  'permadhiwylliant',
+  'trawsnewid',
+  'coedwig fwyd',
+  'cyfnewid hadau',
+  'adeiladu naturiol',
+  'caffi atgyweirio',
+  'dim gwastraff',
+  'theatr y gorthrymedig',
+  'côr cymunedol',
+  'ecoterapi',
+  'galar hinsawdd',
+  'cylch geni',
+  'cegin gymunedol',
+  'economi undod',
+  'adfer bywyd gwyllt',
+  'lloffa',
+  'bwyd gwyllt',
+  'lleoleiddio',
+
   // Irish keywords
   'péirmacultúr',
   'aistriú',
@@ -262,4 +282,4 @@ export const KEYWORDS: string[] = [
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 222
+export const MAX_KEYWORDS_PER_CITY = 240
