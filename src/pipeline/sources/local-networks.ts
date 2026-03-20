@@ -61,6 +61,43 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.goodgriefnetwork.org/events/'],
   },
 
+  // ── Luxembourg City, Luxembourg ────────────────────────────────────────────
+  {
+    name: 'Mouvement Écologique Luxembourg',
+    city: 'Luxembourg City', country: 'Luxembourg', lat: 49.6116, lng: 6.1319,
+    urls: ['https://www.mouvement-ecologique.lu/agenda/', 'https://www.mouvement-ecologique.lu/events/'],
+  },
+  {
+    name: 'natur&ëmwelt Luxembourg',
+    city: 'Luxembourg City', country: 'Luxembourg', lat: 49.6116, lng: 6.1319,
+    urls: ['https://www.naturemwelt.lu/agenda/', 'https://www.naturemwelt.lu/events/'],
+  },
+  {
+    name: 'Oekofoire Luxembourg',
+    city: 'Luxembourg City', country: 'Luxembourg', lat: 49.6116, lng: 6.1319,
+    urls: ['https://www.oekofoire.lu/programme/', 'https://www.oekofoire.lu/events/'],
+  },
+  {
+    name: 'Bio Lëtzebuerg',
+    city: 'Luxembourg City', country: 'Luxembourg', lat: 49.6116, lng: 6.1319,
+    urls: ['https://www.bio.lu/events/', 'https://www.bio.lu/agenda/'],
+  },
+  {
+    name: 'Slow Food Luxembourg',
+    city: 'Luxembourg City', country: 'Luxembourg', lat: 49.6116, lng: 6.1319,
+    urls: ['https://www.slowfood.lu/events/', 'https://www.slowfood.lu/agenda/'],
+  },
+  {
+    name: 'Zero Waste Luxembourg',
+    city: 'Luxembourg City', country: 'Luxembourg', lat: 49.6116, lng: 6.1319,
+    urls: ['https://www.zerowasteluxembourg.lu/events/', 'https://www.zerowasteluxembourg.lu/agenda/'],
+  },
+  {
+    name: 'Repair Café Luxembourg',
+    city: 'Luxembourg City', country: 'Luxembourg', lat: 49.6116, lng: 6.1319,
+    urls: ['https://repaircafe.org/en/locations/?search=luxembourg'],
+  },
+
   // ── Copenhagen, Denmark ────────────────────────────────────────────────────
   {
     name: 'Permakultur Danmark',
