@@ -1,13 +1,13 @@
 {
   "name": "Emerge — Regenerative Community Quests",
   "short_name": "Emerge",
-  "description": "Real quests. Real community. Real change.",
+  "description": "Real quests. Real community. Real change. Discover regenerative events near you.",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "theme_color": "#0D1A0B",
   "background_color": "#0D1A0B",
-  "categories": ["social", "lifestyle"],
+  "theme_color": "#0D1A0B",
+  "orientation": "portrait",
+  "scope": "/",
   "icons": [
     {
       "src": "/icons/icon-192.svg",
@@ -16,22 +16,13 @@
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192-maskable.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
-    },
-    {
       "src": "/icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512-maskable.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["lifestyle", "social"],
+  "lang": "en",
+  "dir": "ltr"
 }
