@@ -1,4 +1,4 @@
-const CACHE_NAME = 'emerge-v2';
+const CACHE_NAME = 'emerge-v3';
 const PRECACHE_URLS = [
   '/',
   '/manifest.json',
