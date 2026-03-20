@@ -437,14 +437,14 @@ function QuestBoard({
           ) : (
             <button
               onClick={() => setShowCitySearch(true)}
-              className="flex items-center gap-1.5"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full active:scale-95 transition-transform"
+              style={{ background: 'rgba(200,145,58,0.08)', border: '0.5px solid rgba(200,145,58,0.2)', cursor: 'pointer' }}
             >
-              <span style={{ color: '#C8913A', fontSize: 10 }}>{'\u25C9'}</span>
-              <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.5)' }}>
+              <span style={{ color: '#C8913A', fontSize: 12 }}>{'\u25C9'}</span>
+              <span className="text-[12px] font-medium" style={{ color: '#E8F2E0' }}>
                 {locationName || 'Your location'}
               </span>
-              <span className="text-[8px]" style={{ color: 'rgba(232,242,224,0.2)' }}>(change)</span>
+              <span className="text-[10px]" style={{ color: 'rgba(200,145,58,0.6)' }}>change</span>
             </button>
           )}
         </div>
