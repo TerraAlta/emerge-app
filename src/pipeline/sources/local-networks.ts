@@ -522,6 +522,62 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.csanetwerk.be/agenda/'],
   },
 
+  // ── Basel, Switzerland ─────────────────────────────────────────────────────
+  {
+    name: 'Transition Basel',
+    city: 'Basel', country: 'Switzerland', lat: 47.5596, lng: 7.5886,
+    urls: ['https://www.transition-basel.ch/veranstaltungen/', 'https://www.transition-basel.ch/events/'],
+  },
+  {
+    name: 'Repair Café Basel',
+    city: 'Basel', country: 'Switzerland', lat: 47.5596, lng: 7.5886,
+    urls: ['https://repaircafe.org/en/locations/?search=basel'],
+  },
+  {
+    name: 'Permakultur Basel',
+    city: 'Basel', country: 'Switzerland', lat: 47.5596, lng: 7.5886,
+    urls: ['https://www.permakultur.ch/veranstaltungen/', 'https://www.permakultur.ch/events/'],
+  },
+  {
+    name: 'CSA Basel',
+    city: 'Basel', country: 'Switzerland', lat: 47.5596, lng: 7.5886,
+    urls: ['https://www.solawi.ch/agenda/', 'https://www.solawi.ch/events/'],
+  },
+
+  // ── Bern, Switzerland ─────────────────────────────────────────────────────
+  {
+    name: 'Transition Bern',
+    city: 'Bern', country: 'Switzerland', lat: 46.9480, lng: 7.4474,
+    urls: ['https://www.transition-bern.ch/veranstaltungen/', 'https://www.transition-bern.ch/events/'],
+  },
+  {
+    name: 'Repair Café Bern',
+    city: 'Bern', country: 'Switzerland', lat: 46.9480, lng: 7.4474,
+    urls: ['https://repaircafe.org/en/locations/?search=bern'],
+  },
+  {
+    name: 'Ernährungsrat Bern',
+    city: 'Bern', country: 'Switzerland', lat: 46.9480, lng: 7.4474,
+    urls: ['https://ernaehrungsrat-bern.ch/veranstaltungen/', 'https://ernaehrungsrat-bern.ch/events/'],
+  },
+
+  // ── Lausanne, Switzerland ─────────────────────────────────────────────────
+  {
+    name: 'Transition Lausanne',
+    city: 'Lausanne', country: 'Switzerland', lat: 46.5197, lng: 6.6323,
+    urls: ['https://www.intransition.ch/lausanne/', 'https://transitionlausanne.ch/evenements/'],
+  },
+  {
+    name: 'Incroyables Comestibles Lausanne',
+    city: 'Lausanne', country: 'Switzerland', lat: 46.5197, lng: 6.6323,
+    urls: ['https://lesincroyablescomestibles.fr/lausanne/'],
+  },
+  {
+    name: 'Repair Café Lausanne',
+    city: 'Lausanne', country: 'Switzerland', lat: 46.5197, lng: 6.6323,
+    urls: ['https://repaircafe.org/en/locations/?search=lausanne'],
+  },
+
   // ── Leuven, Belgium ────────────────────────────────────────────────────────
   {
     name: 'KU Leuven Sustainability Events',
