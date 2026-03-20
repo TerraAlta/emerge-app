@@ -61,6 +61,55 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.goodgriefnetwork.org/events/'],
   },
 
+  // ── Dublin, Ireland ────────────────────────────────────────────────────────
+  {
+    name: 'Cultivate Ireland',
+    city: 'Dublin', country: 'Ireland', lat: 53.3498, lng: -6.2603,
+    urls: ['https://www.cultivate.ie/events/', 'https://www.cultivate.ie/whats-on/'],
+  },
+  {
+    name: 'CELT Ireland',
+    city: 'Dublin', country: 'Ireland', lat: 53.3498, lng: -6.2603,
+    urls: ['https://www.celtnet.org/events/', 'https://www.celtnet.org/courses/'],
+  },
+  {
+    name: 'Feasta',
+    city: 'Dublin', country: 'Ireland', lat: 53.3498, lng: -6.2603,
+    urls: ['https://www.feasta.org/events/'],
+  },
+  {
+    name: 'Repair Café Ireland',
+    city: 'Dublin', country: 'Ireland', lat: 53.3498, lng: -6.2603,
+    urls: ['https://repaircafe.org/en/locations/?search=dublin'],
+  },
+  {
+    name: 'Zero Waste Ireland',
+    city: 'Dublin', country: 'Ireland', lat: 53.3498, lng: -6.2603,
+    urls: ['https://www.zerowasteireland.ie/events/'],
+  },
+  {
+    name: 'Slow Food Ireland',
+    city: 'Dublin', country: 'Ireland', lat: 53.3498, lng: -6.2603,
+    urls: ['https://www.slowfoodireland.com/events/'],
+  },
+  {
+    name: 'Incredible Edible Ireland',
+    city: 'Dublin', country: 'Ireland', lat: 53.3498, lng: -6.2603,
+    urls: ['https://www.incredibleedible.ie/events/'],
+  },
+  {
+    name: 'Irish Seed Savers',
+    city: 'Dublin', country: 'Ireland', lat: 53.3498, lng: -6.2603,
+    urls: ['https://www.irishseedsavers.ie/events/', 'https://www.irishseedsavers.ie/courses/'],
+  },
+
+  // ── Cloughjordan, Ireland ─────────────────────────────────────────────────
+  {
+    name: 'Cloughjordan Ecovillage',
+    city: 'Cloughjordan', country: 'Ireland', lat: 52.9397, lng: -8.0261,
+    urls: ['https://www.thevillage.ie/events/', 'https://www.thevillage.ie/whats-on/'],
+  },
+
   // ── Malta ──────────────────────────────────────────────────────────────────
   {
     name: 'Gozo Sustainability Events',

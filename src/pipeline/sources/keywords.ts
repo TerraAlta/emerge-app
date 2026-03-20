@@ -115,6 +115,23 @@ export const KEYWORDS: string[] = [
   'AMAP',
   'incroyables comestibles',
 
+  // Irish keywords
+  'péirmacultúr',
+  'aistriú',
+  'coill bia',
+  'malartú síolta',
+  'tógáil nádúrtha',
+  'nialas dramhaíola',
+  'cór pobail',
+  'éiceteiripe',
+  'ciorcal breithe',
+  'cistin phobail',
+  'geilleagar dlúthpháirtíochta',
+  'gliúcaireacht',
+  'coipeadh',
+  'bia fiáin',
+  'éicídé',
+
   // Maltese keywords
   'tranżizzjoni',
   'foresta tal-ikel',
@@ -245,4 +262,4 @@ export const KEYWORDS: string[] = [
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 207
+export const MAX_KEYWORDS_PER_CITY = 222
