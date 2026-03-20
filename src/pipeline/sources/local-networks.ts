@@ -590,6 +590,52 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.legacoop.bologna.it/eventi/', 'https://www.legacoop.bologna.it/events/'],
   },
 
+  // ── Turin, Italy ───────────────────────────────────────────────────────────
+  {
+    name: 'Transition Torino',
+    city: 'Turin', country: 'Italy', lat: 45.0703, lng: 7.6869,
+    urls: ['https://transizioneitalia.it/torino/', 'https://www.transitiontorino.it/eventi/'],
+  },
+  {
+    name: 'GAS Torino',
+    city: 'Turin', country: 'Italy', lat: 45.0703, lng: 7.6869,
+    urls: ['https://www.gastorino.it/eventi/', 'https://www.gastorino.it/agenda/'],
+  },
+  {
+    name: 'Repair Café Torino',
+    city: 'Turin', country: 'Italy', lat: 45.0703, lng: 7.6869,
+    urls: ['https://repaircafe.org/en/locations/?search=torino'],
+  },
+
+  // ── Naples, Italy ─────────────────────────────────────────────────────────
+  {
+    name: 'Transition Napoli',
+    city: 'Naples', country: 'Italy', lat: 40.8518, lng: 14.2681,
+    urls: ['https://transizioneitalia.it/napoli/', 'https://www.transitionnapoli.it/eventi/'],
+  },
+  {
+    name: 'GAS Napoli',
+    city: 'Naples', country: 'Italy', lat: 40.8518, lng: 14.2681,
+    urls: ['https://www.gasnapoli.it/eventi/', 'https://www.gasnapoli.it/agenda/'],
+  },
+  {
+    name: 'Slow Food Campania',
+    city: 'Naples', country: 'Italy', lat: 40.8518, lng: 14.2681,
+    urls: ['https://www.slowfood.it/campania/eventi/', 'https://www.slowfoodcampania.it/eventi/'],
+  },
+
+  // ── Padova, Italy ─────────────────────────────────────────────────────────
+  {
+    name: 'Transition Padova',
+    city: 'Padova', country: 'Italy', lat: 45.4064, lng: 11.8768,
+    urls: ['https://transizioneitalia.it/padova/'],
+  },
+  {
+    name: 'GAS Padova',
+    city: 'Padova', country: 'Italy', lat: 45.4064, lng: 11.8768,
+    urls: ['https://www.gaspadova.it/eventi/', 'https://www.gaspadova.it/agenda/'],
+  },
+
   // ── Seattle, USA ──────────────────────────────────────────────────────────
   {
     name: 'Transition Seattle',

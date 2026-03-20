@@ -110,6 +110,30 @@ export const KEYWORDS: string[] = [
   'AMAP',
   'incroyables comestibles',
 
+  // Italian keywords
+  'transizione',
+  'foresta del cibo',
+  'scambio semi',
+  'costruzione naturale',
+  'rifiuti zero',
+  'teatro degli oppressi',
+  'teatro forum',
+  'teatro playback',
+  'coro comunitario',
+  'cerchio di tamburi',
+  'lutto climatico',
+  'cerchio nascita',
+  'cucina comunitaria',
+  'disco zuppa',
+  'economia solidale',
+  'decrescita',
+  'spigolatura',
+  'pasta madre',
+  'piante selvatiche',
+  'economia della ciambella',
+  'banca del tempo',
+  'GAS gruppo acquisto',
+
   // Spanish keywords
   'permacultura',
   'transición',
@@ -166,4 +190,4 @@ export const KEYWORDS: string[] = [
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 136
+export const MAX_KEYWORDS_PER_CITY = 158
