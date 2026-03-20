@@ -11,7 +11,7 @@ const DEF_LAT = 51.5074, DEF_LNG = -0.1278
 
 export const hubbubUk: SourceFetcher = {
   name: 'hubbub-uk',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         // 1. WP REST / Tribe Events API

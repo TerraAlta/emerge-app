@@ -19,7 +19,7 @@ function parseDE(s: string): string {
 
 export const zeggDe: SourceFetcher = {
   name: 'zegg-de',
-  async fetch(_opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         const res = await fetch(url, {

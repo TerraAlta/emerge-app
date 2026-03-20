@@ -16,7 +16,13 @@ export interface RawEvent {
   max_participants?: number | null
 }
 
+export interface FetchOpts {
+  lat?: number
+  lng?: number
+  radiusKm?: number
+}
+
 export interface SourceFetcher {
   name: string
-  fetch(opts: { lat: number; lng: number; radiusKm: number }): Promise<RawEvent[]>
+  fetch(opts: FetchOpts): Promise<RawEvent[]>
 }

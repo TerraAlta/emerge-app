@@ -12,7 +12,7 @@ const DEFAULT_LNG = -123.27
 
 export const pinaCa: SourceFetcher = {
   name: 'pina-ca',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     // Strategy 1: WP REST / Tribe Events API
     try {
       const res = await fetch(`${BASE}/wp-json/tribe/events/v1/events?per_page=20`, {

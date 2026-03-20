@@ -12,7 +12,7 @@ const NL_BOUNDS = { latMin: 50.75, latMax: 53.47, lngMin: 3.37, lngMax: 7.21 }
 
 export const repaircafeNl: SourceFetcher = {
   name: 'repaircafe-nl',
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     // Try multiple API endpoints
     const endpoints = [
       `https://www.repaircafe.org/wp-json/rc/v1/locations?lat_min=${NL_BOUNDS.latMin}&lat_max=${NL_BOUNDS.latMax}&lng_min=${NL_BOUNDS.lngMin}&lng_max=${NL_BOUNDS.lngMax}`,
@@ -33,11 +33,6 @@ export const repaircafeNl: SourceFetcher = {
         if (locations.length === 0) continue
 
         return locations
-          .filter((loc: any) => {
-            const locLat = parseFloat(loc.latitude ?? loc.lat ?? '0')
-            const locLng = parseFloat(loc.longitude ?? loc.lng ?? '0')
-            return locLat && locLng && haversine(lat, lng, locLat, locLng) <= radiusKm
-          })
           .slice(0, 20)
           .map((loc: any) => toEvent(loc))
       } catch { continue }
@@ -48,7 +43,7 @@ export const repaircafeNl: SourceFetcher = {
       const res = await fetch(endpoints[2], {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'Mozilla/5.0' },
-        body: `action=get_cafes&country=NL&lat=${lat}&lng=${lng}&radius=${radiusKm}`,
+        body: `action=get_cafes&country=NL`,
         signal: AbortSignal.timeout(10000),
       })
       if (res.ok) {
@@ -77,11 +72,6 @@ export const repaircafeNl: SourceFetcher = {
             const locs = JSON.parse(match[1])
             if (!Array.isArray(locs)) continue
             return locs
-              .filter((l: any) => {
-                const lLat = parseFloat(l.latitude ?? l.lat ?? '0')
-                const lLng = parseFloat(l.longitude ?? l.lng ?? '0')
-                return lLat && lLng && haversine(lat, lng, lLat, lLng) <= radiusKm
-              })
               .slice(0, 20)
               .map((l: any) => toEvent(l))
           } catch { continue }

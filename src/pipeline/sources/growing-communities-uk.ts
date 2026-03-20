@@ -13,7 +13,7 @@ const DEFAULT_LNG = -0.1278
 
 export const growingCommunitiesUk: SourceFetcher = {
   name: 'growing-communities-uk',
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     for (const url of URLS) {
       // Tier 1: WP REST / Tribe Events API
       try {

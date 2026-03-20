@@ -16,7 +16,7 @@ const URLS = [
 
 export const solawiDe: SourceFetcher = {
   name: 'solawi-de',
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     // Strategy 1: Try events/termine pages
     for (const url of URLS.slice(1)) {
       try {
@@ -75,11 +75,6 @@ export const solawiDe: SourceFetcher = {
         try {
           const data = JSON.parse(jsonMatch[1])
           return data
-            .filter((f: any) => {
-              const fLat = parseFloat(f.lat || f.latitude || f.geometry?.coordinates?.[1] || '0')
-              const fLng = parseFloat(f.lng || f.longitude || f.geometry?.coordinates?.[0] || '0')
-              return fLat && fLng && haversine(lat, lng, fLat, fLng) <= radiusKm
-            })
             .slice(0, 15)
             .map((f: any) => {
               const name = stripHtml(f.name || f.title || f.properties?.name || '')

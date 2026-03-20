@@ -11,7 +11,7 @@ const EVENTS_URL = 'https://mundraub.org/community'
 
 export const mundraubDe: SourceFetcher = {
   name: 'mundraub-de',
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     const events: RawEvent[] = []
 
     // Try their community/events page
@@ -27,21 +27,16 @@ export const mundraubDe: SourceFetcher = {
       console.warn('[mundraub-de] events scrape failed:', (err as Error).message)
     }
 
-    // Try the foraging map API — convert nearby fruit trees into foraging "quests"
+    // Try the foraging map API — fetch all fruit trees (global bounds)
     try {
       const res = await fetch(
-        `https://mundraub.org/cluster/node?bbox=${lng - 1},${lat - 1},${lng + 1},${lat + 1}&zoom=10&cat=2,4,5,6,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33`,
+        `https://mundraub.org/cluster/node?bbox=-180,-90,180,90&zoom=4&cat=2,4,5,6,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33`,
         { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)' } }
       )
       if (res.ok) {
         const data = await res.json()
         if (data.features) {
           const nearby = data.features
-            .filter((f: any) => {
-              if (!f.geometry?.coordinates) return false
-              const [fLng, fLat] = f.geometry.coordinates
-              return haversine(lat, lng, fLat, fLng) <= radiusKm
-            })
             .slice(0, 10)
 
           for (const f of nearby) {

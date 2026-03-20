@@ -478,16 +478,26 @@ export interface OrchestratorResult {
 }
 
 interface OrchestratorOptions {
-  lat: number
-  lng: number
-  radiusKm: number
   scoreThreshold?: number
   dryRun?: boolean    // if true, skip Supabase insert
   supabase?: any      // Supabase client for inserts
 }
 
-export async function runPipeline(opts: OrchestratorOptions): Promise<OrchestratorResult[]> {
-  const { lat, lng, radiusKm, scoreThreshold = 50, dryRun = false, supabase } = opts
+/** Geocode an address string to lat/lng via Nominatim */
+async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
+      { headers: { 'User-Agent': 'Emerge-Pipeline/1.0', 'Accept-Language': 'en' } }
+    )
+    const data = await res.json()
+    if (data[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+  } catch { /* skip */ }
+  return null
+}
+
+export async function runPipeline(opts: OrchestratorOptions = {}): Promise<OrchestratorResult[]> {
+  const { scoreThreshold = 50, dryRun = false, supabase } = opts
   const results: OrchestratorResult[] = []
 
   for (const source of SOURCES) {
@@ -501,10 +511,10 @@ export async function runPipeline(opts: OrchestratorOptions): Promise<Orchestrat
       events: [],
     }
 
-    // 1. Fetch events from source
+    // 1. Fetch events from source — no location filter, scrape everything
     let events: RawEvent[] = []
     try {
-      events = await source.fetch({ lat, lng, radiusKm })
+      events = await source.fetch({})
       result.fetched = events.length
     } catch (err) {
       console.error(`[${source.name}] Fetch failed:`, err)
@@ -513,7 +523,20 @@ export async function runPipeline(opts: OrchestratorOptions): Promise<Orchestrat
       continue
     }
 
-    // 2. Score each event with AI
+    // 2. Geocode events with missing coordinates
+    for (const event of events) {
+      if ((event.lat === 0 && event.lng === 0) && event.location_name && event.location_name !== 'See event page') {
+        const geo = await geocodeAddress(event.location_name)
+        if (geo) {
+          event.lat = geo.lat
+          event.lng = geo.lng
+        }
+      }
+    }
+    // Filter out events that still have no coordinates after geocoding
+    events = events.filter(e => !(e.lat === 0 && e.lng === 0))
+
+    // 3. Score each event with AI
     for (const event of events) {
       try {
         const scored = await scoreQuest({

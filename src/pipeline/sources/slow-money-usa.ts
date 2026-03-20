@@ -12,7 +12,7 @@ const URLS = [
 
 export const slowMoneyUsa: SourceFetcher = {
   name: 'slow-money-usa',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     const allEvents: RawEvent[] = []
 
     for (const url of URLS) {

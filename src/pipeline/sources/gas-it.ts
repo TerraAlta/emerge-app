@@ -21,7 +21,7 @@ function parseIT(s: string): string {
 
 export const gasIt: SourceFetcher = {
   name: 'gas-it',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         const res = await fetch(url, {

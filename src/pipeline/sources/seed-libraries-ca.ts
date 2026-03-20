@@ -12,7 +12,7 @@ const DEFAULT_LNG = -79.3832
 
 export const seedLibrariesCa: SourceFetcher = {
   name: 'seed-libraries-ca',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     // Strategy 1: WP REST API
     try {
       const res = await fetch(`${BASE}/wp-json/wp/v2/posts?per_page=20&_fields=id,title,link,excerpt`, {

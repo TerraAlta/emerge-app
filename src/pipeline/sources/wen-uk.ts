@@ -12,7 +12,7 @@ const URLS = [
 
 export const wenUk: SourceFetcher = {
   name: 'wen-uk',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     const allEvents: RawEvent[] = []
 
     for (const url of URLS) {

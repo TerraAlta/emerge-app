@@ -25,7 +25,7 @@ function parseFr(s: string): string {
 
 export const zeroWasteFr: SourceFetcher = {
   name: 'zero-waste-fr',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         try {

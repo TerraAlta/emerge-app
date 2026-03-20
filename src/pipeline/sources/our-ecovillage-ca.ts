@@ -12,7 +12,7 @@ const DEFAULT_LNG = -123.55
 
 export const ourEcovillageCa: SourceFetcher = {
   name: 'our-ecovillage-ca',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     // Strategy 1: WP REST API
     try {
       const res = await fetch(`${BASE}/wp-json/wp/v2/posts?per_page=20&_fields=id,title,link,excerpt`, {

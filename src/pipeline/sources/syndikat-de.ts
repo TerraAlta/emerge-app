@@ -19,7 +19,7 @@ function parseDE(s: string): string {
 
 export const syndikatDe: SourceFetcher = {
   name: 'syndikat-de',
-  async fetch(_opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         const res = await fetch(url, {

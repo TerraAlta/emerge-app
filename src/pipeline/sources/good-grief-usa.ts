@@ -12,7 +12,7 @@ const URLS = [
 
 export const goodGriefUsa: SourceFetcher = {
   name: 'good-grief-usa',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     const allEvents: RawEvent[] = []
 
     for (const url of URLS) {

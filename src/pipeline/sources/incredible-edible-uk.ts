@@ -10,7 +10,7 @@ const SOURCE_URL = 'https://www.incredibleedible.org.uk/find-a-group/'
 
 export const incredibleEdibleUk: SourceFetcher = {
   name: 'incredible-edible-uk',
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     try {
       const res = await fetch(SOURCE_URL, {
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
@@ -44,9 +44,6 @@ export const incredibleEdibleUk: SourceFetcher = {
 
               const gLat = parseFloat(g.lat || g.latitude || g.position?.lat || '0')
               const gLng = parseFloat(g.lng || g.longitude || g.position?.lng || '0')
-
-              // Distance filter if we have coordinates
-              if (gLat && gLng && haversine(lat, lng, gLat, gLng) > radiusKm) return null
 
               return {
                 source: 'incredible-edible-uk' as const,

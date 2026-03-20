@@ -17,7 +17,7 @@ const API_URLS = [
 
 export const nationalTrustUk: SourceFetcher = {
   name: 'national-trust-uk',
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     // Strategy 1: Try internal API
     for (const url of API_URLS) {
       try {

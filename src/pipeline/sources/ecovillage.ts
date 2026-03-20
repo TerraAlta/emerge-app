@@ -20,12 +20,12 @@ const EVENT_PAGES = [
 export const ecovillage: SourceFetcher = {
   name: 'ecovillage',
 
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     const allEvents: RawEvent[] = []
 
     for (const url of EVENT_PAGES) {
       try {
-        const events = await scrapeEventPage(url, lat, lng, radiusKm)
+        const events = await scrapeEventPage(url)
         allEvents.push(...events)
       } catch (err) {
         console.warn(`[ecovillage] Failed to scrape ${url}:`, (err as Error).message)
@@ -36,12 +36,7 @@ export const ecovillage: SourceFetcher = {
   },
 }
 
-async function scrapeEventPage(
-  url: string,
-  lat: number,
-  lng: number,
-  _radiusKm: number
-): Promise<RawEvent[]> {
+async function scrapeEventPage(url: string): Promise<RawEvent[]> {
   const res = await fetch(url, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',

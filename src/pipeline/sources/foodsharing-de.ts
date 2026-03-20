@@ -11,12 +11,12 @@ const API_BASE = 'https://foodsharing.de/api'
 
 export const foodsharingDe: SourceFetcher = {
   name: 'foodsharing-de',
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     const events: RawEvent[] = []
 
     // Strategy 1: Events API
     try {
-      const res = await fetch(`${API_BASE}/events?lat=${lat}&lon=${lng}&distance=${radiusKm}`, {
+      const res = await fetch(`${API_BASE}/events`, {
         headers: { 'User-Agent': 'Emerge-App/1.0', Accept: 'application/json' },
         signal: AbortSignal.timeout(10000),
       })
@@ -45,7 +45,7 @@ export const foodsharingDe: SourceFetcher = {
 
     // Strategy 2: Community pickups (Fairteiler — public food sharing points)
     try {
-      const res = await fetch(`${API_BASE}/fairteiler?lat=${lat}&lon=${lng}&distance=${radiusKm}`, {
+      const res = await fetch(`${API_BASE}/fairteiler`, {
         headers: { 'User-Agent': 'Emerge-App/1.0', Accept: 'application/json' },
         signal: AbortSignal.timeout(10000),
       })
@@ -55,7 +55,6 @@ export const foodsharingDe: SourceFetcher = {
         for (const f of items.slice(0, 15)) {
           const fLat = parseFloat(f.lat || f.location?.lat || '0')
           const fLng = parseFloat(f.lon || f.lng || f.location?.lon || '0')
-          if (fLat && fLng && haversine(lat, lng, fLat, fLng) > radiusKm) continue
 
           events.push({
             source: 'foodsharing-de',

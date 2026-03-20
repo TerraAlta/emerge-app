@@ -12,7 +12,7 @@ const URLS = [
 
 export const eupn: SourceFetcher = {
   name: 'eupn',
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         const res = await fetch(url, {

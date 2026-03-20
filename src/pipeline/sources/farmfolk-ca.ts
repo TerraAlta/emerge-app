@@ -12,7 +12,7 @@ const DEFAULT_LNG = -123.1207
 
 export const farmfolkCa: SourceFetcher = {
   name: 'farmfolk-ca',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     // Strategy 1: Tribe Events API
     try {
       const res = await fetch(`${BASE}/wp-json/tribe/events/v1/events?per_page=20`, {

@@ -50,15 +50,15 @@ let lastUpdateId = 0
 export const telegram: SourceFetcher = {
   name: 'telegram',
 
-  async fetch(opts) {
+  async fetch() {
     const events: RawEvent[] = []
 
     // MODE 1: Scrape public channels
-    const channelEvents = await scrapePublicChannels(opts)
+    const channelEvents = await scrapePublicChannels()
     events.push(...channelEvents)
 
     // MODE 2: Bot polling (if token available)
-    const botEvents = await pollBotUpdates(opts)
+    const botEvents = await pollBotUpdates()
     events.push(...botEvents)
 
     console.log(`[telegram] ${events.length} events (${channelEvents.length} from channels, ${botEvents.length} from bot)`)
@@ -68,9 +68,7 @@ export const telegram: SourceFetcher = {
 
 // ─── MODE 1: Public Channel Scraper ───
 
-async function scrapePublicChannels(
-  opts: { lat: number; lng: number; radiusKm: number }
-): Promise<RawEvent[]> {
+async function scrapePublicChannels(): Promise<RawEvent[]> {
   const allEvents: RawEvent[] = []
 
   // Process channels in batches of 5 to avoid rate limiting
@@ -215,9 +213,7 @@ function extractEventsFromHtml(html: string, channel: TelegramChannel): RawEvent
 
 // ─── MODE 2: Bot Polling ───
 
-async function pollBotUpdates(
-  opts: { lat: number; lng: number; radiusKm: number }
-): Promise<RawEvent[]> {
+async function pollBotUpdates(): Promise<RawEvent[]> {
   const token = process.env.TELEGRAM_BOT_TOKEN
   if (!token) return []
 
@@ -244,11 +240,11 @@ async function pollBotUpdates(
       if (!msg?.text) continue
 
       if (msg.text.startsWith('/quest')) {
-        const event = parseQuestCommand(msg, opts.lat, opts.lng)
+        const event = parseQuestCommand(msg)
         if (event) events.push(event)
       } else if (EVENT_KEYWORDS.test(msg.text)) {
         // Natural language event — check for date
-        const event = parseNaturalEvent(msg, opts.lat, opts.lng)
+        const event = parseNaturalEvent(msg)
         if (event) events.push(event)
       }
     }
@@ -274,7 +270,6 @@ interface TgUpdate {
 
 function parseQuestCommand(
   msg: NonNullable<TgUpdate['message']>,
-  defaultLat: number, defaultLng: number
 ): RawEvent | null {
   const text = msg.text ?? ''
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
@@ -282,7 +277,7 @@ function parseQuestCommand(
   if (!title || title.length < 3) return null
 
   let locationName = '', dateStr = '', description = '', cost = 'Free'
-  let lat = defaultLat, lng = defaultLng
+  let lat = 0, lng = 0
 
   for (const line of lines.slice(1)) {
     const lo = line.toLowerCase()
@@ -296,7 +291,7 @@ function parseQuestCommand(
       cost = line.replace(/^[💰\s]*/, '').replace(/^(?:cost|price):\s*/i, '').trim() || 'Free'
     else if (lo.startsWith('coords:') || lo.startsWith('gps:')) {
       const c = line.replace(/^(?:coords|gps):\s*/i, '').split(',')
-      if (c.length === 2) { lat = parseFloat(c[0]) || defaultLat; lng = parseFloat(c[1]) || defaultLng }
+      if (c.length === 2) { lat = parseFloat(c[0]) || 0; lng = parseFloat(c[1]) || 0 }
     }
     else if (!description) description = line
   }
@@ -319,7 +314,6 @@ function parseQuestCommand(
 
 function parseNaturalEvent(
   msg: NonNullable<TgUpdate['message']>,
-  defaultLat: number, defaultLng: number
 ): RawEvent | null {
   const text = msg.text ?? ''
 
@@ -351,8 +345,8 @@ function parseNaturalEvent(
     description: text.slice(0, 500),
     organizer: msg.chat.title ?? msg.from?.first_name ?? 'Telegram community',
     location_name: locationName,
-    lat: msg.location?.latitude ?? defaultLat,
-    lng: msg.location?.longitude ?? defaultLng,
+    lat: msg.location?.latitude ?? 0,
+    lng: msg.location?.longitude ?? 0,
     starts_at: eventDate, cost: 'Unknown',
   }
 }

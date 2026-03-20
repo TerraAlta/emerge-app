@@ -28,7 +28,7 @@ const WWOOF_PUBLIC_PAGES = [
 export const wwoof: SourceFetcher = {
   name: 'wwoof',
 
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     const events: RawEvent[] = []
 
     // 1. Load manual submissions
@@ -38,7 +38,7 @@ export const wwoof: SourceFetcher = {
     // 2. Try scraping public WWOOF pages for any visible host data
     for (const url of WWOOF_PUBLIC_PAGES) {
       try {
-        const scraped = await scrapePublicPage(url, lat, lng, radiusKm)
+        const scraped = await scrapePublicPage(url)
         events.push(...scraped)
       } catch (err) {
         console.warn(`[wwoof] Failed to scrape ${url}:`, (err as Error).message)
@@ -98,12 +98,7 @@ function loadManualSubmissions(): RawEvent[] {
  * Many WWOOF sites show a handful of "featured hosts" or "urgent needs"
  * without requiring login.
  */
-async function scrapePublicPage(
-  url: string,
-  _lat: number,
-  _lng: number,
-  _radiusKm: number
-): Promise<RawEvent[]> {
+async function scrapePublicPage(url: string): Promise<RawEvent[]> {
   const res = await fetch(url, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',

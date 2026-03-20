@@ -18,7 +18,7 @@ function parseDE(s: string): string {
 
 export const permakulturLwDe: SourceFetcher = {
   name: 'permakultur-lw-de',
-  async fetch(_opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         const res = await fetch(url, {

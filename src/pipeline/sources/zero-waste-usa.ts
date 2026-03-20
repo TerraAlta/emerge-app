@@ -11,7 +11,7 @@ const DEF_LAT = 40.7128, DEF_LNG = -74.0060
 
 export const zeroWasteUsa: SourceFetcher = {
   name: 'zero-waste-usa',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         // 1. WP REST / Tribe Events API

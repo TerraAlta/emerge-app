@@ -21,7 +21,7 @@ function parseIT(s: string): string {
 
 export const slowfoodIt: SourceFetcher = {
   name: 'slowfood-it',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         const res = await fetch(url, {

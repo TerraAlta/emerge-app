@@ -25,7 +25,7 @@ function parseDe(s: string): string {
 
 export const zeroWasteDe: SourceFetcher = {
   name: 'zero-waste-de',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         try {

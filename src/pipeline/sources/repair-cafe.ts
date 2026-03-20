@@ -16,29 +16,26 @@ import type { RawEvent, SourceFetcher } from './types'
 export const repairCafe: SourceFetcher = {
   name: 'repair-cafe',
 
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     // Strategy 1: Try the REST API endpoint
-    const apiEvents = await tryRestApi(lat, lng, radiusKm)
+    const apiEvents = await tryRestApi()
     if (apiEvents.length > 0) return apiEvents
 
     // Strategy 2: Scrape the visit page for embedded location data
-    const scraped = await scrapeVisitPage(lat, lng, radiusKm)
+    const scraped = await scrapeVisitPage()
     if (scraped.length > 0) return scraped
 
     // Strategy 3: Try the AJAX endpoint
-    const ajaxEvents = await tryAjaxEndpoint(lat, lng, radiusKm)
+    const ajaxEvents = await tryAjaxEndpoint()
     return ajaxEvents
   },
 }
 
-async function tryRestApi(lat: number, lng: number, radiusKm: number): Promise<RawEvent[]> {
-  const latDelta = radiusKm / 111
-  const lngDelta = radiusKm / (111 * Math.cos((lat * Math.PI) / 180))
-
-  // Try multiple known endpoint patterns
+async function tryRestApi(): Promise<RawEvent[]> {
+  // Use global bounds to fetch all locations
   const endpoints = [
-    `https://www.repaircafe.org/wp-json/rc/v1/locations?lat_min=${lat - latDelta}&lat_max=${lat + latDelta}&lng_min=${lng - lngDelta}&lng_max=${lng + lngDelta}`,
-    `https://www.repaircafe.org/wp-json/rc/v2/cafes?bounds=${lat - latDelta},${lng - lngDelta},${lat + latDelta},${lng + lngDelta}`,
+    `https://www.repaircafe.org/wp-json/rc/v1/locations?lat_min=-90&lat_max=90&lng_min=-180&lng_max=180`,
+    `https://www.repaircafe.org/wp-json/rc/v2/cafes?bounds=-90,-180,90,180`,
   ]
 
   for (const url of endpoints) {
@@ -68,7 +65,7 @@ async function tryRestApi(lat: number, lng: number, radiusKm: number): Promise<R
   return []
 }
 
-async function scrapeVisitPage(lat: number, lng: number, radiusKm: number): Promise<RawEvent[]> {
+async function scrapeVisitPage(): Promise<RawEvent[]> {
   try {
     const res = await fetch('https://www.repaircafe.org/en/visit/', {
       headers: {
@@ -97,13 +94,7 @@ async function scrapeVisitPage(lat: number, lng: number, radiusKm: number): Prom
         const locations = JSON.parse(match[1])
         if (!Array.isArray(locations)) continue
 
-        // Filter by distance
         return locations
-          .filter((loc: any) => {
-            const locLat = parseFloat(loc.latitude ?? loc.lat ?? '0')
-            const locLng = parseFloat(loc.longitude ?? loc.lng ?? '0')
-            return haversine(lat, lng, locLat, locLng) <= radiusKm
-          })
           .map((loc: any) => locationToEvent(loc))
       } catch {
         continue
@@ -117,7 +108,7 @@ async function scrapeVisitPage(lat: number, lng: number, radiusKm: number): Prom
   }
 }
 
-async function tryAjaxEndpoint(lat: number, lng: number, radiusKm: number): Promise<RawEvent[]> {
+async function tryAjaxEndpoint(): Promise<RawEvent[]> {
   try {
     const res = await fetch('https://www.repaircafe.org/wp-admin/admin-ajax.php', {
       method: 'POST',
@@ -125,7 +116,7 @@ async function tryAjaxEndpoint(lat: number, lng: number, radiusKm: number): Prom
         'Content-Type': 'application/x-www-form-urlencoded',
         'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)',
       },
-      body: `action=get_cafes&lat=${lat}&lng=${lng}&radius=${radiusKm}`,
+      body: `action=get_cafes`,
     })
 
     if (!res.ok) return []

@@ -23,7 +23,7 @@ function parseNL(s: string): string {
 
 export const donutAmsterdamNl: SourceFetcher = {
   name: SRC,
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         const res = await fetch(url, {

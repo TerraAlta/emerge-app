@@ -12,26 +12,23 @@ import type { RawEvent, SourceFetcher } from './types'
 export const inaturalist: SourceFetcher = {
   name: 'inaturalist',
 
-  async fetch({ lat, lng, radiusKm }) {
+  async fetch() {
     const events: RawEvent[] = []
 
-    // Strategy 1: Search for collection projects with date bounds near the user
-    const projectEvents = await fetchProjects(lat, lng, radiusKm)
+    // Strategy 1: Search for collection projects with date bounds
+    const projectEvents = await fetchProjects()
     events.push(...projectEvents)
 
     // Strategy 2: Search for umbrella projects (multi-project bioblitzes)
-    const umbrellaEvents = await fetchUmbrellaProjects(lat, lng, radiusKm)
+    const umbrellaEvents = await fetchUmbrellaProjects()
     events.push(...umbrellaEvents)
 
     return events
   },
 }
 
-async function fetchProjects(lat: number, lng: number, radiusKm: number): Promise<RawEvent[]> {
+async function fetchProjects(): Promise<RawEvent[]> {
   const url = new URL('https://api.inaturalist.org/v1/projects')
-  url.searchParams.set('lat', lat.toString())
-  url.searchParams.set('lng', lng.toString())
-  url.searchParams.set('radius', radiusKm.toString())
   url.searchParams.set('type', 'collection')
   url.searchParams.set('per_page', '30')
   url.searchParams.set('order_by', 'created')
@@ -60,8 +57,8 @@ async function fetchProjects(lat: number, lng: number, radiusKm: number): Promis
       // Skip events that have already ended
       if (d2 && new Date(d2) < new Date()) continue
 
-      const projLat = p.latitude ? parseFloat(p.latitude) : lat
-      const projLng = p.longitude ? parseFloat(p.longitude) : lng
+      const projLat = p.latitude ? parseFloat(p.latitude) : 0
+      const projLng = p.longitude ? parseFloat(p.longitude) : 0
 
       events.push({
         source: 'inaturalist',
@@ -70,7 +67,7 @@ async function fetchProjects(lat: number, lng: number, radiusKm: number): Promis
         title: p.title,
         description: cleanDescription(p.description ?? ''),
         organizer: p.user?.login ?? 'iNaturalist community',
-        location_name: p.place?.display_name || p.location || 'Near you',
+        location_name: p.place?.display_name || p.location || 'See project page',
         lat: projLat,
         lng: projLng,
         starts_at: new Date(d1).toISOString(),
@@ -87,11 +84,8 @@ async function fetchProjects(lat: number, lng: number, radiusKm: number): Promis
   }
 }
 
-async function fetchUmbrellaProjects(lat: number, lng: number, radiusKm: number): Promise<RawEvent[]> {
+async function fetchUmbrellaProjects(): Promise<RawEvent[]> {
   const url = new URL('https://api.inaturalist.org/v1/projects')
-  url.searchParams.set('lat', lat.toString())
-  url.searchParams.set('lng', lng.toString())
-  url.searchParams.set('radius', radiusKm.toString())
   url.searchParams.set('type', 'umbrella')
   url.searchParams.set('per_page', '20')
   url.searchParams.set('order_by', 'created')
@@ -124,8 +118,8 @@ async function fetchUmbrellaProjects(lat: number, lng: number, radiusKm: number)
         description: cleanDescription(p.description ?? ''),
         organizer: p.user?.login ?? 'iNaturalist community',
         location_name: p.place?.display_name || 'Regional',
-        lat: p.latitude ? parseFloat(p.latitude) : lat,
-        lng: p.longitude ? parseFloat(p.longitude) : lng,
+        lat: p.latitude ? parseFloat(p.latitude) : 0,
+        lng: p.longitude ? parseFloat(p.longitude) : 0,
         starts_at: new Date(d1).toISOString(),
         ends_at: d2 ? new Date(d2).toISOString() : null,
         cost: 'Free',

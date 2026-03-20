@@ -26,7 +26,7 @@ function parseEsCat(s: string): string {
 
 export const rezeroEs: SourceFetcher = {
   name: 'rezero-es',
-  async fetch(opts: { lat: number; lng: number; radiusKm: number }) {
+  async fetch() {
     for (const url of URLS) {
       try {
         try {
