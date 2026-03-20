@@ -487,8 +487,38 @@ function PipelineTab() {
 /* ══════════════════════════════════════════════════════════════════
    Admin Page
    ══════════════════════════════════════════════════════════════════ */
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'terraalta.sintra@gmail.com'
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('analytics')
+  const [authed, setAuthed] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setAuthed(data.user?.email === ADMIN_EMAIL)
+    })
+  }, [])
+
+  if (authed === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D1A0B' }}>
+        <div className="text-[11px] animate-pulse" style={{ color: 'rgba(232,242,224,0.3)' }}>Loading…</div>
+      </div>
+    )
+  }
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6" style={{ background: '#0D1A0B' }}>
+        <p className="text-[13px] text-center" style={{ color: 'rgba(232,242,224,0.5)' }}>
+          Admin access restricted.
+        </p>
+        <a href="/" className="text-[11px]" style={{ color: '#C8913A', textDecoration: 'underline' }}>
+          Back to app
+        </a>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen font-body" style={{ background: '#0D1A0B' }}>
