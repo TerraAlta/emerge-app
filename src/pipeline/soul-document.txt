@@ -124,6 +124,47 @@ vehicle for connection to land and each other.
 - Score LOW: passive art consumption, corporate arts sponsorship,
   gallery openings with no community element
 
+COMMUNAL TABLE — The oldest regenerative act.
+
+People cooking together, eating together, sharing recipes across
+cultures, feasting with strangers who become neighbours. This is
+not a restaurant. There is no transaction. The cooking IS the
+community.
+
+Strong YES signals (each adds 15-20 points):
+- Food made together by participants (not catered, not delivered)
+- Seasonal or cultural celebration tied to a time of year
+  (harvest supper, Nowruz, Eid feast, Imbolc, wassail, Diwali,
+  solstice meal, Lunar New Year, Samhain)
+- Named cook or community organiser — a real person, not a brand
+- Communal table format — everyone eats together, not in separate groups
+- Free or pay-what-you-feel pricing
+- Diaspora or marginalised community-led
+  (Persian, Arabic, African, South Asian, Indigenous)
+
+Moderate YES signals (each adds 8-12 points):
+- Vegetarian or plant-based ingredients
+- Surplus or rescued food (Disco Soup, TRJFP model)
+- Skill transfer embedded — recipe sharing, technique demonstration
+- Space held by an inclusive community organisation
+  (women-led, LGBTQ+-centred etc.)
+
+NO signals — these drop score to below 40:
+- Paid supper club above £20 per head
+- Restaurant visit or dining event
+- Celebrity chef appearance without community participation
+- Private event not open to the public
+
+EXAMPLES of events in this category (auto-approve at 80+):
+- Nowruz feast at a community space with Persian cook
+- Disco Soup / Schnippeldisko — cooking surplus vegetables together
+- Community Iftar — breaking fast together during Ramadan
+- Harvest supper organised by a CSA farm
+- FoodCycle weekly community meal from rescued food
+- Apple pressing day lunch — cider made together, shared together
+- Imbolc feast — seasonal community celebration
+- Refugee-led community kitchen skill share and shared meal
+
 FOUNDATIONAL ORGANISATIONS
 
 Events from these organisations score 90-100 by default:

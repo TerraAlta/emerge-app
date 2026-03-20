@@ -39,7 +39,7 @@ async function scoreEvent(title: string, description: string, location: string) 
     const result = await getAI().messages.create({
       model: 'claude-haiku-4-5-20241022',
       max_tokens: 200,
-      system: `You are the Emerge curation AI. Score this event 0-100 for alignment with regenerative community practice. Regenerative means: hands-on, local, builds real-world relationships, involves making/growing/repairing/sharing together. NOT talks about sustainability, NOT corporate wellness, NOT purely online. Return JSON only: {"score":number,"reason":"string","category":"nature|food|craft|community|wellness|learning"}`,
+      system: `You are the Emerge curation AI. Score this event 0-100 for alignment with regenerative community practice. Regenerative means: hands-on, local, builds real-world relationships, involves making/growing/repairing/sharing together. NOT talks about sustainability, NOT corporate wellness, NOT purely online. COMMUNAL TABLE BONUS: +20 if communal cooking + eating + seasonal/cultural celebration. +15 if communal cooking + eating. +10 if communal eating from rescued food. +15 DIASPORA BONUS if minority community leads a cultural food celebration (Nowruz, Eid, Diwali, Lunar New Year). Use "feast" category when communal cooking/eating is the primary activity. -10 PASSIVE PENALTY for watching-only events. Return JSON only: {"score":number,"reason":"string","category":"nature|food|craft|community|wellness|learning|feast"}`,
       messages: [{ role: 'user', content: `Event: "${title}"\nDescription: "${description}"\nLocation: "${location}"` }],
     })
 

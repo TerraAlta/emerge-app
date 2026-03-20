@@ -63,10 +63,12 @@ function formatDate(iso: string) {
 const typeEmoji: Record<string, string> = {
   nature: '\u{1F33F}', food: '\u{1F33F}', craft: '\u{1F3D7}\u{FE0F}',
   community: '\u{1F3B5}', wellness: '\u{2728}', learning: '\u{1F4D6}',
+  feast: '\u{1F372}',
 }
 const typeLabel: Record<string, string> = {
   nature: 'Forage', food: 'Harvest', craft: 'Build',
   community: 'Gather', wellness: 'Wellness', learning: 'Learn',
+  feast: 'Feast',
 }
 
 function daysUntil(iso: string): number {
