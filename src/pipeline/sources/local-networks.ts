@@ -61,6 +61,86 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.goodgriefnetwork.org/events/'],
   },
 
+  // ── Manchester, UK ─────────────────────────────────────────────────────────
+  {
+    name: 'Incredible Edible Manchester',
+    city: 'Manchester', country: 'United Kingdom', lat: 53.4808, lng: -2.2426,
+    urls: ['https://www.incredibleediblemanchester.org/events/', 'https://www.incredibleedible.org.uk/find-a-group/incredible-edible-manchester/'],
+  },
+  {
+    name: 'Transition Manchester',
+    city: 'Manchester', country: 'United Kingdom', lat: 53.4808, lng: -2.2426,
+    urls: ['https://transitionmanchester.net/events/'],
+  },
+  {
+    name: 'FoodCycle Manchester',
+    city: 'Manchester', country: 'United Kingdom', lat: 53.4808, lng: -2.2426,
+    urls: ['https://www.foodcycle.org.uk/location/manchester/'],
+  },
+
+  // ── Edinburgh, UK ─────────────────────────────────────────────────────────
+  {
+    name: 'Transition Edinburgh',
+    city: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lng: -3.1883,
+    urls: ['https://www.transitionedinburgh.org.uk/events/'],
+  },
+  {
+    name: 'Edinburgh Community Food',
+    city: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lng: -3.1883,
+    urls: ['https://www.edinburghcommunityfood.org.uk/events/'],
+  },
+  {
+    name: 'Repair Café Edinburgh',
+    city: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lng: -3.1883,
+    urls: ['https://repaircafe.org/en/locations/?search=edinburgh', 'https://www.edinburghrepaircafe.org/events/'],
+  },
+
+  // ── Cardiff, UK ───────────────────────────────────────────────────────────
+  {
+    name: 'Incredible Edible Cardiff',
+    city: 'Cardiff', country: 'United Kingdom', lat: 51.4816, lng: -3.1791,
+    urls: ['https://www.incredibleedible.org.uk/find-a-group/incredible-edible-cardiff/'],
+  },
+  {
+    name: 'Transition Cardiff',
+    city: 'Cardiff', country: 'United Kingdom', lat: 51.4816, lng: -3.1791,
+    urls: ['https://transitioncardiff.org.uk/events/'],
+  },
+  {
+    name: 'FoodCycle Cardiff',
+    city: 'Cardiff', country: 'United Kingdom', lat: 51.4816, lng: -3.1791,
+    urls: ['https://www.foodcycle.org.uk/location/cardiff/'],
+  },
+
+  // ── Leeds, UK ─────────────────────────────────────────────────────────────
+  {
+    name: 'Incredible Edible Leeds',
+    city: 'Leeds', country: 'United Kingdom', lat: 53.8008, lng: -1.5491,
+    urls: ['https://www.incredibleedibleleeds.co.uk/events/'],
+  },
+  {
+    name: 'Transition Leeds',
+    city: 'Leeds', country: 'United Kingdom', lat: 53.8008, lng: -1.5491,
+    urls: ['https://transitionleeds.org.uk/events/'],
+  },
+  {
+    name: 'FoodCycle Leeds',
+    city: 'Leeds', country: 'United Kingdom', lat: 53.8008, lng: -1.5491,
+    urls: ['https://www.foodcycle.org.uk/location/leeds/'],
+  },
+
+  // ── Totnes, UK ────────────────────────────────────────────────────────────
+  {
+    name: 'Transition Town Totnes',
+    city: 'Totnes', country: 'United Kingdom', lat: 50.4327, lng: -3.6862,
+    urls: ['https://totnes.transitionnetwork.org/events/', 'https://www.transitiontowntotnes.org/events/'],
+  },
+  {
+    name: 'Schumacher College',
+    city: 'Totnes', country: 'United Kingdom', lat: 50.4327, lng: -3.6862,
+    urls: ['https://campus.dartington.org/whats-on/', 'https://www.schumachercollege.org.uk/events/'],
+  },
+
   // ── Toulouse, France ──────────────────────────────────────────────────────
   {
     name: 'Colibris Toulouse',

@@ -1,5 +1,5 @@
 /**
- * 50 cities across Europe and North America for event scraping.
+ * 64 cities across Europe and North America for event scraping.
  * Each city has a name, country, and coordinates.
  */
 
@@ -36,6 +36,17 @@ export const CITIES: City[] = [
   { name: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lng: -3.1883 },
   { name: 'Brighton', country: 'United Kingdom', lat: 50.8225, lng: -0.1372 },
   { name: 'Oxford', country: 'United Kingdom', lat: 51.7520, lng: -1.2577 },
+  { name: 'Cardiff', country: 'United Kingdom', lat: 51.4816, lng: -3.1791 },
+  { name: 'Leeds', country: 'United Kingdom', lat: 53.8008, lng: -1.5491 },
+  { name: 'Liverpool', country: 'United Kingdom', lat: 53.4084, lng: -2.9916 },
+  { name: 'Newcastle', country: 'United Kingdom', lat: 54.9783, lng: -1.6178 },
+  { name: 'Nottingham', country: 'United Kingdom', lat: 52.9548, lng: -1.1581 },
+  { name: 'Sheffield', country: 'United Kingdom', lat: 53.3811, lng: -1.4701 },
+  { name: 'Glasgow', country: 'United Kingdom', lat: 55.8642, lng: -4.2518 },
+  { name: 'Birmingham', country: 'United Kingdom', lat: 52.4862, lng: -1.8904 },
+  { name: 'Exeter', country: 'United Kingdom', lat: 50.7184, lng: -3.5339 },
+  { name: 'York', country: 'United Kingdom', lat: 53.9590, lng: -1.0815 },
+  { name: 'Totnes', country: 'United Kingdom', lat: 50.4327, lng: -3.6862 },
 
   // France
   { name: 'Paris', country: 'France', lat: 48.8566, lng: 2.3522 },

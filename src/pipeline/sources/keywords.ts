@@ -38,6 +38,8 @@ export const KEYWORDS: string[] = [
   'disco soup',
   'community land trust',
   'ecocide law',
+  'ecocide',
+  'localisation',
 
   // Arts & Theatre
   'theatre of the oppressed',
@@ -66,4 +68,4 @@ export const KEYWORDS: string[] = [
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 46
+export const MAX_KEYWORDS_PER_CITY = 48
