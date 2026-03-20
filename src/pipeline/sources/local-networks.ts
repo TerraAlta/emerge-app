@@ -229,6 +229,69 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.permakultur.de/veranstaltungen/', 'https://www.permakultur.de/termine/'],
   },
 
+  // ── Hamburg, Germany ────────────────────────────────────────────────────────
+  {
+    name: 'Transition Hamburg',
+    city: 'Hamburg', country: 'Germany', lat: 53.5511, lng: 9.9937,
+    urls: ['https://www.transition-hamburg.de/veranstaltungen/', 'https://www.transition-hamburg.de/termine/'],
+  },
+  {
+    name: 'Foodsharing Hamburg',
+    city: 'Hamburg', country: 'Germany', lat: 53.5511, lng: 9.9937,
+    urls: ['https://foodsharing.de/region?bid=31', 'https://foodsharing.de/events?bid=31'],
+  },
+  {
+    name: 'Repair Café Hamburg',
+    city: 'Hamburg', country: 'Germany', lat: 53.5511, lng: 9.9937,
+    urls: ['https://repaircafe.org/en/locations/?search=hamburg'],
+  },
+
+  // ── Munich, Germany ───────────────────────────────────────────────────────
+  {
+    name: 'Transition München',
+    city: 'Munich', country: 'Germany', lat: 48.1351, lng: 11.5820,
+    urls: ['https://www.transition-muenchen.de/veranstaltungen/', 'https://www.transition-muenchen.de/termine/'],
+  },
+  {
+    name: 'SoLaWi München',
+    city: 'Munich', country: 'Germany', lat: 48.1351, lng: 11.5820,
+    urls: ['https://www.solawi-muenchen.de/termine/', 'https://www.solawi-muenchen.de/veranstaltungen/'],
+  },
+  {
+    name: 'Repair Café München',
+    city: 'Munich', country: 'Germany', lat: 48.1351, lng: 11.5820,
+    urls: ['https://repaircafe.org/en/locations/?search=munich'],
+  },
+
+  // ── Leipzig, Germany ──────────────────────────────────────────────────────
+  {
+    name: 'Transition Leipzig',
+    city: 'Leipzig', country: 'Germany', lat: 51.3397, lng: 12.3731,
+    urls: ['https://www.transition-leipzig.de/veranstaltungen/', 'https://www.transition-leipzig.de/termine/'],
+  },
+  {
+    name: 'Stadtfarm Leipzig',
+    city: 'Leipzig', country: 'Germany', lat: 51.3397, lng: 12.3731,
+    urls: ['https://www.annalinde-leipzig.de/veranstaltungen/', 'https://www.annalinde-leipzig.de/termine/'],
+  },
+  {
+    name: 'Querfeld CSA Leipzig',
+    city: 'Leipzig', country: 'Germany', lat: 51.3397, lng: 12.3731,
+    urls: ['https://www.querbeet-leipzig.de/termine/', 'https://www.querbeet-leipzig.de/veranstaltungen/'],
+  },
+
+  // ── Stuttgart, Germany ────────────────────────────────────────────────────
+  {
+    name: 'Ernährungsrat Stuttgart',
+    city: 'Stuttgart', country: 'Germany', lat: 48.7758, lng: 9.1829,
+    urls: ['https://ernaehrungsrat-stuttgart.de/veranstaltungen/', 'https://ernaehrungsrat-stuttgart.de/termine/'],
+  },
+  {
+    name: 'Transition Stuttgart',
+    city: 'Stuttgart', country: 'Germany', lat: 48.7758, lng: 9.1829,
+    urls: ['https://www.transition-stuttgart.de/veranstaltungen/', 'https://www.transition-stuttgart.de/termine/'],
+  },
+
   // ── Wageningen, Netherlands ───────────────────────────────────────────────
   {
     name: 'WUR Public Events',

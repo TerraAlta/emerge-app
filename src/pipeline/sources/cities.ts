@@ -1,5 +1,5 @@
 /**
- * 64 cities across Europe and North America for event scraping.
+ * 75 cities across Europe and North America for event scraping.
  * Each city has a name, country, and coordinates.
  */
 
@@ -22,6 +22,14 @@ export const CITIES: City[] = [
   { name: 'Cologne', country: 'Germany', lat: 50.9375, lng: 6.9603 },
   { name: 'Frankfurt', country: 'Germany', lat: 50.1109, lng: 8.6821 },
   { name: 'Freiburg', country: 'Germany', lat: 47.9990, lng: 7.8421 },
+  { name: 'Stuttgart', country: 'Germany', lat: 48.7758, lng: 9.1829 },
+  { name: 'Leipzig', country: 'Germany', lat: 51.3397, lng: 12.3731 },
+  { name: 'Dresden', country: 'Germany', lat: 51.0504, lng: 13.7373 },
+  { name: 'Hannover', country: 'Germany', lat: 52.3759, lng: 9.7320 },
+  { name: 'Nuremberg', country: 'Germany', lat: 49.4521, lng: 11.0767 },
+  { name: 'Heidelberg', country: 'Germany', lat: 49.3988, lng: 8.6724 },
+  { name: 'Münster', country: 'Germany', lat: 51.9607, lng: 7.6261 },
+  { name: 'Tübingen', country: 'Germany', lat: 48.5216, lng: 9.0576 },
 
   // Netherlands
   { name: 'Amsterdam', country: 'Netherlands', lat: 52.3676, lng: 4.9041 },

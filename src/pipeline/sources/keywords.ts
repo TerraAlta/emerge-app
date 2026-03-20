@@ -62,10 +62,32 @@ export const KEYWORDS: string[] = [
   'ecovillage',
   'regenerative agriculture',
   'agroforestry',
+
+  // German keywords
+  'Permakultur',
+  'Lebensmittelwald',
+  'Saatguttausch',
+  'Naturbauen',
+  'Null Abfall',
+  'Forumtheater',
+  'Theater der Unterdrückten',
+  'Playback Theater',
+  'Gemeinschaftschor',
+  'Trommelkreis',
+  'Ökotherapie',
+  'Klimatrauer',
+  'Geburtskreis',
+  'Gemeinschaftsküche',
+  'Disco Suppe',
+  'Solidarische Ökonomie',
+  'Stadtimkerei',
+  'Kompost',
+  'Wildpflanzen',
+  'Solidarische Landwirtschaft',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 48
+export const MAX_KEYWORDS_PER_CITY = 68
