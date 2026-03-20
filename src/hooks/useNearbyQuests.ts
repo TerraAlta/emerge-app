@@ -13,6 +13,30 @@ interface UseNearbyQuestsOptions {
   category?: Quest['category'] | null
 }
 
+interface SavedLocation {
+  lat: number
+  lng: number
+  name: string
+  source: 'gps' | 'manual'
+}
+
+const LOCATION_KEY = 'emerge-location'
+
+function getSavedLocation(): SavedLocation | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(LOCATION_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
+function saveLocation(loc: SavedLocation) {
+  localStorage.setItem(LOCATION_KEY, JSON.stringify(loc))
+}
+
 export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
   const { radiusKm = 25, category = null } = options
 
@@ -20,24 +44,77 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [locationName, setLocationName] = useState<string>('')
+  const [locationDenied, setLocationDenied] = useState(false)
+  const [locationLoading, setLocationLoading] = useState(true)
 
-  // Get user location
+  // Reverse geocode to get city name
+  const reverseGeocode = useCallback(async (lat: number, lng: number): Promise<string> => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`,
+        { headers: { 'Accept-Language': 'en' } }
+      )
+      const data = await res.json()
+      const addr = data.address
+      return addr?.city || addr?.town || addr?.village || addr?.municipality || addr?.county || 'Unknown'
+    } catch {
+      return 'Unknown'
+    }
+  }, [])
+
+  // Get user location on mount
   useEffect(() => {
+    const saved = getSavedLocation()
+
     if (!navigator.geolocation) {
-      setError('Geolocation not supported')
-      setLoading(false)
+      // No geolocation API — use saved or show denied
+      if (saved) {
+        setLocation({ lat: saved.lat, lng: saved.lng })
+        setLocationName(saved.name)
+        setLocationLoading(false)
+      } else {
+        setLocationDenied(true)
+        setLocationLoading(false)
+        setLoading(false)
+      }
       return
     }
 
+    // Always try geolocation first
     navigator.geolocation.getCurrentPosition(
-      (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      async (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        setLocation(coords)
+        const name = await reverseGeocode(coords.lat, coords.lng)
+        setLocationName(name)
+        saveLocation({ ...coords, name, source: 'gps' })
+        setLocationLoading(false)
+      },
       () => {
-        // Fallback to Lisbon when location is denied
-        setLocation({ lat: 38.7169, lng: -9.1393 })
+        // Geolocation denied — use saved location if available, otherwise show search
+        if (saved) {
+          setLocation({ lat: saved.lat, lng: saved.lng })
+          setLocationName(saved.name)
+          setLocationLoading(false)
+        } else {
+          setLocationDenied(true)
+          setLocationLoading(false)
+          setLoading(false)
+        }
       },
       { enableHighAccuracy: true, timeout: 10000 }
     )
-  }, [])
+  }, [reverseGeocode])
+
+  // Manual location setter (from city search)
+  const setManualLocation = useCallback(async (lat: number, lng: number, name?: string) => {
+    const cityName = name || await reverseGeocode(lat, lng)
+    setLocation({ lat, lng })
+    setLocationName(cityName)
+    setLocationDenied(false)
+    saveLocation({ lat, lng, name: cityName, source: 'manual' })
+  }, [reverseGeocode])
 
   // Fetch quests when location is available
   const fetchQuests = useCallback(async () => {
@@ -86,5 +163,15 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
     }
   }, [fetchQuests])
 
-  return { quests, loading, error, location, refetch: fetchQuests }
+  return {
+    quests,
+    loading,
+    error,
+    location,
+    locationName,
+    locationDenied,
+    locationLoading,
+    setManualLocation,
+    refetch: fetchQuests,
+  }
 }

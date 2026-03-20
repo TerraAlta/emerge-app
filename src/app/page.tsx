@@ -268,7 +268,32 @@ function QuestBoard({
     return 25
   })
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
-  const { quests, loading, error, location } = useNearbyQuests({ radiusKm })
+  const { quests, loading, error, location, locationName, locationDenied, locationLoading, setManualLocation } = useNearbyQuests({ radiusKm })
+  const [citySearch, setCitySearch] = useState('')
+  const [searchResults, setSearchResults] = useState<Array<{ lat: number; lng: number; name: string }>>([])
+  const [searching, setSearching] = useState(false)
+  const [showCitySearch, setShowCitySearch] = useState(false)
+
+  // City search via Nominatim
+  const handleCitySearch = async () => {
+    if (!citySearch.trim()) return
+    setSearching(true)
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(citySearch)}&format=json&limit=5&addressdetails=1`,
+        { headers: { 'Accept-Language': 'en' } }
+      )
+      const data = await res.json()
+      setSearchResults(data.map((r: any) => ({
+        lat: parseFloat(r.lat),
+        lng: parseFloat(r.lon),
+        name: r.address?.city || r.address?.town || r.address?.village || r.display_name.split(',')[0],
+      })))
+    } catch {
+      setSearchResults([])
+    }
+    setSearching(false)
+  }
 
   const closestDist = useMemo(() => {
     if (quests.length === 0) return null
@@ -348,6 +373,81 @@ function QuestBoard({
           </div>
         </div>
         {showMenu && <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />}
+
+        {/* Location indicator */}
+        <div className="px-4 pb-1">
+          {locationLoading ? (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.3)' }}>Locating you...</span>
+            </div>
+          ) : (locationDenied || showCitySearch) ? (
+            <div className="rounded-[12px] px-3.5 py-3" style={{ background: 'rgba(200,145,58,0.08)', border: '0.5px solid rgba(200,145,58,0.25)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] font-medium" style={{ color: '#C8913A' }}>
+                  {locationDenied ? 'Where are you?' : 'Change location'}
+                </p>
+                {!locationDenied && (
+                  <button onClick={() => setShowCitySearch(false)} className="text-[10px]" style={{ color: 'rgba(232,242,224,0.3)', background: 'none', border: 'none', cursor: 'pointer' }}>Cancel</button>
+                )}
+              </div>
+              {locationDenied && (
+                <p className="text-[10px] mb-2.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                  Location access was denied. Search for your city to see nearby quests.
+                </p>
+              )}
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={citySearch}
+                  onChange={e => { setCitySearch(e.target.value); setSearchResults([]) }}
+                  onKeyDown={e => e.key === 'Enter' && handleCitySearch()}
+                  placeholder="e.g. Lisbon, Berlin, London..."
+                  className="flex-1 rounded-[8px] px-2.5 py-2 text-[12px] outline-none"
+                  style={{ background: '#0D1A0B', border: '0.5px solid rgba(200,145,58,0.2)', color: '#E8F2E0' }}
+                />
+                <button
+                  onClick={handleCitySearch}
+                  disabled={searching}
+                  className="rounded-[8px] px-3 py-2 text-[11px] font-medium"
+                  style={{ background: '#C8913A', color: '#0D1A0B' }}
+                >
+                  {searching ? '...' : 'Search'}
+                </button>
+              </div>
+              {searchResults.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {searchResults.map((r, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setManualLocation(r.lat, r.lng, r.name)
+                        setCitySearch('')
+                        setSearchResults([])
+                        setShowCitySearch(false)
+                      }}
+                      className="w-full text-left rounded-[8px] px-2.5 py-2 text-[11px]"
+                      style={{ background: '#162814', color: '#E8F2E0', border: '0.5px solid rgba(200,145,58,0.1)' }}
+                    >
+                      {r.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowCitySearch(true)}
+              className="flex items-center gap-1.5"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              <span style={{ color: '#C8913A', fontSize: 10 }}>{'\u25C9'}</span>
+              <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.5)' }}>
+                {locationName || 'Your location'}
+              </span>
+              <span className="text-[8px]" style={{ color: 'rgba(232,242,224,0.2)' }}>(change)</span>
+            </button>
+          )}
+        </div>
 
         {/* Pulse pills */}
         <div className="flex gap-2 px-4 pt-3 pb-4">
