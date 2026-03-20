@@ -479,6 +479,45 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://grassrootsremedies.co.uk/events/'],
   },
 
+  // ── Reykjavík, Iceland ───────────────────────────────────────────────────
+  {
+    name: 'Landvernd (Iceland Nature Conservation)',
+    city: 'Reykjavík', country: 'Iceland', lat: 64.1355, lng: -21.8954,
+    urls: ['https://landvernd.is/vidburdir/'],
+  },
+  {
+    name: 'Transition Reykjavík',
+    city: 'Reykjavík', country: 'Iceland', lat: 64.1355, lng: -21.8954,
+    urls: ['https://transitionnetwork.org/transition-near-me/?country=iceland'],
+  },
+  {
+    name: 'Repair Café Iceland',
+    city: 'Reykjavík', country: 'Iceland', lat: 64.1355, lng: -21.8954,
+    urls: ['https://repaircafe.org/en/locations/?search=iceland'],
+  },
+  {
+    name: 'Waking Giants Iceland',
+    city: 'Reykjavík', country: 'Iceland', lat: 64.1355, lng: -21.8954,
+    urls: ['https://www.wakinggiants.com/events/'],
+  },
+  {
+    name: 'Búseta Cooperative Housing',
+    city: 'Reykjavík', country: 'Iceland', lat: 64.1355, lng: -21.8954,
+    urls: ['https://www.buseta.is/'],
+  },
+
+  // ── Iceland-wide ────────────────────────────────────────────────────────
+  {
+    name: 'Nordic Permaculture Festival',
+    city: 'Reykjavík', country: 'Iceland', lat: 64.1355, lng: -21.8954,
+    urls: ['https://nordicpermaculturefestival.org/'],
+  },
+  {
+    name: 'Matarborg Food Sovereignty Iceland',
+    city: 'Reykjavík', country: 'Iceland', lat: 64.1355, lng: -21.8954,
+    urls: ['https://www.matarborg.is/'],
+  },
+
   // ── Toulouse, France ──────────────────────────────────────────────────────
   {
     name: 'Colibris Toulouse',

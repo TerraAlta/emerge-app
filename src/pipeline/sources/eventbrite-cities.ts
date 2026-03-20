@@ -38,6 +38,7 @@ function countrySlug(country: string): string {
     'Luxembourg': 'luxembourg',
     'Denmark': 'denmark',
     'Finland': 'finland',
+    'Iceland': 'iceland',
     'Canada': 'canada',
     'United States': 'united-states',
   }

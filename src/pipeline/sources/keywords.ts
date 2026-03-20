@@ -285,10 +285,28 @@ export const KEYWORDS: string[] = [
   'ath-fhiadhachadh',
   'coimhearsnachd fearainn',
   'eag-olaigheachd',
+
+  // Icelandic keywords
+  'permabygging',
+  'umbreyting',
+  'matarskógur',
+  'fræskipti',
+  'náttúrulegt byggingarfræði',
+  'núll sorp',
+  'leikhús kúgaðra',
+  'samfélagskór',
+  'vistmeðferð',
+  'loftslagssorg',
+  'fæðingarhrings',
+  'samfélagseldhús',
+  'samstæðuhagkerfi',
+  'endurreisn náttúru',
+  'villt matur',
+  'staðbinding',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 250
+export const MAX_KEYWORDS_PER_CITY = 270
