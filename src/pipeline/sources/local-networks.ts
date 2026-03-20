@@ -518,6 +518,45 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.matarborg.is/'],
   },
 
+  // ── Belgrade, Serbia ─────────────────────────────────────────────────────
+  {
+    name: 'PermaVEZ Serbian Permaculture',
+    city: 'Belgrade', country: 'Serbia', lat: 44.8176, lng: 20.4569,
+    urls: ['https://permavez.org/'],
+  },
+  {
+    name: 'Transition Belgrade',
+    city: 'Belgrade', country: 'Serbia', lat: 44.8176, lng: 20.4569,
+    urls: ['https://transitionnetwork.org/transition-near-me/?country=serbia'],
+  },
+  {
+    name: 'Repair Café Serbia',
+    city: 'Belgrade', country: 'Serbia', lat: 44.8176, lng: 20.4569,
+    urls: ['https://repaircafe.org/en/locations/?search=serbia'],
+  },
+  {
+    name: 'Greenpeace Serbia',
+    city: 'Belgrade', country: 'Serbia', lat: 44.8176, lng: 20.4569,
+    urls: ['https://www.greenpeace.org/serbia/events/'],
+  },
+  {
+    name: 'Zero Waste Serbia',
+    city: 'Belgrade', country: 'Serbia', lat: 44.8176, lng: 20.4569,
+    urls: ['https://zerowaste.rs/events/'],
+  },
+  {
+    name: 'Slow Food Serbia',
+    city: 'Belgrade', country: 'Serbia', lat: 44.8176, lng: 20.4569,
+    urls: ['https://www.slowfood.com/our-network/?fwp_sf_our_network_search=serbia'],
+  },
+
+  // ── Novi Sad, Serbia ────────────────────────────────────────────────────
+  {
+    name: 'Ekološki pokret Novog Sada',
+    city: 'Novi Sad', country: 'Serbia', lat: 45.2671, lng: 19.8335,
+    urls: ['https://eko.rs/'],
+  },
+
   // ── Toulouse, France ──────────────────────────────────────────────────────
   {
     name: 'Colibris Toulouse',

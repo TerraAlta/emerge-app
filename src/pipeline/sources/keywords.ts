@@ -303,10 +303,30 @@ export const KEYWORDS: string[] = [
   'endurreisn náttúru',
   'villt matur',
   'staðbinding',
+
+  // Serbian keywords
+  'permakultura',
+  'tranzicija',
+  'šuma hrane',
+  'razmena semena',
+  'prirodna gradnja',
+  'nula otpada',
+  'pozorište potlačenih',
+  'forum teatar',
+  'zajednički hor',
+  'ekoterapija',
+  'klimatska tuga',
+  'krug rađanja',
+  'zajednička kuhinja',
+  'solidarna ekonomija',
+  'obnova divljine',
+  'fermentacija',
+  'divlja hrana',
+  'lokalizacija',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 270
+export const MAX_KEYWORDS_PER_CITY = 290
