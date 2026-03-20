@@ -79,11 +79,19 @@ async function scrapeMeetupSearch(
 
   // Strategy 1: Parse __NEXT_DATA__ (Meetup's Next.js embedded data)
   const nextDataEvents = extractFromNextData(html, fallbackLat, fallbackLng)
-  if (nextDataEvents.length > 0) return nextDataEvents
 
-  // Strategy 2: Extract JSON-LD
+  // Strategy 2: Extract JSON-LD (may find additional events)
   const jsonLdEvents = extractJsonLdEvents(html, fallbackLat, fallbackLng)
-  if (jsonLdEvents.length > 0) return jsonLdEvents
+
+  // Combine both strategies, dedup by URL
+  const seen = new Set<string>()
+  const combined: RawEvent[] = []
+  for (const ev of [...nextDataEvents, ...jsonLdEvents]) {
+    if (ev.source_url && seen.has(ev.source_url)) continue
+    if (ev.source_url) seen.add(ev.source_url)
+    combined.push(ev)
+  }
+  if (combined.length > 0) return combined
 
   // Strategy 3: Try the GraphQL endpoint
   return await tryGraphQLEndpoint(cityName, keyword, fallbackLat, fallbackLng)
@@ -97,11 +105,19 @@ function extractFromNextData(html: string, fallbackLat: number, fallbackLng: num
     const nextData = JSON.parse(match[1])
     const events: RawEvent[] = []
 
-    // Navigate the __NEXT_DATA__ structure — Meetup uses Apollo cache or pageProps
-    const results = findEventsInObject(nextData)
+    // First check Apollo state directly — scan all entries for Event type
+    const apollo = nextData?.props?.pageProps?.__APOLLO_STATE__
+    let results: any[] = []
+    if (apollo) {
+      for (const val of Object.values(apollo)) {
+        if ((val as any)?.__typename === 'Event') results.push(val)
+      }
+    }
+    // Fallback: navigate the __NEXT_DATA__ structure recursively
+    if (results.length === 0) results = findEventsInObject(nextData)
 
     for (const item of results) {
-      if (!item.title || !item.dateTime) continue
+      if (!item.dateTime) continue
       // Skip past events
       if (new Date(item.dateTime) < new Date()) continue
 
@@ -109,6 +125,9 @@ function extractFromNextData(html: string, fallbackLat: number, fallbackLng: num
       if (!eventUrl) continue
 
       const fullUrl = eventUrl.startsWith('http') ? eventUrl : `https://www.meetup.com${eventUrl}`
+
+      // Apollo Event objects may have a date as 'title' — use group name + date as fallback
+      const title = (item.title && !/^\w+ \d/.test(item.title)) ? item.title : item.name ?? item.group?.name ?? item.title
       const venueLat = item.venue?.lat ?? item.venue?.latitude ?? fallbackLat
       const venueLng = item.venue?.lng ?? item.venue?.longitude ?? fallbackLng
 
@@ -116,7 +135,7 @@ function extractFromNextData(html: string, fallbackLat: number, fallbackLng: num
         source: 'meetup-cities',
         source_id: `meetup-${hashStr(fullUrl)}`,
         source_url: fullUrl,
-        title: stripHtml(item.title),
+        title: stripHtml(title ?? 'Meetup Event'),
         description: stripHtml(item.description ?? item.shortDescription ?? '').slice(0, 500),
         organizer: item.group?.name ?? item.organizer ?? 'Meetup Group',
         location_name: item.venue?.name ?? item.venue?.address ?? 'See event page',

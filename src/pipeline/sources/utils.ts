@@ -29,7 +29,14 @@ export function extractJsonLd(html: string, source: string): RawEvent[] {
     try {
       const json = block.replace(/<\/?script[^>]*>/g, '').trim()
       const data = JSON.parse(json)
-      const items = Array.isArray(data) ? data : data['@graph'] ?? [data]
+      let items = Array.isArray(data) ? data : data['@graph'] ?? [data]
+
+      // Unwrap ItemList > ListItem.item (used by Eventbrite)
+      if (data['@type'] === 'ItemList' && Array.isArray(data.itemListElement)) {
+        items = data.itemListElement
+          .map((li: any) => li.item ?? li)
+          .filter((i: any) => i['@type'] === 'Event')
+      }
 
       for (const item of items) {
         if (item['@type'] !== 'Event') continue
