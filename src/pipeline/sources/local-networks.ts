@@ -61,6 +61,37 @@ const LOCAL_ORGS: LocalOrg[] = [
     urls: ['https://www.goodgriefnetwork.org/events/'],
   },
 
+  // ── Porto, Portugal ────────────────────────────────────────────────────────
+  {
+    name: 'Transition Porto',
+    city: 'Porto', country: 'Portugal', lat: 41.1579, lng: -8.6291,
+    urls: ['https://transicao.org/eventos/', 'https://transicao.org/agenda/'],
+  },
+  {
+    name: 'GAIA Porto',
+    city: 'Porto', country: 'Portugal', lat: 41.1579, lng: -8.6291,
+    urls: ['https://gaia.org.pt/eventos/', 'https://gaia.org.pt/events/'],
+  },
+  {
+    name: 'Repair Café Porto',
+    city: 'Porto', country: 'Portugal', lat: 41.1579, lng: -8.6291,
+    urls: ['https://repaircafe.org/en/locations/?search=porto'],
+  },
+
+  // ── Coimbra, Portugal ─────────────────────────────────────────────────────
+  {
+    name: 'Repair Café Coimbra',
+    city: 'Coimbra', country: 'Portugal', lat: 40.2033, lng: -8.4103,
+    urls: ['https://repaircafe.org/en/locations/?search=coimbra'],
+  },
+
+  // ── Évora, Portugal ───────────────────────────────────────────────────────
+  {
+    name: 'Rede Convergir — Projecto Oasis',
+    city: 'Évora', country: 'Portugal', lat: 38.5667, lng: -7.9000,
+    urls: ['https://redeconvergir.net/eventos/', 'https://redeconvergir.net/agenda/'],
+  },
+
   // ── Manchester, UK ─────────────────────────────────────────────────────────
   {
     name: 'Incredible Edible Manchester',

@@ -1,5 +1,5 @@
 /**
- * 107 cities across Europe and North America for event scraping.
+ * 115 cities across Europe and North America for event scraping.
  * Each city has a name, country, and coordinates.
  */
 
@@ -14,6 +14,15 @@ export const CITIES: City[] = [
   // Portugal
   { name: 'Lisbon', country: 'Portugal', lat: 38.7223, lng: -9.1393 },
   { name: 'Porto', country: 'Portugal', lat: 41.1579, lng: -8.6291 },
+  { name: 'Braga', country: 'Portugal', lat: 41.5518, lng: -8.4229 },
+  { name: 'Coimbra', country: 'Portugal', lat: 40.2033, lng: -8.4103 },
+  { name: 'Évora', country: 'Portugal', lat: 38.5667, lng: -7.9000 },
+  { name: 'Faro', country: 'Portugal', lat: 37.0194, lng: -7.9322 },
+  { name: 'Setúbal', country: 'Portugal', lat: 38.5243, lng: -8.8926 },
+  { name: 'Sintra', country: 'Portugal', lat: 38.8029, lng: -9.3817 },
+  { name: 'Cascais', country: 'Portugal', lat: 38.6979, lng: -9.4215 },
+  { name: 'Viseu', country: 'Portugal', lat: 40.6566, lng: -7.9122 },
+  { name: 'Aveiro', country: 'Portugal', lat: 40.6405, lng: -8.6538 },
 
   // Germany
   { name: 'Berlin', country: 'Germany', lat: 52.5200, lng: 13.4050 },
