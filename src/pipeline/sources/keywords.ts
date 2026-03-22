@@ -381,6 +381,11 @@ export const KEYWORDS: string[] = [
   'rhythm workshop',
   'Irish trad session',
   'community drumming',
+  // UK Play
+  'singing session',
+  'ceilidh community',
+  'wassail',
+  'shanty session',
   // Irish Play
   'irish session',
   'trad session',
@@ -409,6 +414,11 @@ export const KEYWORDS: string[] = [
   'art collective open',
   'eco art walk',
   'climate witness art',
+  // UK Make
+  'screen printing community',
+  'artist-led walk',
+  'art workshop free',
+  'climate art open',
   // Irish Make
   'arts council community project',
   'printmaking open',

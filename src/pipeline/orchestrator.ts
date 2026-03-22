@@ -134,6 +134,10 @@ import { resartisGlobal } from './sources/resartis-global'
 // Irish Play & Make
 import { comhaltasIe } from './sources/comhaltas-ie'
 import { artscouncilIe } from './sources/artscouncil-ie'
+// UK Play & Make
+import { efdssUk } from './sources/efdss-uk'
+import { balfolkUk } from './sources/balfolk-uk'
+import { ukArtSpaces } from './sources/uk-art-spaces'
 // Community Orchards
 import { orchardProjectUk } from './sources/orchard-project-uk'
 import { appleDayUk } from './sources/apple-day-uk'
@@ -379,6 +383,9 @@ const SOURCES: SourceFetcher[] = [
   resartisGlobal,
   comhaltasIe,
   artscouncilIe,
+  efdssUk,
+  balfolkUk,
+  ukArtSpaces,
   // Community Orchards
   orchardProjectUk,
   appleDayUk,
