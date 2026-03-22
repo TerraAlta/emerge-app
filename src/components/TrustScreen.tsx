@@ -104,7 +104,7 @@ export default function TrustScreen({ userId, profile }: Props) {
           <h1 className="font-heading text-[20px] font-light" style={{ color: '#E8F2E0' }}>
             Trust <em style={{ color: '#C8913A' }}>Journey</em>
           </h1>
-          <p className="text-[10px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+          <p className="text-[12px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
             Your path through the community
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function TrustScreen({ userId, profile }: Props) {
             <div className="font-heading text-[18px] font-light" style={{ color: currentLevel.color }}>
               {currentLevel.label}
             </div>
-            <div className="text-[11px] mt-0.5" style={{ color: 'rgba(232,242,224,0.45)' }}>
+            <div className="text-[13px] mt-0.5" style={{ color: 'rgba(232,242,224,0.45)' }}>
               {displayName}&apos;s trust level
             </div>
           </div>
@@ -135,8 +135,8 @@ export default function TrustScreen({ userId, profile }: Props) {
           {nextLevel && (
             <div className="mt-3">
               <div className="flex justify-between mb-1">
-                <span className="text-[9px]" style={{ color: currentLevel.color }}>{currentLevel.label}</span>
-                <span className="text-[9px]" style={{ color: 'rgba(232,242,224,0.3)' }}>{nextLevel.label}</span>
+                <span className="text-[13px]" style={{ color: currentLevel.color }}>{currentLevel.label}</span>
+                <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.3)' }}>{nextLevel.label}</span>
               </div>
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(232,242,224,0.06)' }}>
                 <div
@@ -144,13 +144,13 @@ export default function TrustScreen({ userId, profile }: Props) {
                   style={{ width: `${progressToNext * 100}%`, background: currentLevel.color }}
                 />
               </div>
-              <div className="text-[9px] mt-1 text-center" style={{ color: 'rgba(232,242,224,0.3)' }}>
+              <div className="text-[13px] mt-1 text-center" style={{ color: 'rgba(232,242,224,0.3)' }}>
                 {trustScore} / {nextLevel.threshold} points to next level
               </div>
             </div>
           )}
           {!nextLevel && (
-            <div className="text-[10px] text-center mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>
+            <div className="text-[12px] text-center mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>
               Highest trust level reached
             </div>
           )}
@@ -165,14 +165,14 @@ export default function TrustScreen({ userId, profile }: Props) {
           ].map(stat => (
             <div key={stat.label} className="flex-1 rounded-[10px] px-2.5 py-2.5 text-center" style={{ background: '#162814' }}>
               <div className="text-[16px] font-semibold" style={{ color: '#C8913A' }}>{stat.val}</div>
-              <div className="text-[9px] mt-0.5 font-medium" style={{ color: '#E8F2E0' }}>{stat.label}</div>
+              <div className="text-[13px] mt-0.5 font-medium" style={{ color: '#E8F2E0' }}>{stat.label}</div>
               <div className="text-[8px] mt-0.5" style={{ color: 'rgba(232,242,224,0.25)' }}>{stat.sub}</div>
             </div>
           ))}
         </div>
 
         {/* Trust level ladder */}
-        <div className="px-4 pb-2 text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
+        <div className="px-4 pb-2 text-[13px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
           Trust levels
         </div>
         <div className="mx-3 mb-4 rounded-[14px] overflow-hidden" style={{ border: '0.5px solid rgba(200,145,58,0.12)' }}>
@@ -195,10 +195,10 @@ export default function TrustScreen({ userId, profile }: Props) {
                   {isUnlocked ? '\u2713' : '\u{1F512}'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-medium" style={{ color: isUnlocked ? level.color : 'rgba(232,242,224,0.25)' }}>
+                  <div className="text-[13px] font-medium" style={{ color: isUnlocked ? level.color : 'rgba(232,242,224,0.25)' }}>
                     {level.label}
                   </div>
-                  <div className="text-[9px]" style={{ color: 'rgba(232,242,224,0.25)' }}>
+                  <div className="text-[13px]" style={{ color: 'rgba(232,242,224,0.25)' }}>
                     {level.threshold === 0 ? 'Starting level' : `${level.threshold} points needed`}
                   </div>
                 </div>
@@ -213,20 +213,20 @@ export default function TrustScreen({ userId, profile }: Props) {
         </div>
 
         {/* How to level up */}
-        <div className="px-4 pb-2 text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
+        <div className="px-4 pb-2 text-[13px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
           How to grow your trust
         </div>
         <div className="px-3 space-y-1.5 mb-4">
           {LEVEL_UP_TIPS.map(tip => (
             <div key={tip.action} className="rounded-[10px] px-3 py-2.5" style={{ background: '#162814' }}>
-              <div className="text-[11px] font-medium" style={{ color: '#E8F2E0' }}>{tip.action}</div>
-              <div className="text-[9px] mt-0.5" style={{ color: 'rgba(232,242,224,0.35)' }}>{tip.desc}</div>
+              <div className="text-[13px] font-medium" style={{ color: '#E8F2E0' }}>{tip.action}</div>
+              <div className="text-[13px] mt-0.5" style={{ color: 'rgba(232,242,224,0.35)' }}>{tip.desc}</div>
             </div>
           ))}
         </div>
 
         {/* Recent endorsements */}
-        <div className="px-4 pb-2 text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
+        <div className="px-4 pb-2 text-[13px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
           Recent endorsements
         </div>
         <div className="px-3 pb-24">
@@ -234,7 +234,7 @@ export default function TrustScreen({ userId, profile }: Props) {
             <div className="rounded-[14px] px-4 py-8 text-center" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
               <p className="text-[22px] mb-2">{'\u{1F331}'}</p>
               <p className="font-heading text-[13px]" style={{ color: '#E8F2E0' }}>No endorsements yet</p>
-              <p className="text-[10px] mt-1" style={{ color: 'rgba(232,242,224,0.3)' }}>
+              <p className="text-[12px] mt-1" style={{ color: 'rgba(232,242,224,0.3)' }}>
                 Join quests and contribute — endorsements will come.
               </p>
             </div>
@@ -244,15 +244,15 @@ export default function TrustScreen({ userId, profile }: Props) {
                 <div key={e.id} className="rounded-[10px] px-3 py-2.5" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
                   <div className="flex items-center gap-2">
                     <div
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-semibold shrink-0"
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-[13px] font-semibold shrink-0"
                       style={{ background: '#1E3A1A', border: '1px solid #2D5A1E', color: '#4A7C59' }}
                     >
                       {e.from_name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[11px] font-medium" style={{ color: '#E8F2E0' }}>{e.from_name}</div>
+                      <div className="text-[13px] font-medium" style={{ color: '#E8F2E0' }}>{e.from_name}</div>
                       {e.message && (
-                        <div className="text-[9px] mt-0.5 truncate" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                        <div className="text-[13px] mt-0.5 truncate" style={{ color: 'rgba(232,242,224,0.4)' }}>
                           &quot;{e.message}&quot;
                         </div>
                       )}

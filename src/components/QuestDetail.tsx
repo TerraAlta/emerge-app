@@ -9,7 +9,7 @@ const DetailMap = dynamic(() => import('./DetailMap'), {
   ssr: false,
   loading: () => (
     <div className="h-full w-full rounded-[12px] flex items-center justify-center" style={{ background: '#162814' }}>
-      <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.25)' }}>Loading map...</span>
+      <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.25)' }}>Loading map...</span>
     </div>
   ),
 })
@@ -204,11 +204,11 @@ export default function QuestDetail({
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
             </svg>
-            <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.4)' }}>Back</span>
+            <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.4)' }}>Back</span>
           </button>
 
           <span
-            className="text-[9px] font-semibold uppercase px-2.5 py-1 rounded-full"
+            className="text-[13px] font-semibold uppercase px-2.5 py-1 rounded-full"
             style={{ background: 'rgba(200,145,58,0.15)', color: '#C8913A', letterSpacing: '0.08em' }}
           >
             {typeEmoji[quest.category] ?? ''} {typeLabel[quest.category] ?? quest.category}
@@ -234,17 +234,17 @@ export default function QuestDetail({
 
           {/* Organiser + source */}
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.45)' }}>
+            <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.45)' }}>
               via {quest.source_name}
             </span>
-            <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.2)' }}>&middot;</span>
-            <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.45)' }}>
+            <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.2)' }}>&middot;</span>
+            <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.45)' }}>
               {quest.distance_km.toFixed(1)}km away
             </span>
             {quest.ai_score > 0 && (
               <>
-                <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.2)' }}>&middot;</span>
-                <span className="text-[10px] font-medium" style={{ color: '#C8913A' }}>
+                <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.2)' }}>&middot;</span>
+                <span className="text-[12px] font-medium" style={{ color: '#C8913A' }}>
                   {quest.ai_score} regen
                 </span>
               </>
@@ -260,7 +260,7 @@ export default function QuestDetail({
             <div>
               <p className="text-[13px] font-medium">{formatDateTime(quest.starts_at)}</p>
               {quest.ends_at && (
-                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                <p className="text-[13px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
                   {formatDuration(quest.starts_at, quest.ends_at)} duration
                 </p>
               )}
@@ -278,7 +278,7 @@ export default function QuestDetail({
                 <p className="text-[13px] font-medium">
                   {joined ? quest.address : approximateLocation(quest.address)}
                 </p>
-                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                <p className="text-[13px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
                   {joined
                     ? `${quest.distance_km.toFixed(1)}km from you \u2014 exact location`
                     : `Approximate area \u2014 exact location after joining`
@@ -300,7 +300,7 @@ export default function QuestDetail({
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8FBF7A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6L9 17l-5-5" />
               </svg>
-              <span className="text-[11px]" style={{ color: '#8FBF7A' }}>
+              <span className="text-[13px]" style={{ color: '#8FBF7A' }}>
                 Full address: {quest.address}
               </span>
             </div>
@@ -322,7 +322,7 @@ export default function QuestDetail({
               className="rounded-[12px] px-3.5 py-3 mb-2.5"
               style={{ background: 'rgba(200,145,58,0.06)', border: '0.5px solid rgba(200,145,58,0.12)' }}
             >
-              <p className="text-[9px] uppercase font-medium mb-1" style={{ color: '#C8913A', letterSpacing: '0.08em' }}>
+              <p className="text-[13px] uppercase font-medium mb-1" style={{ color: '#C8913A', letterSpacing: '0.08em' }}>
                 Why this quest matters
               </p>
               <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.5)' }}>
@@ -342,7 +342,7 @@ export default function QuestDetail({
                   {count} going{spotsLeft !== null && ` \u00b7 ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
                 </span>
                 {maxSpots && (
-                  <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.25)' }}>{count}/{maxSpots}</span>
+                  <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.25)' }}>{count}/{maxSpots}</span>
                 )}
               </div>
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(232,242,224,0.06)' }}>
@@ -363,7 +363,7 @@ export default function QuestDetail({
               className="rounded-[12px] px-3.5 py-3 mb-2.5"
               style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
             >
-              <p className="text-[9px] uppercase font-medium mb-2.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+              <p className="text-[13px] uppercase font-medium mb-2.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
                 Going {count > 0 ? `\u2014 first names only until you meet in person` : ''}
               </p>
 
@@ -379,13 +379,13 @@ export default function QuestDetail({
                     return (
                       <div key={p.user_id} className="flex items-center gap-1.5">
                         <div
-                          className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0"
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-semibold shrink-0"
                           style={{ background: '#1E3A1A', border: '1.5px solid #C8913A', color: '#C8913A' }}
                         >
                           {initial}
                         </div>
                         <div>
-                          <p className="text-[11px] font-medium" style={{ color: '#E8F2E0' }}>
+                          <p className="text-[13px] font-medium" style={{ color: '#E8F2E0' }}>
                             {p.first_name || 'Explorer'}
                           </p>
                           <p className="text-[8px]" style={{ color: badge.color }}>
@@ -397,7 +397,7 @@ export default function QuestDetail({
                   })}
                   {count > 6 && (
                     <div className="flex items-center">
-                      <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.35)' }}>
+                      <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.35)' }}>
                         +{count - 6} more
                       </span>
                     </div>
@@ -409,10 +409,10 @@ export default function QuestDetail({
 
           {/* Safety footer */}
           <div className="mt-4 mb-6 text-center space-y-2">
-            <button className="text-[10px] underline" style={{ color: 'rgba(232,242,224,0.25)' }}>
+            <button className="text-[12px] underline" style={{ color: 'rgba(232,242,224,0.25)' }}>
               Report this quest
             </button>
-            <p className="text-[9px] leading-relaxed px-4" style={{ color: 'rgba(232,242,224,0.18)' }}>
+            <p className="text-[13px] leading-relaxed px-4" style={{ color: 'rgba(232,242,224,0.18)' }}>
               Exact location shared after joining &mdash; your location is never shared with others.
             </p>
           </div>

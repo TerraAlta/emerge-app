@@ -184,23 +184,23 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
           <p className="font-heading text-[13px] italic mt-1" style={{ color: '#C8913A' }}>
             What can you offer? What do you want to learn?
           </p>
-          <p className="text-[11px] mt-2.5 leading-[1.6]" style={{ color: 'rgba(232,242,224,0.55)' }}>
+          <p className="text-[13px] mt-2.5 leading-[1.6]" style={{ color: 'rgba(232,242,224,0.55)' }}>
             Tap any skill, then choose: <strong style={{ color: '#C8913A' }}>I have this</strong> or <strong style={{ color: '#8CB87A' }}>I want to learn</strong>.
           </p>
-          <p className="text-[11px] mt-1 leading-[1.6]" style={{ color: 'rgba(232,242,224,0.4)' }}>
+          <p className="text-[13px] mt-1 leading-[1.6]" style={{ color: 'rgba(232,242,224,0.4)' }}>
             People joining the same quest can see your skills. Organisers can plan better.
           </p>
 
           {/* Legend pills */}
           <div className="flex gap-2 mt-3 mb-1">
             <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[9px]"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[13px]"
               style={{ background: 'rgba(200,145,58,0.10)', border: '0.5px solid rgba(200,145,58,0.25)', color: '#C8913A' }}
             >
               I have this
             </span>
             <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[9px]"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[13px]"
               style={{ background: 'rgba(45,90,30,0.25)', border: '0.5px solid rgba(45,90,30,0.5)', color: '#8CB87A' }}
             >
               I want to learn
@@ -211,7 +211,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
         {/* Your skills summary */}
         {totalSkills > 0 && (
           <div className="px-4 pt-2 pb-3">
-            <div className="text-[9px] uppercase mb-2" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
+            <div className="text-[11px] uppercase mb-2" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
               {totalSkills} skill{totalSkills !== 1 ? 's' : ''} added
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -221,7 +221,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
                 return (
                   <span
                     key={sk}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium cursor-pointer active:scale-95 transition-transform"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium cursor-pointer active:scale-95 transition-transform"
                     style={{ background: 'rgba(200,145,58,0.15)', border: '0.5px solid rgba(200,145,58,0.35)', color: '#C8913A' }}
                     onClick={() => setSelectedSkill(selectedSkill === sk ? null : sk)}
                   >
@@ -235,7 +235,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
                 return (
                   <span
                     key={sk}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium cursor-pointer active:scale-95 transition-transform"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium cursor-pointer active:scale-95 transition-transform"
                     style={{ background: 'rgba(45,90,30,0.2)', border: '0.5px solid rgba(45,90,30,0.4)', color: '#8CB87A' }}
                     onClick={() => setSelectedSkill(selectedSkill === sk ? null : sk)}
                   >
@@ -251,7 +251,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
         {SKILL_SECTIONS.map(section => (
           <div key={section.key} className="mb-1">
             <div className="px-4 pt-3 pb-2">
-              <span className="text-[9px] font-semibold uppercase" style={{ color: '#C8913A', letterSpacing: '0.1em' }}>
+              <span className="text-[11px] font-semibold uppercase" style={{ color: '#C8913A', letterSpacing: '0.1em' }}>
                 {section.emoji} {section.title}
               </span>
             </div>
@@ -296,7 +296,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
                     >
                       <div className="text-[20px] mb-0.5">{skill.emoji}</div>
                       <div
-                        className="text-[9px] font-medium leading-tight"
+                        className="text-[11px] font-medium leading-tight"
                         style={{ color: isHave ? '#C8913A' : isWant ? '#8CB87A' : '#E8F2E0' }}
                       >
                         {skill.label}
@@ -330,14 +330,14 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
                       >
                         <button
                           onClick={(e) => { e.stopPropagation(); setSkillState(skill.key, 'have') }}
-                          className="px-3 py-1.5 rounded-full text-[9px] font-semibold whitespace-nowrap"
+                          className="px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap"
                           style={{ background: 'rgba(200,145,58,0.15)', color: '#C8913A', border: '0.5px solid rgba(200,145,58,0.3)' }}
                         >
                           I have this
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setSkillState(skill.key, 'want') }}
-                          className="px-3 py-1.5 rounded-full text-[9px] font-semibold whitespace-nowrap"
+                          className="px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap"
                           style={{ background: 'rgba(45,90,30,0.2)', color: '#8CB87A', border: '0.5px solid rgba(45,90,30,0.4)' }}
                         >
                           Want to learn
@@ -354,12 +354,12 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
         {/* Filtered quests for selected skill */}
         {selectedSkill && (
           <div className="px-3 pt-2 pb-4">
-            <div className="px-1 pb-2 text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
+            <div className="px-1 pb-2 text-[11px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
               {ALL_SKILLS.find(s => s.key === selectedSkill)?.label} quests ({filteredQuests.length})
             </div>
             {filteredQuests.length === 0 ? (
               <div className="rounded-[14px] px-4 py-8 text-center" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
-                <p className="text-[11px]" style={{ color: 'rgba(232,242,224,0.35)' }}>
+                <p className="text-[13px]" style={{ color: 'rgba(232,242,224,0.35)' }}>
                   No matching quests nearby right now.
                 </p>
               </div>
@@ -372,14 +372,14 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
                     onClick={() => onSelectQuest(quest)}
                     style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
                   >
-                    <div className="text-[9px] font-medium uppercase mb-1" style={{ color: '#C8913A', letterSpacing: '0.08em' }}>
+                    <div className="text-[13px] font-medium uppercase mb-1" style={{ color: '#C8913A', letterSpacing: '0.08em' }}>
                       {ALL_SKILLS.find(s => s.key === selectedSkill)?.emoji}{' '}
                       {ALL_SKILLS.find(s => s.key === selectedSkill)?.label}
                     </div>
                     <div className="text-[13px] font-medium leading-snug mb-1" style={{ color: '#E8F2E0' }}>
                       {quest.title}
                     </div>
-                    <div className="text-[10px]" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                    <div className="text-[12px]" style={{ color: 'rgba(232,242,224,0.4)' }}>
                       {quest.distance_km.toFixed(1)} km away
                     </div>
                   </div>

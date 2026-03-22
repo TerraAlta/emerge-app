@@ -44,16 +44,16 @@ export default function ConnectLuma({ userId, onBack }: { userId: string; onBack
       </div>
 
       <div className="flex-1 px-4 pt-4">
-        <p className="text-[9px] font-semibold uppercase tracking-widest mb-2" style={{ color: '#C8913A' }}>
+        <p className="text-[13px] font-semibold uppercase tracking-widest mb-2" style={{ color: '#C8913A' }}>
           Connect your calendar
         </p>
         <h1 className="font-heading text-xl font-light mb-1" style={{ color: '#E8F2E0' }}>
           Luma integration
         </h1>
-        <p className="text-[11px] mb-1" style={{ color: 'rgba(232,242,224,0.4)' }}>
+        <p className="text-[13px] mb-1" style={{ color: 'rgba(232,242,224,0.4)' }}>
           If you host events on Luma, connect your calendar once and all your events will automatically appear on Emerge.
         </p>
-        <p className="text-[10px] mb-6" style={{ color: 'rgba(232,242,224,0.25)' }}>
+        <p className="text-[12px] mb-6" style={{ color: 'rgba(232,242,224,0.25)' }}>
           Find your API key at lu.ma &rarr; Settings &rarr; Developer
         </p>
 
@@ -89,10 +89,10 @@ export default function ConnectLuma({ userId, onBack }: { userId: string; onBack
         {status === 'done' && result && (
           <div className="mt-6 rounded-xl px-4 py-4" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.15)' }}>
             <p className="text-[13px] font-medium mb-1" style={{ color: '#C8913A' }}>Connected!</p>
-            <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
+            <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
               {result.organiser_name} &mdash; {result.events_found} events found, {result.inserted} added to Emerge.
             </p>
-            <p className="text-[10px] mt-2 italic" style={{ color: 'rgba(232,242,224,0.3)' }}>
+            <p className="text-[12px] mt-2 italic" style={{ color: 'rgba(232,242,224,0.3)' }}>
               New events will sync automatically every day.
             </p>
           </div>

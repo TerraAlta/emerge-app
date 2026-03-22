@@ -55,8 +55,14 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
         style={{ maxWidth: 390, background: '#162814', border: '0.5px solid rgba(200,145,58,0.15)' }}
       >
         <div className="flex items-center justify-between mb-5">
+          <button onClick={onClose} className="flex items-center gap-1.5">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
+            </svg>
+            <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.4)' }}>Back</span>
+          </button>
           <h2 className="font-heading text-[18px] font-light" style={{ color: '#E8F2E0' }}>Settings</h2>
-          <button onClick={onClose} className="text-[11px]" style={{ color: 'rgba(232,242,224,0.4)' }}>Done</button>
+          <div className="w-[50px]" />
         </div>
 
         {/* Digest toggle */}
@@ -64,7 +70,7 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[12px] font-medium" style={{ color: '#E8F2E0' }}>Weekly quest digest</p>
-              <p className="text-[10px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+              <p className="text-[12px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
                 Get an email every Monday with quests near you
               </p>
             </div>
@@ -85,13 +91,13 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
 
           {enabled && (
             <div className="mt-3 pt-3" style={{ borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
-              <p className="text-[10px] mb-2" style={{ color: 'rgba(232,242,224,0.4)' }}>Digest radius</p>
+              <p className="text-[12px] mb-2" style={{ color: 'rgba(232,242,224,0.4)' }}>Digest radius</p>
               <div className="flex gap-2">
                 {RADIUS_OPTIONS.map(km => (
                   <button
                     key={km}
                     onClick={() => changeRadius(km)}
-                    className="px-3 py-1 rounded-full text-[11px] font-medium transition-colors"
+                    className="px-3 py-1 rounded-full text-[13px] font-medium transition-colors"
                     style={{
                       background: radius === km ? 'rgba(200,145,58,0.2)' : 'rgba(232,242,224,0.06)',
                       color: radius === km ? '#C8913A' : 'rgba(232,242,224,0.4)',
@@ -107,7 +113,7 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
         </div>
 
         {saving && (
-          <p className="text-[9px] text-center mt-1" style={{ color: 'rgba(200,145,58,0.5)' }}>Saving...</p>
+          <p className="text-[13px] text-center mt-1" style={{ color: 'rgba(200,145,58,0.5)' }}>Saving...</p>
         )}
       </div>
     </div>

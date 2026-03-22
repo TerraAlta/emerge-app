@@ -59,7 +59,7 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
         <h1 className="font-heading text-[20px] font-light" style={{ color: '#E8F2E0' }}>
           Living <em style={{ color: '#C8913A' }}>Map</em>
         </h1>
-        <p className="text-[10px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+        <p className="text-[12px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
           {quests.length} quest{quests.length !== 1 ? 's' : ''} near you
         </p>
       </div>
@@ -162,12 +162,12 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
           {Object.entries(CATEGORIES).map(([key, cat]) => (
             <div key={key} className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full" style={{ background: cat.color }} />
-              <span className="text-[9px]" style={{ color: 'rgba(232,242,224,0.5)' }}>{cat.label}</span>
+              <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.5)' }}>{cat.label}</span>
             </div>
           ))}
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full" style={{ background: '#C8913A', boxShadow: '0 0 4px #C8913A' }} />
-            <span className="text-[9px]" style={{ color: 'rgba(232,242,224,0.5)' }}>You</span>
+            <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.5)' }}>You</span>
           </div>
         </div>
       </div>
@@ -229,7 +229,7 @@ function QuestDot({
               display: 'inline-block',
               padding: '2px 8px',
               borderRadius: 9999,
-              fontSize: 9,
+              fontSize: 13,
               fontWeight: 600,
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
@@ -259,7 +259,7 @@ function QuestDot({
           </div>
 
           {/* Date · Location · Distance */}
-          <div style={{ fontSize: 10, color: 'rgba(232,242,224,0.55)', lineHeight: 1.4, marginBottom: 4 }}>
+          <div style={{ fontSize: 12, color: 'rgba(232,242,224,0.55)', lineHeight: 1.4, marginBottom: 4 }}>
             {formatDate(q.starts_at)} · {q.address || 'Location TBC'} · {q.distance_km.toFixed(1)}km away
           </div>
 
@@ -267,7 +267,7 @@ function QuestDot({
           {q.source_name && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10 }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8913A', flexShrink: 0 }} />
-              <span style={{ fontSize: 9, color: '#C8913A', fontWeight: 500 }}>via {q.source_name}</span>
+              <span style={{ fontSize: 13, color: '#C8913A', fontWeight: 500 }}>via {q.source_name}</span>
             </div>
           )}
 
@@ -283,7 +283,7 @@ function QuestDot({
                 borderRadius: 9999,
                 background: '#C8913A',
                 color: '#fff',
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: 600,
                 textDecoration: 'none',
                 lineHeight: 1.3,
@@ -303,7 +303,7 @@ function QuestDot({
                 borderRadius: 9999,
                 background: 'transparent',
                 color: 'rgba(232,242,224,0.7)',
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: 500,
                 textDecoration: 'none',
                 border: '1px solid rgba(232,242,224,0.2)',

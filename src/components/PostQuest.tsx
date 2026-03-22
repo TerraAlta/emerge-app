@@ -8,7 +8,7 @@ const PinMap = dynamic(() => import('./PinMap'), {
   ssr: false,
   loading: () => (
     <div className="h-full w-full rounded-[12px] flex items-center justify-center" style={{ background: '#162814' }}>
-      <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.25)' }}>Loading map...</span>
+      <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.25)' }}>Loading map...</span>
     </div>
   ),
 })
@@ -188,9 +188,9 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
               </svg>
-              <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.4)' }}>Back</span>
+              <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.4)' }}>Back</span>
             </button>
-            <span className="text-[11px] font-medium" style={{ color: 'rgba(232,242,224,0.35)' }}>New quest</span>
+            <span className="text-[13px] font-medium" style={{ color: 'rgba(232,242,224,0.35)' }}>New quest</span>
             <div className="w-[50px]" />
           </div>
 
@@ -199,7 +199,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
             <h1 className="font-heading text-[22px] font-light leading-tight" style={{ color: '#E8F2E0' }}>
               Add a <em style={{ color: '#C8913A' }}>quest</em>
             </h1>
-            <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.4)' }}>
+            <p className="text-[13px] mt-1" style={{ color: 'rgba(232,242,224,0.4)' }}>
               Something real for your community to do together.
             </p>
           </div>
@@ -216,8 +216,8 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               }}
             >
               <div className="text-[14px] mb-0.5">🌱</div>
-              <div className="text-[11px] font-medium" style={{ color: '#E8F2E0' }}>Fill in the details</div>
-              <div className="text-[9px]" style={{ color: 'rgba(232,242,224,0.35)' }}>Create a quest directly</div>
+              <div className="text-[13px] font-medium" style={{ color: '#E8F2E0' }}>Fill in the details</div>
+              <div className="text-[11px]" style={{ color: 'rgba(232,242,224,0.35)' }}>Create a quest directly</div>
             </button>
             <button
               type="button"
@@ -229,8 +229,8 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               }}
             >
               <div className="text-[14px] mb-0.5">🔗</div>
-              <div className="text-[11px] font-medium" style={{ color: '#E8F2E0' }}>I have an event URL</div>
-              <div className="text-[9px]" style={{ color: 'rgba(232,242,224,0.35)' }}>Eventbrite, Luma, your site...</div>
+              <div className="text-[13px] font-medium" style={{ color: '#E8F2E0' }}>I have an event URL</div>
+              <div className="text-[11px]" style={{ color: 'rgba(232,242,224,0.35)' }}>Eventbrite, Luma, your site...</div>
             </button>
           </div>
 
@@ -277,10 +277,10 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   {urlResult.approved && (
                     <>
                       <p className="text-[13px] font-medium mb-1" style={{ color: '#C8913A' }}>Your quest is live!</p>
-                      <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
+                      <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
                         &ldquo;{urlResult.title}&rdquo; will appear for people nearby.
                       </p>
-                      <p className="text-[10px] mt-2 italic" style={{ color: 'rgba(232,242,224,0.3)' }}>
+                      <p className="text-[12px] mt-2 italic" style={{ color: 'rgba(232,242,224,0.3)' }}>
                         Score: {urlResult.score}/100 &middot; {urlResult.reason}
                       </p>
                     </>
@@ -288,7 +288,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   {urlResult.queued && (
                     <>
                       <p className="text-[13px] font-medium mb-1" style={{ color: '#E8F2E0' }}>We&apos;re reviewing it</p>
-                      <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
+                      <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
                         &ldquo;{urlResult.title}&rdquo; is queued for review — usually within 24h.
                       </p>
                     </>
@@ -296,7 +296,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   {!urlResult.approved && !urlResult.queued && (
                     <>
                       <p className="text-[13px] font-medium mb-1" style={{ color: '#E8F2E0' }}>Not quite right for Emerge</p>
-                      <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
+                      <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
                         {urlResult.reason}
                       </p>
                     </>
@@ -318,7 +318,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* FIX 2 — Title with "e.g." placeholder */}
               <div>
-                <label className="text-[10px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
                   Quest title
                 </label>
                 <input
@@ -334,7 +334,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* FIX 3 — Multi-select type dropdown */}
               <div ref={dropdownRef}>
-                <label className="text-[10px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
                   Quest type
                 </label>
                 <button
@@ -397,7 +397,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                       return (
                         <span
                           key={key}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-medium"
                           style={{ background: 'rgba(200,145,58,0.15)', color: '#C8913A', border: '0.5px solid rgba(200,145,58,0.3)' }}
                         >
                           {t?.emoji} {t?.label}
@@ -411,7 +411,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* Description */}
               <div>
-                <label className="text-[10px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
                   What will people do?
                 </label>
                 <textarea
@@ -428,7 +428,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               {/* Date + Time */}
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[10px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                  <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
                     Date
                   </label>
                   <input
@@ -441,7 +441,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                  <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
                     Time
                   </label>
                   <input
@@ -457,7 +457,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* Location */}
               <div>
-                <label className="text-[10px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
                   Meeting place
                 </label>
                 <input
@@ -473,7 +473,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* FIX 4 & 5 — Map: collapsed preview + full-screen expand (dark tiles) */}
               <div>
-                <label className="text-[10px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
                   Location on map
                 </label>
                 <div
@@ -493,7 +493,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   </div>
                 </div>
                 {pin && (
-                  <p className="text-[9px] mt-1" style={{ color: 'rgba(232,242,224,0.3)' }}>
+                  <p className="text-[13px] mt-1" style={{ color: 'rgba(232,242,224,0.3)' }}>
                     {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
                   </p>
                 )}
@@ -501,7 +501,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* Spots */}
               <div>
-                <label className="text-[10px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
                   Spots available <span style={{ color: 'rgba(232,242,224,0.2)' }}>(optional)</span>
                 </label>
                 <input
@@ -519,7 +519,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* Cost */}
               <div>
-                <label className="text-[10px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
                   Cost
                 </label>
                 <div className="flex gap-2 mb-2">
@@ -528,7 +528,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                       key={c}
                       type="button"
                       onClick={() => setCostType(c)}
-                      className="px-4 py-1.5 rounded-full text-[11px] font-medium transition-all"
+                      className="px-4 py-1.5 rounded-full text-[13px] font-medium transition-all"
                       style={{
                         background: costType === c ? '#C8913A' : '#162814',
                         color: costType === c ? '#0D1A0B' : 'rgba(232,242,224,0.5)',
@@ -562,7 +562,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                 className="rounded-[12px] px-3.5 py-3"
                 style={{ background: 'rgba(200,145,58,0.05)', border: '0.5px solid rgba(200,145,58,0.1)' }}
               >
-                <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.35)' }}>
+                <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.35)' }}>
                   🛡️ Location will be shown as approximate until someone joins.
                   Your quest will be reviewed if flagged by the community.
                 </p>

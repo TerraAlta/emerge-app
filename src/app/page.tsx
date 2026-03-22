@@ -19,7 +19,7 @@ const QuestMap = dynamic(() => import('@/components/QuestMap'), {
   ssr: false,
   loading: () => (
     <div className="h-full w-full flex items-center justify-center" style={{ background: '#162814' }}>
-      <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.3)' }}>Loading map...</span>
+      <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.3)' }}>Loading map...</span>
     </div>
   ),
 })
@@ -28,7 +28,7 @@ const MapScreen = dynamic(() => import('@/components/MapScreen'), {
   ssr: false,
   loading: () => (
     <div className="h-screen w-full flex items-center justify-center" style={{ background: '#0D1A0B' }}>
-      <span className="text-[11px]" style={{ color: 'rgba(232,242,224,0.3)' }}>Loading map...</span>
+      <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.3)' }}>Loading map...</span>
     </div>
   ),
 })
@@ -440,7 +440,7 @@ function QuestBoard({
               em<span style={{ color: '#C8913A' }}>e</span>rge
             </span>
           </div>
-          <p className="text-center mt-3 relative z-10" style={{ fontSize: 11, color: 'rgba(232,242,224,0.45)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+          <p className="text-center mt-3 relative z-10" style={{ fontSize: 13, color: 'rgba(232,242,224,0.45)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
             Real quests · Real community · Real change
           </p>
         </div>
@@ -448,7 +448,7 @@ function QuestBoard({
         {/* Header row */}
         <div className="flex items-center justify-between px-4 pt-5 pb-1">
           <div>
-            <p className="text-[10px] uppercase mb-0.5" style={{ color: 'rgba(232,242,224,0.45)', letterSpacing: '0.08em' }}>
+            <p className="text-[12px] uppercase mb-0.5" style={{ color: 'rgba(232,242,224,0.45)', letterSpacing: '0.08em' }}>
               {getTimeGreeting()}
             </p>
             <h1 className="font-heading text-[20px] font-light leading-tight" style={{ color: '#E8F2E0' }}>
@@ -460,7 +460,7 @@ function QuestBoard({
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-semibold shrink-0"
               style={{ background: '#1E3A1A', border: '1.5px solid #C8913A', color: '#C8913A' }}
             >
               {initials}
@@ -468,19 +468,19 @@ function QuestBoard({
             {showMenu && (
               <div className="absolute right-0 top-10 rounded-[10px] py-2 px-1 z-50 min-w-[140px]" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.25)' }}>
                 <div className="px-3 py-1.5 mb-1" style={{ borderBottom: '0.5px solid rgba(232,242,224,0.06)' }}>
-                  <p className="text-[11px] font-medium" style={{ color: '#E8F2E0' }}>{displayName}</p>
-                  <p className="text-[9px]" style={{ color: 'rgba(232,242,224,0.35)' }}>Signed in</p>
+                  <p className="text-[13px] font-medium" style={{ color: '#E8F2E0' }}>{displayName}</p>
+                  <p className="text-[13px]" style={{ color: 'rgba(232,242,224,0.35)' }}>Signed in</p>
                 </div>
                 <button
                   onClick={() => { setShowMenu(false); setShowSettings(true) }}
-                  className="w-full text-left px-3 py-1.5 rounded-md text-[11px]"
+                  className="w-full text-left px-3 py-1.5 rounded-md text-[13px]"
                   style={{ color: '#E8F2E0' }}
                 >
                   Settings
                 </button>
                 <button
                   onClick={() => { setShowMenu(false); onSignOut() }}
-                  className="w-full text-left px-3 py-1.5 rounded-md text-[11px]"
+                  className="w-full text-left px-3 py-1.5 rounded-md text-[13px]"
                   style={{ color: '#D4785A' }}
                 >
                   Sign out
@@ -496,20 +496,20 @@ function QuestBoard({
         <div className="px-4 pb-1">
           {locationLoading ? (
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.3)' }}>Locating you...</span>
+              <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.3)' }}>Locating you...</span>
             </div>
           ) : (locationDenied || showCitySearch) ? (
             <div className="rounded-[12px] px-3.5 py-3" style={{ background: 'rgba(200,145,58,0.08)', border: '0.5px solid rgba(200,145,58,0.25)' }}>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-[11px] font-medium" style={{ color: '#C8913A' }}>
+                <p className="text-[13px] font-medium" style={{ color: '#C8913A' }}>
                   {locationDenied ? 'Where are you?' : 'Change location'}
                 </p>
                 {!locationDenied && (
-                  <button onClick={() => setShowCitySearch(false)} className="text-[10px]" style={{ color: 'rgba(232,242,224,0.3)', background: 'none', border: 'none', cursor: 'pointer' }}>Cancel</button>
+                  <button onClick={() => setShowCitySearch(false)} className="text-[12px]" style={{ color: 'rgba(232,242,224,0.3)', background: 'none', border: 'none', cursor: 'pointer' }}>Cancel</button>
                 )}
               </div>
               {locationDenied && (
-                <p className="text-[10px] mb-2.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                <p className="text-[12px] mb-2.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
                   Location access was denied. Search for your city to see nearby quests.
                 </p>
               )}
@@ -526,7 +526,7 @@ function QuestBoard({
                 <button
                   onClick={handleCitySearch}
                   disabled={searching}
-                  className="rounded-[8px] px-3 py-2 text-[11px] font-medium"
+                  className="rounded-[8px] px-3 py-2 text-[13px] font-medium"
                   style={{ background: '#C8913A', color: '#0D1A0B' }}
                 >
                   {searching ? '...' : 'Search'}
@@ -543,7 +543,7 @@ function QuestBoard({
                         setSearchResults([])
                         setShowCitySearch(false)
                       }}
-                      className="w-full text-left rounded-[8px] px-2.5 py-2 text-[11px]"
+                      className="w-full text-left rounded-[8px] px-2.5 py-2 text-[13px]"
                       style={{ background: '#162814', color: '#E8F2E0', border: '0.5px solid rgba(200,145,58,0.1)' }}
                     >
                       {r.name}
@@ -562,7 +562,7 @@ function QuestBoard({
               <span className="text-[12px] font-medium" style={{ color: '#E8F2E0' }}>
                 {locationName || 'Your location'}
               </span>
-              <span className="text-[10px]" style={{ color: 'rgba(200,145,58,0.6)' }}>change</span>
+              <span className="text-[12px]" style={{ color: 'rgba(200,145,58,0.6)' }}>change</span>
             </button>
           )}
         </div>
@@ -576,7 +576,7 @@ function QuestBoard({
           ].map(pill => (
             <div key={pill.label} className="flex-1 rounded-[10px] px-2.5 py-2" style={{ background: '#162814' }}>
               <div className="text-[14px] font-semibold" style={{ color: '#C8913A' }}>{pill.val}</div>
-              <div className="text-[9px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>{pill.label}</div>
+              <div className="text-[13px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>{pill.label}</div>
             </div>
           ))}
         </div>
@@ -593,7 +593,7 @@ function QuestBoard({
                 <button
                   key={f.key}
                   onClick={() => setTimeFilter(f.key)}
-                  className="text-[9px] px-2.5 py-1 rounded-full transition-all"
+                  className="text-[13px] px-2.5 py-1 rounded-full transition-all"
                   style={{
                     background: timeFilter === f.key ? 'rgba(200,145,58,0.18)' : 'rgba(232,242,224,0.04)',
                     border: timeFilter === f.key ? '0.5px solid rgba(200,145,58,0.4)' : '0.5px solid rgba(232,242,224,0.06)',
@@ -607,7 +607,7 @@ function QuestBoard({
             </div>
             <button
               onClick={() => setShowRadiusPicker(!showRadiusPicker)}
-              className="text-[9px] px-2 py-0.5 rounded-full active:scale-95 transition-transform"
+              className="text-[13px] px-2 py-0.5 rounded-full active:scale-95 transition-transform"
               style={{
                 background: showRadiusPicker ? 'rgba(200,145,58,0.15)' : 'rgba(232,242,224,0.06)',
                 border: '0.5px solid rgba(200,145,58,0.25)',
@@ -673,12 +673,12 @@ function QuestBoard({
                 return (
                   <div className="rounded-[14px] px-4 py-10 text-center" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
                     <p className="font-heading text-base" style={{ color: '#E8F2E0' }}>Nothing today</p>
-                    <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>
+                    <p className="text-[13px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>
                       There {quests.length === 1 ? 'is 1 quest' : `are ${quests.length} quests`} coming up near you.
                     </p>
                     <button
                       onClick={() => setTimeFilter('all')}
-                      className="mt-3 text-[11px] font-medium"
+                      className="mt-3 text-[13px] font-medium"
                       style={{ color: '#C8913A' }}
                     >
                       Show all upcoming &rarr;
@@ -690,12 +690,12 @@ function QuestBoard({
                 return (
                   <div className="rounded-[14px] px-4 py-10 text-center" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
                     <p className="font-heading text-base" style={{ color: '#E8F2E0' }}>Nothing this week</p>
-                    <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>
+                    <p className="text-[13px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>
                       There {quests.length === 1 ? 'is 1 quest' : `are ${quests.length} quests`} coming up near you.
                     </p>
                     <button
                       onClick={() => setTimeFilter('all')}
-                      className="mt-3 text-[11px] font-medium"
+                      className="mt-3 text-[13px] font-medium"
                       style={{ color: '#C8913A' }}
                     >
                       Show all upcoming &rarr;
@@ -706,10 +706,10 @@ function QuestBoard({
               return (
                 <div className="rounded-[14px] px-4 py-10 text-center" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
                   <p className="font-heading text-base" style={{ color: '#E8F2E0' }}>No quests near you yet.</p>
-                  <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>Check back soon — or add your own.</p>
+                  <p className="text-[13px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>Check back soon — or add your own.</p>
                   <button
                     onClick={onPostQuest}
-                    className="mt-3 text-[11px] font-medium"
+                    className="mt-3 text-[13px] font-medium"
                     style={{ color: '#C8913A' }}
                   >
                     Add a quest &rarr;
@@ -724,7 +724,7 @@ function QuestBoard({
             return groups.map((group, gi) => (
               <div key={gi}>
                 {group.label && (
-                  <div className="text-[9px] uppercase pt-2 pb-1.5 px-0.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
+                  <div className="text-[11px] uppercase pt-2 pb-1.5 px-0.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
                     {group.label}
                   </div>
                 )}
@@ -747,13 +747,13 @@ function QuestBoard({
                             Closest to you
                           </span>
                         )}
-                        <div className="text-[9px] font-medium uppercase mb-1" style={{ color: '#C8913A', letterSpacing: '0.08em' }}>
+                        <div className="text-[13px] font-medium uppercase mb-1" style={{ color: '#C8913A', letterSpacing: '0.08em' }}>
                           {typeEmoji[quest.category] ?? ''} {typeLabel[quest.category] ?? quest.category}
                         </div>
                         <div className="text-[13px] font-medium leading-snug mb-1" style={{ color: '#E8F2E0' }}>
                           {quest.title}
                         </div>
-                        <div className="text-[10px] flex items-center gap-1.5 flex-wrap" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                        <div className="text-[12px] flex items-center gap-1.5 flex-wrap" style={{ color: 'rgba(232,242,224,0.4)' }}>
                           {pill && (
                             <span className="inline-block text-[8px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: pill.bg, color: pill.color, border: pill.bg.startsWith('rgba') ? '0.5px solid rgba(232,242,224,0.08)' : 'none' }}>
                               {pill.text}
@@ -764,7 +764,7 @@ function QuestBoard({
                         {quest.source_name && quest.source_name !== 'manual' && (
                           <div className="flex items-center gap-1.5 mt-2 pt-2" style={{ borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
                             <span className="w-1.5 h-1.5 rounded-full flex-none" style={{ background: '#C8913A' }} />
-                            <span className="text-[10px] font-medium" style={{ color: '#C8913A' }}>
+                            <span className="text-[12px] font-medium" style={{ color: '#C8913A' }}>
                               via {displaySourceName(quest.source_name, quest.source_url)}
                             </span>
                           </div>
@@ -779,7 +779,7 @@ function QuestBoard({
         </div>
 
         {/* Living map */}
-        <div className="px-4 pt-4 pb-2 text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
+        <div className="px-4 pt-4 pb-2 text-[11px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
           Living map
         </div>
         {!showMap ? (
@@ -794,7 +794,7 @@ function QuestBoard({
             {quests.length > 0 && (
               <div className="absolute rounded-full" style={{ width: 16, height: 16, border: '1.5px solid rgba(200,145,58,0.35)', top: 14, left: 36 }} />
             )}
-            <span className="text-[10px] relative z-10" style={{ color: 'rgba(232,242,224,0.25)', letterSpacing: '0.06em' }}>Open full map</span>
+            <span className="text-[12px] relative z-10" style={{ color: 'rgba(232,242,224,0.25)', letterSpacing: '0.06em' }}>Open full map</span>
           </div>
         ) : (
           <div className="mx-3 mb-2 rounded-[14px] h-[180px] overflow-hidden" style={{ border: '0.5px solid rgba(232,242,224,0.06)' }}>
