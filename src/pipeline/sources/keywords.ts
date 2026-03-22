@@ -103,6 +103,13 @@ export const KEYWORDS: string[] = [
   'Waldbaden',
   'Waldtherapie',
   'Klimatrauer Kreis',
+  'Naturverbindung',
+  'Ökotherapie Gemeinschaft',
+  'Shinrin-Yoku Gemeinschaft',
+  'Trauerkreis Natur',
+  'Übergangsriten',
+  'Naturimmersion',
+  'Naturmeditation Gemeinschaft',
 
   // French keywords
   'forêt comestible',
