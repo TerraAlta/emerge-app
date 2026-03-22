@@ -28,7 +28,7 @@ export default function PinMap({ pin, onPin }: Props) {
       zoomControl={false}
       attributionControl={false}
     >
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
       <ClickHandler onPin={onPin} />
       {pin && (
         <CircleMarker

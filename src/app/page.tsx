@@ -191,23 +191,18 @@ export default function Home() {
     )
   }
 
-  // Submit event URL screen
-  if (showSubmitEvent) {
-    return <SubmitEvent onBack={() => setShowSubmitEvent(false)} />
-  }
-
   // Connect Luma screen
   if (showConnectLuma) {
     return <ConnectLuma userId={user.id} onBack={() => setShowConnectLuma(false)} />
   }
 
-  // Post quest screen
-  if (showPostQuest) {
+  // Post quest screen (merged — includes URL paste mode)
+  if (showPostQuest || showSubmitEvent) {
     return (
       <PostQuest
         userId={user.id}
-        onBack={() => setShowPostQuest(false)}
-        onSuccess={() => setShowPostQuest(false)}
+        onBack={() => { setShowPostQuest(false); setShowSubmitEvent(false) }}
+        onSuccess={() => { setShowPostQuest(false); setShowSubmitEvent(false) }}
       />
     )
   }
@@ -270,7 +265,7 @@ function BottomNav({
                 >
                   +
                 </div>
-                <span className="text-[8px]" style={{ color: '#C8913A', letterSpacing: '0.04em' }}>Post</span>
+                <span className="text-[8px]" style={{ color: '#C8913A', letterSpacing: '0.04em' }}>Add</span>
               </div>
             )
           }
@@ -774,12 +769,12 @@ function QuestBoard({
         {/* Organiser CTA */}
         <div className="px-3 pt-3">
           <button
-            onClick={onSubmitEvent}
+            onClick={onPostQuest}
             className="w-full rounded-[14px] px-3.5 py-3 text-left cursor-pointer active:scale-[0.98] transition-transform"
             style={{ background: 'rgba(200,145,58,0.06)', border: '0.5px dashed rgba(200,145,58,0.25)' }}
           >
             <span className="text-[10px] font-medium" style={{ color: '#C8913A' }}>Organiser?</span>
-            <span className="text-[10px] ml-1" style={{ color: 'rgba(232,242,224,0.4)' }}>Paste any event URL to add your quest &rarr;</span>
+            <span className="text-[10px] ml-1" style={{ color: 'rgba(232,242,224,0.4)' }}>Add a quest or paste an event URL &rarr;</span>
           </button>
           <button
             onClick={onConnectLuma}
