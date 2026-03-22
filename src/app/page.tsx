@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { supabase } from '@/lib/supabase'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/hooks/useAuth'
 import { useNearbyQuests } from '@/hooks/useNearbyQuests'
@@ -362,7 +363,21 @@ function QuestBoard({
     return 25
   })
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
+  const [attendedCount, setAttendedCount] = useState(0)
   const { quests, loading, error, location, locationName, locationDenied, locationLoading, setManualLocation } = useNearbyQuests({ radiusKm })
+
+  // Fetch quests attended count
+  useEffect(() => {
+    async function fetchAttended() {
+      const { count } = await supabase
+        .from('quest_participants')
+        .select('quest_id, quests!inner(starts_at)', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .lt('quests.starts_at', new Date().toISOString())
+      setAttendedCount(count ?? 0)
+    }
+    fetchAttended()
+  }, [userId])
   const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'all'>('all')
   const [citySearch, setCitySearch] = useState('')
   const [searchResults, setSearchResults] = useState<Array<{ lat: number; lng: number; name: string }>>([])
@@ -557,7 +572,7 @@ function QuestBoard({
           {[
             { val: quests.length.toString(), label: 'Quests nearby' },
             { val: closestDist !== null ? `${closestDist.toFixed(1)}km` : '\u2014', label: 'Closest quest' },
-            { val: quests.reduce((s, q) => s + q.ai_score, 0).toString(), label: 'Regen score' },
+            { val: attendedCount.toString(), label: 'Quests attended' },
           ].map(pill => (
             <div key={pill.label} className="flex-1 rounded-[10px] px-2.5 py-2" style={{ background: '#162814' }}>
               <div className="text-[14px] font-semibold" style={{ color: '#C8913A' }}>{pill.val}</div>
