@@ -1263,6 +1263,28 @@ const LOCAL_ORGS: LocalOrg[] = [
     city: 'Asheville', country: 'United States', lat: 35.5951, lng: -82.5515,
     urls: ['https://organicgrowersschool.org/events/', 'https://organicgrowersschool.org/conferences/'],
   },
+
+  // ── Wellbeing & Nature Connection — Global ──────────────────────────────
+  {
+    name: 'Embercombe',
+    city: 'Exeter', country: 'United Kingdom', lat: 50.7184, lng: -3.5339,
+    urls: ['https://embercombe.org/events/'],
+  },
+  {
+    name: 'All We Can Save Circles',
+    city: 'London', country: 'United Kingdom', lat: 51.5074, lng: -0.1278,
+    urls: ['https://www.allwecansave.earth/circles'],
+  },
+  {
+    name: 'Shinrin-Yoku Association Europe',
+    city: 'Berlin', country: 'Germany', lat: 52.5200, lng: 13.4050,
+    urls: ['https://shinrin-yoku-association.com/events/'],
+  },
+  {
+    name: 'ANFT Forest Therapy',
+    city: 'London', country: 'United Kingdom', lat: 51.5074, lng: -0.1278,
+    urls: ['https://www.anft.earth/find-a-guide/'],
+  },
 ]
 
 // ─── Scraper Logic ──────────────────────────────────────────────────────────

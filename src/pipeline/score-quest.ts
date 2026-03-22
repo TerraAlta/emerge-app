@@ -52,6 +52,15 @@ and return reason "religious_content" — do not calculate a score:
 - Proselytising or missionary activity
 - Pilgrimage or religious rite
 
+NEW AGE / PSEUDOSCIENCE HARD REJECT — score 0, reason "new_age_content":
+If the event's primary purpose involves any of these, reject immediately:
+- Crystals, astrology, energy healing, chakra workshops
+- Ayahuasca, plant medicine ceremonies, psychedelic retreats
+- Guru-led or devotional spiritual communities
+- Angel healing, tarot, psychic readings
+- New Age festivals or spiritual marketplaces
+- Paid retreat centres above €50/day
+
 The cultural OCCASION (Eid, Diwali, Nowruz, Christmas, Lunar New Year,
 Hanukkah, Imbolc) does NOT make an event religious. The PURPOSE does.
 
@@ -111,6 +120,21 @@ MAKE BONUS SCORING (ecological and community art):
 +10 if community-made or artist-run space (squat, social centre, community hall)
 +8 if free or pay-what-you-feel opening
 REJECT (score below 30): commercial gallery, art fair, passive exhibition, ticketed above €15
+
+WELLBEING & NATURE CONNECTION SCORING:
+Use "wellness" when the primary activity is nature connection, ecological grief work, or embodied community practice grounded in ecology — NOT supernatural belief.
++15 if community/peer-led (not commercial therapist-led)
++15 if free or low-cost (under €15)
++10 if explicitly about ecological or climate grief (solastalgia, eco-anxiety)
++10 if in natural setting (forest, park, coastline, woodland)
++8 if open to all with no experience required
+Apply when event contains: forest bathing, forest therapy, shinrin-yoku, ecotherapy, climate grief, eco-anxiety support, Work That Reconnects, ecological grief, nature connection circle, contemplative walk nature, rites of passage wilderness, nature immersion community, grief in nature.
+The test: if you removed all reference to spirituality or belief, would the community gathering and embodied practice still stand on its own? If yes → score as wellness. If belief is the whole point → reject.
+EXAMPLES:
+Score 86: "Forest bathing walk — Epping Forest, free, open to all, 2 hours slow walking in silence" → community-led (+15) + free (+15) + natural setting (+10) + open to all (+8) = 86
+Score 84: "Climate grief circle — peer support for eco-anxiety, community hall, donation" → peer-led (+15) + low-cost (+15) + ecological grief (+10) + open to all (+8) = 84
+Score 0 (reject): "Crystal healing and chakra alignment workshop — connect with your higher self" → new_age_content
+Score 0 (reject): "Ayahuasca ceremony — plant medicine journey with shamanic guide" → new_age_content
 
 CALIBRATION EXAMPLES:
 

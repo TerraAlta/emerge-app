@@ -49,11 +49,22 @@ export const KEYWORDS: string[] = [
   'singing circle',
   'drum circle',
 
-  // Wellness & Inner
+  // Wellness & Nature Connection
   'ecotherapy',
   'forest bathing',
+  'forest therapy',
+  'shinrin-yoku',
   'climate grief',
+  'climate grief circle',
+  'eco-anxiety support',
   'work that reconnects',
+  'ecological grief',
+  'nature connection circle',
+  'contemplative walk',
+  'grief in nature',
+  'rites of passage nature',
+  'nature immersion',
+  'solastalgia',
   'birth circle',
   'postnatal circle',
 
@@ -89,6 +100,9 @@ export const KEYWORDS: string[] = [
   'Lokalisierung',
   'Gemeinschaftsgarten',
   'Ökozid',
+  'Waldbaden',
+  'Waldtherapie',
+  'Klimatrauer Kreis',
 
   // French keywords
   'forêt comestible',
@@ -114,6 +128,8 @@ export const KEYWORDS: string[] = [
   'économie du donut',
   'AMAP',
   'incroyables comestibles',
+  'bain de forêt',
+  'cercle de deuil climatique',
 
   // Welsh keywords
   'permadhiwylliant',
@@ -621,6 +637,33 @@ export const KEYWORDS: string[] = [
   'arte climática',
   'residência artística aberto',
   'espaço alternativo',
+
+  // Wellbeing & Nature Connection — multilingual
+  // Portuguese
+  'banho de floresta',
+  'ecoterapia comunitária',
+  'círculo de luto climático',
+  // Spanish
+  'baño de bosque',
+  'ecoterapia',
+  'círculo de duelo climático',
+  // Dutch
+  'bosbaden',
+  'ecotherapie',
+  'klimaatrouwkring',
+  'natuurverbinding',
+  // Italian
+  'bagno di foresta',
+  'ecoterapia',
+  'cerchio di lutto climatico',
+  // Finnish
+  'metsäkylpy',
+  'luontoterapia',
+  'ilmastosurupiiri',
+  // Danish
+  'skovbadning',
+  'naturterapi',
+  'klimasorggruppe',
 ]
 
 /**
