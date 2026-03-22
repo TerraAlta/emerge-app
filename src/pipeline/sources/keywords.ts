@@ -397,6 +397,50 @@ export const KEYWORDS: string[] = [
   'bodhrán workshop',
   'fiddle workshop open',
   'sean-nós community',
+  // Italian Play
+  'sessione folk',
+  'cerchio di percussione',
+  'coro comunitario aperto',
+  'officina musicale',
+  'musica tradizionale',
+  // Belgian Play (Dutch + French covered above)
+  // Swiss Play (German + French covered above)
+  // Austrian Play (German covered above)
+  // Finnish Play
+  'kansanmusiikki sessio',
+  'rumpupiiri',
+  'yhteislaulupiiri',
+  'musiikkityöpaja ilmainen',
+  // Danish Play
+  'folkemusik session',
+  'trommekrebs',
+  'fælles sang åben',
+  'musikworkshop gratis',
+  // Welsh Play
+  'sesiwn werin',
+  'côr cymunedol agored',
+  'gweithdai cerddoriaeth am ddim',
+  // Scottish Play (English covered above)
+  'ceilidh open',
+  // Icelandic Play
+  'þjóðlagasessía',
+  'trommuhringur',
+  'söngfundur opinn',
+  // Serbian Play
+  'folk sesija',
+  'bubnjarski krug',
+  'zajednički hor otvoren',
+  'muzička radionica besplatna',
+  // Slovenian Play
+  'folk seja',
+  'bobnarski krog',
+  'skupnostni zbor odprt',
+  'glasbena delavnica brezplačna',
+  // Hungarian Play
+  'folk zenei session',
+  'dobkör',
+  'közösségi kórus nyitott',
+  'zenei workshop ingyenes',
   // Spanish/Catalan Play
   'peña flamenca abierta',
   'sesión tradicional',
@@ -483,6 +527,42 @@ export const KEYWORDS: string[] = [
   'community darkroom',
   'artist residency open day',
   'art walk community',
+  // Italian Make
+  'studio aperto',
+  'murale comunitario',
+  'arte ecologica',
+  'arte climatica',
+  'serigrafia comunità',
+  // Finnish Make
+  'avoin ateljee',
+  'yhteisömaalaus',
+  'ekologinen taide',
+  'ilmastotaide',
+  // Danish Make
+  'åbent atelier',
+  'fællesskabsmaleri',
+  'økologisk kunst',
+  'klimakunst dansk',
+  // Welsh Make
+  'stiwdio agored',
+  'murlun cymunedol',
+  'celf ecolegol',
+  // Icelandic Make
+  'opið vinnustofa',
+  'samfélagsmynd',
+  'vistfræðileg list',
+  // Serbian Make
+  'otvoreni studio',
+  'zajednički mural',
+  'ekološka umetnost',
+  // Slovenian Make
+  'odprta delavnica',
+  'skupnostna poslikava',
+  'ekološka umetnost slovenija',
+  // Hungarian Make
+  'nyitott műterem',
+  'közösségi falfestmény',
+  'ökológiai művészet',
   // Spanish/Catalan Make
   'taller abierto',
   'mural comunitario',
