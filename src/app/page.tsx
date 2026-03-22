@@ -389,25 +389,51 @@ function QuestBoard({
   }, [userId])
   const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'all'>('all')
   const [citySearch, setCitySearch] = useState('')
-  const [searchResults, setSearchResults] = useState<Array<{ lat: number; lng: number; name: string }>>([])
+  const [searchResults, setSearchResults] = useState<Array<{ lat: number; lng: number; name: string; detail: string; cc: string }>>([])
   const [searching, setSearching] = useState(false)
   const [showCitySearch, setShowCitySearch] = useState(false)
 
-  // City search via Nominatim
+  // City search via Nominatim — with dedup, country sort, full labels
   const handleCitySearch = async () => {
     if (!citySearch.trim()) return
     setSearching(true)
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(citySearch)}&format=json&limit=5&addressdetails=1`,
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(citySearch)}&format=json&limit=8&addressdetails=1`,
         { headers: { 'Accept-Language': 'en' } }
       )
       const data = await res.json()
-      setSearchResults(data.map((r: any) => ({
-        lat: parseFloat(r.lat),
-        lng: parseFloat(r.lon),
-        name: r.address?.city || r.address?.town || r.address?.village || r.display_name.split(',')[0],
-      })))
+      let results: Array<{ lat: number; lng: number; name: string; detail: string; cc: string }> = data.map((r: any) => {
+        const addr = r.address || {}
+        const city = addr.city || addr.town || addr.village || r.display_name.split(',')[0]
+        const region = addr.state || addr.county || ''
+        const country = addr.country || ''
+        const cc = (addr.country_code || '').toUpperCase()
+        return {
+          lat: parseFloat(r.lat),
+          lng: parseFloat(r.lon),
+          name: city,
+          detail: [region, country].filter(Boolean).join(', '),
+          cc,
+        }
+      })
+      // Dedup: remove results within 10km of each other
+      const deduped: typeof results = []
+      for (const r of results) {
+        const tooClose = deduped.some(d => {
+          const dlat = (d.lat - r.lat) * 111
+          const dlng = (d.lng - r.lng) * 111 * Math.cos(r.lat * Math.PI / 180)
+          return Math.sqrt(dlat * dlat + dlng * dlng) < 10
+        })
+        if (!tooClose) deduped.push(r)
+      }
+      // Sort: user's country first
+      deduped.sort((a, b) => {
+        const aMatch = a.cc === countryCode ? 1 : 0
+        const bMatch = b.cc === countryCode ? 1 : 0
+        return bMatch - aMatch
+      })
+      setSearchResults(deduped.slice(0, 4))
     } catch {
       setSearchResults([])
     }
@@ -552,10 +578,11 @@ function QuestBoard({
                         setSearchResults([])
                         setShowCitySearch(false)
                       }}
-                      className="w-full text-left rounded-[8px] px-2.5 py-2 text-[13px]"
+                      className="w-full text-left rounded-[8px] px-2.5 py-2"
                       style={{ background: '#162814', color: '#E8F2E0', border: '0.5px solid rgba(200,145,58,0.1)' }}
                     >
-                      {r.name}
+                      <div className="text-[13px] font-medium">{r.name}</div>
+                      {r.detail && <div className="text-[10px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>{r.detail}</div>}
                     </button>
                   ))}
                 </div>
