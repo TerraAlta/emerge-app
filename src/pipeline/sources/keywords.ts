@@ -682,10 +682,32 @@ export const KEYWORDS: string[] = [
   'metsäkylpy',
   'luontoterapia',
   'ilmastosurupiiri',
+  'luontoyhteys piiri',
+  'metsäterapia yhteisö',
   // Danish
   'skovbadning',
   'naturterapi',
   'klimasorggruppe',
+  'naturrelation',
+  'skovterapi fællesskab',
+  // Slovenian
+  'gozdna kopel',
+  'ekoterapija',
+  'podnebna žalost krog',
+  'naravna povezava',
+  'gozdna terapija skupnost',
+  // Serbian
+  'kupanje u šumi',
+  'ekoterapija zajednica',
+  'klimatska tuga krug',
+  'veza s prirodom',
+  'šumska terapija zajednica',
+  // Hungarian
+  'erdőfürdő',
+  'ökoterápia',
+  'éghajlati gyász kör',
+  'természetkapcsolat',
+  'erdőterápia közösség',
 ]
 
 /**
