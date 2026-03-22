@@ -228,7 +228,6 @@ export default function Home() {
       onSignOut={signOut}
       onSelectQuest={setSelectedQuest}
       onPostQuest={() => setShowPostQuest(true)}
-      onSubmitEvent={() => setShowSubmitEvent(true)}
       onConnectLuma={() => setShowConnectLuma(true)}
     />
   )
@@ -341,7 +340,6 @@ function QuestBoard({
   onSignOut,
   onSelectQuest,
   onPostQuest,
-  onSubmitEvent,
   onConnectLuma,
 }: {
   profile: { first_name: string; last_name: string } | null
@@ -351,7 +349,6 @@ function QuestBoard({
   onSignOut: () => void
   onSelectQuest: (quest: any) => void
   onPostQuest: () => void
-  onSubmitEvent: () => void
   onConnectLuma: () => void
 }) {
   const [showMap, setShowMap] = useState(false)
@@ -696,11 +693,11 @@ function QuestBoard({
                   <p className="font-heading text-base" style={{ color: '#E8F2E0' }}>No quests near you yet.</p>
                   <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.35)' }}>Check back soon — or add your own.</p>
                   <button
-                    onClick={onSubmitEvent}
+                    onClick={onPostQuest}
                     className="mt-3 text-[11px] font-medium"
                     style={{ color: '#C8913A' }}
                   >
-                    Add your event &rarr;
+                    Add a quest &rarr;
                   </button>
                 </div>
               )
@@ -764,24 +761,6 @@ function QuestBoard({
               </div>
             ))
           })()}
-        </div>
-
-        {/* Organiser CTA */}
-        <div className="px-3 pt-3">
-          <button
-            onClick={onPostQuest}
-            className="w-full rounded-[14px] px-3.5 py-3 text-left cursor-pointer active:scale-[0.98] transition-transform"
-            style={{ background: 'rgba(200,145,58,0.06)', border: '0.5px dashed rgba(200,145,58,0.25)' }}
-          >
-            <span className="text-[10px] font-medium" style={{ color: '#C8913A' }}>Organiser?</span>
-            <span className="text-[10px] ml-1" style={{ color: 'rgba(232,242,224,0.4)' }}>Add a quest or paste an event URL &rarr;</span>
-          </button>
-          <button
-            onClick={onConnectLuma}
-            className="mt-1.5 w-full text-left px-3.5 py-1"
-          >
-            <span className="text-[9px]" style={{ color: 'rgba(232,242,224,0.25)' }}>Use Luma? <span style={{ color: 'rgba(200,145,58,0.5)' }}>Connect your calendar &rarr;</span></span>
-          </button>
         </div>
 
         {/* Living map */}
