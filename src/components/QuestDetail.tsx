@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import SharePopup from './SharePopup'
+import { formatDateTime } from '@/lib/dateUtils'
 
 const DetailMap = dynamic(() => import('./DetailMap'), {
   ssr: false,
@@ -53,16 +54,7 @@ const trustBadge: Record<string, { label: string; color: string }> = {
   steward:     { label: 'Steward', color: '#D4A054' },
 }
 
-function formatDateTime(iso: string) {
-  const d = new Date(iso)
-  const now = new Date()
-  const diffDays = Math.floor((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-  let dayStr: string
-  if (diffDays === 0) dayStr = 'Today'
-  else if (diffDays === 1) dayStr = 'Tomorrow'
-  else dayStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
-  return `${dayStr} at ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
-}
+// formatDateTime imported from @/lib/dateUtils
 
 function formatDuration(start: string, end: string) {
   const hours = Math.round((new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60) * 10) / 10

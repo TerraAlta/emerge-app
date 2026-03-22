@@ -3,6 +3,7 @@
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet'
 import { useEffect, useRef } from 'react'
 import { CATEGORIES } from '@/lib/categories'
+import { formatDate } from '@/lib/dateUtils'
 import type { Quest } from '@/types/database'
 
 interface NearbyQuest extends Quest {
@@ -33,11 +34,6 @@ const PILL_COLORS: Record<string, { bg: string; text: string }> = {
   feast:     { bg: '#FFF8DC', text: '#8B6914' },
   play:      { bg: '#FBE9E7', text: '#BF360C' },
   make:      { bg: '#F5F0E8', text: '#6D4C2A' },
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
 }
 
 function getDirectionsUrl(lat: number, lng: number): string {

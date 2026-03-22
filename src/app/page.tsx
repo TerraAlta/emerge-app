@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/hooks/useAuth'
+import { formatDate, proximityPill, filterQuests, groupQuests, daysUntil } from '@/lib/dateUtils'
 import { useNearbyQuests } from '@/hooks/useNearbyQuests'
 import AuthScreen from '@/components/AuthScreen'
 import QuestDetail from '@/components/QuestDetail'
@@ -53,14 +54,7 @@ function getTimeGreeting() {
   return `${day} evening`
 }
 
-function formatDate(iso: string) {
-  const d = new Date(iso)
-  const now = new Date()
-  const diff = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 1000)
-  if (diff > 0 && diff < 24) return `Today ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
-  if (diff > 0 && diff < 48) return `Tomorrow ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-}
+// Date utilities imported from shared module — see lib/dateUtils.ts
 
 const typeEmoji: Record<string, string> = {
   nature: '\u{1F33F}', food: '\u{1F33F}', craft: '\u{1F3D7}\u{FE0F}',
@@ -73,46 +67,6 @@ const typeLabel: Record<string, string> = {
   feast: 'Feast', play: 'Play', make: 'Make',
 }
 
-function daysUntil(iso: string): number {
-  const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const eventDay = new Date(iso)
-  const eventStart = new Date(eventDay.getFullYear(), eventDay.getMonth(), eventDay.getDate())
-  return Math.round((eventStart.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
-}
-
-function proximityPill(iso: string): { text: string; bg: string; color: string } | null {
-  const d = daysUntil(iso)
-  if (d === 0) return { text: 'Today', bg: '#FFF3E0', color: '#BF360C' }
-  if (d === 1) return { text: 'Tomorrow', bg: '#FFF8E1', color: '#A0522D' }
-  if (d >= 2 && d <= 6) return { text: `In ${d} days`, bg: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.45)' }
-  if (d >= 7 && d <= 13) return { text: 'Next week', bg: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.45)' }
-  if (d >= 14 && d <= 29) { const w = Math.floor(d / 7); return { text: `In ${w} week${w > 1 ? 's' : ''}`, bg: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.45)' } }
-  return null
-}
-
-function filterQuests(quests: any[], filter: 'today' | 'week' | 'all') {
-  if (filter === 'today') return quests.filter(q => daysUntil(q.starts_at) === 0)
-  if (filter === 'week') return quests.filter(q => { const d = daysUntil(q.starts_at); return d >= 0 && d <= 7 })
-  return quests
-}
-
-function groupQuests(quests: any[]): { label: string; quests: any[] }[] {
-  const groups: { label: string; quests: any[] }[] = []
-  const today: any[] = [], week: any[] = [], month: any[] = [], later: any[] = []
-  for (const q of quests) {
-    const d = daysUntil(q.starts_at)
-    if (d === 0) today.push(q)
-    else if (d >= 1 && d <= 7) week.push(q)
-    else if (d >= 8 && d <= 30) month.push(q)
-    else later.push(q)
-  }
-  if (today.length) groups.push({ label: 'Today', quests: today })
-  if (week.length) groups.push({ label: 'This week', quests: week })
-  if (month.length) groups.push({ label: 'This month', quests: month })
-  if (later.length) groups.push({ label: 'Later', quests: later })
-  return groups
-}
 
 const SOURCE_DISPLAY: Record<string, string> = {
   'redeconvergir.pt': 'Rede Convergir',
