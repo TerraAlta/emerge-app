@@ -397,6 +397,16 @@ export const KEYWORDS: string[] = [
   'bodhrán workshop',
   'fiddle workshop open',
   'sean-nós community',
+  // Portuguese Play
+  'sessão de fado comunitária',
+  'círculo de percussão',
+  'música tradicional portuguesa',
+  'rancho folclórico aberto',
+  'oficina de música',
+  'viola campaniça',
+  'cante alentejano comunitário',
+  'open mic comunitário',
+  'música ao vivo gratuita',
 
   // Ecological & Community Art (Make)
   'open studio',
@@ -425,6 +435,18 @@ export const KEYWORDS: string[] = [
   'community darkroom',
   'artist residency open day',
   'art walk community',
+  // Portuguese Make
+  'estúdio aberto',
+  'mural comunitário',
+  'arte ecológica',
+  'arte e natureza',
+  'exposição comunitária',
+  'atelier aberto',
+  'arte colaborativa',
+  'impressão comunitária',
+  'arte climática',
+  'residência artística aberto',
+  'espaço alternativo',
 ]
 
 /**

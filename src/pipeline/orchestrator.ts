@@ -134,6 +134,9 @@ import { resartisGlobal } from './sources/resartis-global'
 // Irish Play & Make
 import { comhaltasIe } from './sources/comhaltas-ie'
 import { artscouncilIe } from './sources/artscouncil-ie'
+// Portuguese Play & Make
+import { agendaCulturalPt } from './sources/agenda-cultural-pt'
+import { ptArtSpaces } from './sources/pt-art-spaces'
 // UK Play & Make
 import { efdssUk } from './sources/efdss-uk'
 import { balfolkUk } from './sources/balfolk-uk'
@@ -383,6 +386,8 @@ const SOURCES: SourceFetcher[] = [
   resartisGlobal,
   comhaltasIe,
   artscouncilIe,
+  agendaCulturalPt,
+  ptArtSpaces,
   efdssUk,
   balfolkUk,
   ukArtSpaces,
