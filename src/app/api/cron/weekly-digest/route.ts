@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
 
       // 7. Send via Resend
       const { error: sendError } = await resend.emails.send({
-        from: 'Emerge <quests@emerge.terralta.org>',
+        from: 'Emerge <onboarding@resend.dev>',
         to: email,
         subject: `${weekQuests.length} quest${weekQuests.length > 1 ? 's' : ''} near ${user.saved_city || 'you'} this week`,
         html,
