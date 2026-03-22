@@ -332,6 +332,14 @@ function FooterDisclaimer() {
   )
 }
 
+const COUNTRY_NAMES: Record<string, string> = {
+  PT: 'Portugal', GB: 'United Kingdom', DE: 'Germany', FR: 'France', ES: 'Spain',
+  IT: 'Italy', NL: 'Netherlands', BE: 'Belgium', AT: 'Austria', CH: 'Switzerland',
+  IE: 'Ireland', DK: 'Denmark', FI: 'Finland', SE: 'Sweden', NO: 'Norway',
+  IS: 'Iceland', MT: 'Malta', LU: 'Luxembourg', SI: 'Slovenia', RS: 'Serbia',
+  HU: 'Hungary', CA: 'Canada', US: 'United States',
+}
+
 /* ── Quest Board ── */
 function QuestBoard({
   profile,
@@ -355,16 +363,17 @@ function QuestBoard({
   const [showMap, setShowMap] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [radiusKm, setRadiusKm] = useState(() => {
+  const [radiusKm, setRadiusKm] = useState<number | 'national'>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('emerge-radius')
+      if (saved === 'national') return 'national'
       return saved ? parseInt(saved, 10) : 25
     }
     return 25
   })
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
   const [attendedCount, setAttendedCount] = useState(0)
-  const { quests, loading, error, location, locationName, locationDenied, locationLoading, setManualLocation } = useNearbyQuests({ radiusKm })
+  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, setManualLocation } = useNearbyQuests({ radiusKm })
 
   // Fetch quests attended count
   useEffect(() => {
@@ -615,21 +624,23 @@ function QuestBoard({
                 letterSpacing: '0.03em',
               }}
             >
-              within {radiusKm}km
+              {radiusKm === 'national' ? '🌍 National' : `within ${radiusKm}km`}
             </button>
           </div>
           {showRadiusPicker && (
             <div className="flex gap-1.5 mt-2">
               {([
-                { km: 2,  label: 'walking' },
-                { km: 10, label: 'cycling' },
-                { km: 25, label: 'driving' },
-                { km: 50, label: 'regional' },
-              ] as const).map(preset => {
+                { km: 2 as number | 'national',  label: 'walking' },
+                { km: 10 as number | 'national', label: 'cycling' },
+                { km: 25 as number | 'national', label: 'driving' },
+                { km: 50 as number | 'national', label: 'regional' },
+                { km: 'national' as number | 'national', label: 'national' },
+              ]).map(preset => {
                 const isActive = radiusKm === preset.km
+                const isNational = preset.km === 'national'
                 return (
                   <button
-                    key={preset.km}
+                    key={String(preset.km)}
                     onClick={() => {
                       setRadiusKm(preset.km)
                       localStorage.setItem('emerge-radius', String(preset.km))
@@ -637,14 +648,18 @@ function QuestBoard({
                     }}
                     className="flex-1 rounded-[10px] py-2 text-center active:scale-95 transition-all"
                     style={{
-                      background: isActive ? 'rgba(200,145,58,0.18)' : '#162814',
-                      border: isActive ? '1px solid rgba(200,145,58,0.5)' : '0.5px solid rgba(200,145,58,0.1)',
+                      background: isActive
+                        ? isNational ? '#C8913A' : 'rgba(200,145,58,0.18)'
+                        : isNational ? 'rgba(200,145,58,0.08)' : '#162814',
+                      border: isActive
+                        ? '1px solid rgba(200,145,58,0.5)'
+                        : isNational ? '0.5px solid rgba(200,145,58,0.3)' : '0.5px solid rgba(200,145,58,0.1)',
                     }}
                   >
-                    <div className="text-[12px] font-semibold" style={{ color: isActive ? '#C8913A' : '#E8F2E0' }}>
-                      {preset.km}km
+                    <div className="text-[12px] font-semibold" style={{ color: isActive && isNational ? '#0D1A0B' : isActive || isNational ? '#C8913A' : '#E8F2E0' }}>
+                      {isNational ? '🌍' : `${preset.km}km`}
                     </div>
-                    <div className="text-[8px] mt-0.5" style={{ color: isActive ? 'rgba(200,145,58,0.7)' : 'rgba(232,242,224,0.3)' }}>
+                    <div className="text-[8px] mt-0.5" style={{ color: isActive && isNational ? 'rgba(13,26,11,0.7)' : isActive ? 'rgba(200,145,58,0.7)' : 'rgba(232,242,224,0.3)' }}>
                       {preset.label}
                     </div>
                   </button>
@@ -653,6 +668,22 @@ function QuestBoard({
             </div>
           )}
         </div>
+
+        {/* National mode label */}
+        {radiusKm === 'national' && countryCode && (
+          <div className="px-4 pb-2">
+            <p className="text-[11px]" style={{ color: 'rgba(232,242,224,0.35)' }}>
+              Showing all quests in {COUNTRY_NAMES[countryCode] ?? countryCode} — sorted by date and distance
+            </p>
+          </div>
+        )}
+        {radiusKm === 'national' && !countryCode && (
+          <div className="px-4 pb-2">
+            <p className="text-[11px]" style={{ color: 'rgba(200,145,58,0.6)' }}>
+              Set your location to enable national mode
+            </p>
+          </div>
+        )}
 
         {/* Quest cards */}
         <div className="px-3 space-y-2">

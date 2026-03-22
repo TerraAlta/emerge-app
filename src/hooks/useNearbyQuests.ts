@@ -9,7 +9,7 @@ interface NearbyQuest extends Quest {
 }
 
 interface UseNearbyQuestsOptions {
-  radiusKm?: number
+  radiusKm?: number | 'national'
   category?: Quest['category'] | null
 }
 
@@ -18,6 +18,7 @@ interface SavedLocation {
   lng: number
   name: string
   source: 'gps' | 'manual'
+  countryCode?: string
 }
 
 const LOCATION_KEY = 'emerge-location'
@@ -40,6 +41,7 @@ function saveLocation(loc: SavedLocation) {
     if (data?.user?.id) {
       supabase.from('profiles').update({
         saved_lat: loc.lat, saved_lng: loc.lng, saved_city: loc.name,
+        ...(loc.countryCode ? { country_code: loc.countryCode } : {}),
       }).eq('id', data.user.id).then(() => {})
     }
   })
@@ -55,9 +57,10 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
   const [locationName, setLocationName] = useState<string>('')
   const [locationDenied, setLocationDenied] = useState(false)
   const [locationLoading, setLocationLoading] = useState(true)
+  const [countryCode, setCountryCode] = useState<string>('')
 
-  // Reverse geocode to get city name
-  const reverseGeocode = useCallback(async (lat: number, lng: number): Promise<string> => {
+  // Reverse geocode to get city name and country code
+  const reverseGeocode = useCallback(async (lat: number, lng: number): Promise<{ name: string; countryCode: string }> => {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`,
@@ -65,9 +68,11 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
       )
       const data = await res.json()
       const addr = data.address
-      return addr?.city || addr?.town || addr?.village || addr?.municipality || addr?.county || 'Unknown'
+      const name = addr?.city || addr?.town || addr?.village || addr?.municipality || addr?.county || 'Unknown'
+      const countryCode = (addr?.country_code || '').toUpperCase()
+      return { name, countryCode }
     } catch {
-      return 'Unknown'
+      return { name: 'Unknown', countryCode: '' }
     }
   }, [])
 
@@ -80,6 +85,7 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
       if (saved) {
         setLocation({ lat: saved.lat, lng: saved.lng })
         setLocationName(saved.name)
+        if (saved.countryCode) setCountryCode(saved.countryCode)
         setLocationLoading(false)
       } else {
         setLocationDenied(true)
@@ -94,9 +100,10 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
       async (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }
         setLocation(coords)
-        const name = await reverseGeocode(coords.lat, coords.lng)
+        const { name, countryCode: cc } = await reverseGeocode(coords.lat, coords.lng)
         setLocationName(name)
-        saveLocation({ ...coords, name, source: 'gps' })
+        setCountryCode(cc)
+        saveLocation({ ...coords, name, countryCode: cc, source: 'gps' })
         setLocationLoading(false)
       },
       () => {
@@ -104,6 +111,7 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
         if (saved) {
           setLocation({ lat: saved.lat, lng: saved.lng })
           setLocationName(saved.name)
+          if (saved.countryCode) setCountryCode(saved.countryCode)
           setLocationLoading(false)
         } else {
           setLocationDenied(true)
@@ -117,11 +125,13 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
 
   // Manual location setter (from city search)
   const setManualLocation = useCallback(async (lat: number, lng: number, name?: string) => {
-    const cityName = name || await reverseGeocode(lat, lng)
+    const geo = await reverseGeocode(lat, lng)
+    const cityName = name || geo.name
     setLocation({ lat, lng })
     setLocationName(cityName)
+    setCountryCode(geo.countryCode)
     setLocationDenied(false)
-    saveLocation({ lat, lng, name: cityName, source: 'manual' })
+    saveLocation({ lat, lng, name: cityName, countryCode: geo.countryCode, source: 'manual' })
   }, [reverseGeocode])
 
   // Fetch quests when location is available
@@ -131,12 +141,27 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
     setLoading(true)
     setError(null)
 
-    const { data, error: dbError } = await supabase
-      .rpc('nearby_quests', {
+    let data: any[] | null = null
+    let dbError: any = null
+
+    if (radiusKm === 'national' && countryCode) {
+      const result = await supabase.rpc('national_quests', {
+        user_country: countryCode,
         user_lat: location.lat,
         user_lng: location.lng,
-        radius_km: radiusKm,
       })
+      data = result.data
+      dbError = result.error
+    } else {
+      const km = radiusKm === 'national' ? 50 : radiusKm // fallback if no country_code
+      const result = await supabase.rpc('nearby_quests', {
+        user_lat: location.lat,
+        user_lng: location.lng,
+        radius_km: km,
+      })
+      data = result.data
+      dbError = result.error
+    }
 
     if (dbError) {
       setError(dbError.message)
@@ -198,7 +223,7 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
 
     setQuests(results)
     setLoading(false)
-  }, [location, radiusKm, category])
+  }, [location, radiusKm, category, countryCode])
 
   useEffect(() => {
     fetchQuests()
@@ -226,6 +251,7 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
     locationName,
     locationDenied,
     locationLoading,
+    countryCode,
     setManualLocation,
     refetch: fetchQuests,
   }
