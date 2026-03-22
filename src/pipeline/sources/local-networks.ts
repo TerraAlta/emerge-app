@@ -1300,6 +1300,16 @@ const LOCAL_ORGS: LocalOrg[] = [
     city: 'London', country: 'United Kingdom', lat: 51.5074, lng: -0.1278,
     urls: ['https://workthatreconnects.org/events/'],
   },
+  {
+    name: 'Colibris Paris',
+    city: 'Paris', country: 'France', lat: 48.8566, lng: 2.3522,
+    urls: ['https://colibris-lemouvement.org/agenda?field_departement_value=75'],
+  },
+  {
+    name: 'IVN Forest Bathing Netherlands',
+    city: 'Amsterdam', country: 'Netherlands', lat: 52.3676, lng: 4.9041,
+    urls: ['https://www.ivn.nl/bosbaden/'],
+  },
 ]
 
 // ─── Scraper Logic ──────────────────────────────────────────────────────────
