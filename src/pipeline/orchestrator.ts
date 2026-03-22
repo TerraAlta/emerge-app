@@ -131,6 +131,9 @@ import { balfolkEu } from './sources/balfolk-eu'
 import { fasolaGlobal } from './sources/fasola-global'
 // Ecological & Community Art
 import { resartisGlobal } from './sources/resartis-global'
+// Irish Play & Make
+import { comhaltasIe } from './sources/comhaltas-ie'
+import { artscouncilIe } from './sources/artscouncil-ie'
 // Community Orchards
 import { orchardProjectUk } from './sources/orchard-project-uk'
 import { appleDayUk } from './sources/apple-day-uk'
@@ -374,6 +377,8 @@ const SOURCES: SourceFetcher[] = [
   balfolkEu,
   fasolaGlobal,
   resartisGlobal,
+  comhaltasIe,
+  artscouncilIe,
   // Community Orchards
   orchardProjectUk,
   appleDayUk,

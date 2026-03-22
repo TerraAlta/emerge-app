@@ -381,6 +381,17 @@ export const KEYWORDS: string[] = [
   'rhythm workshop',
   'Irish trad session',
   'community drumming',
+  // Irish Play
+  'irish session',
+  'trad session',
+  'céilí',
+  'set dancing',
+  'open session',
+  'singaround',
+  'community choir open',
+  'bodhrán workshop',
+  'fiddle workshop open',
+  'sean-nós community',
 
   // Ecological & Community Art (Make)
   'open studio',
@@ -398,10 +409,16 @@ export const KEYWORDS: string[] = [
   'art collective open',
   'eco art walk',
   'climate witness art',
+  // Irish Make
+  'arts council community project',
+  'printmaking open',
+  'community darkroom',
+  'artist residency open day',
+  'art walk community',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 400
+export const MAX_KEYWORDS_PER_CITY = 420

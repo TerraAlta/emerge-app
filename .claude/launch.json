@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "emerge-dev",
+      "runtimeExecutable": "/Users/pedrovaldjiu/local/node-v20.11.1-darwin-x64/bin/npx",
+      "runtimeArgs": ["next", "dev"],
+      "port": 3000
+    }
+  ]
+}
