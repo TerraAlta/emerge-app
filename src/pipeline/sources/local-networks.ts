@@ -1310,6 +1310,52 @@ const LOCAL_ORGS: LocalOrg[] = [
     city: 'Amsterdam', country: 'Netherlands', lat: 52.3676, lng: 4.9041,
     urls: ['https://www.ivn.nl/bosbaden/'],
   },
+
+  // ── Oxford & Oxfordshire ────────────────────────────────────────────────
+  // Play
+  {
+    name: 'Oxford Slow Session',
+    city: 'Oxford', country: 'United Kingdom', lat: 51.7520, lng: -1.2577,
+    urls: ['https://oxfordslowsession.com/'],
+  },
+  {
+    name: 'Folk in Oxford',
+    city: 'Oxford', country: 'United Kingdom', lat: 51.7520, lng: -1.2577,
+    urls: ['https://folkinoxford.co.uk/events/', 'https://folkinoxford.co.uk/festival/'],
+  },
+  // Make
+  {
+    name: 'YWMP The Nest Oxford',
+    city: 'Oxford', country: 'United Kingdom', lat: 51.7520, lng: -1.2577,
+    urls: ['https://ywmp.org.uk/thenest/events/'],
+  },
+  {
+    name: 'Modern Art Oxford',
+    city: 'Oxford', country: 'United Kingdom', lat: 51.7520, lng: -1.2577,
+    urls: ['https://www.modernartoxford.org.uk/whats-on/'],
+  },
+  {
+    name: 'Asylum Welcome Oxford',
+    city: 'Oxford', country: 'United Kingdom', lat: 51.7520, lng: -1.2577,
+    urls: ['https://www.asylum-welcome.org/community-events/'],
+  },
+  // Wellbeing & Nature
+  {
+    name: 'CAG Oxfordshire',
+    city: 'Oxford', country: 'United Kingdom', lat: 51.7520, lng: -1.2577,
+    urls: ['https://www.cagoxfordshire.org.uk/oxfordshire-groups/'],
+  },
+  {
+    name: 'Wytham Woods Oxford',
+    city: 'Oxford', country: 'United Kingdom', lat: 51.7722, lng: -1.3165,
+    urls: ['https://www.wythamwoods.ox.ac.uk/events/'],
+  },
+  // General aggregator
+  {
+    name: 'Daily Info Oxford',
+    city: 'Oxford', country: 'United Kingdom', lat: 51.7520, lng: -1.2577,
+    urls: ['https://www.dailyinfo.co.uk/oxford/events/'],
+  },
 ]
 
 // ─── Scraper Logic ──────────────────────────────────────────────────────────
