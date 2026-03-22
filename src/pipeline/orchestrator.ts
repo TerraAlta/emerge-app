@@ -126,6 +126,11 @@ import { birthcircleGlobal } from './sources/birthcircle-global'
 // Participatory Music & Arts
 import { naturalVoiceUk } from './sources/natural-voice-uk'
 import { iptnGlobal } from './sources/iptn-global'
+import { theSessionGlobal } from './sources/thesession-global'
+import { balfolkEu } from './sources/balfolk-eu'
+import { fasolaGlobal } from './sources/fasola-global'
+// Ecological & Community Art
+import { resartisGlobal } from './sources/resartis-global'
 // Community Orchards
 import { orchardProjectUk } from './sources/orchard-project-uk'
 import { appleDayUk } from './sources/apple-day-uk'
@@ -365,6 +370,10 @@ const SOURCES: SourceFetcher[] = [
   // Participatory Music & Arts
   naturalVoiceUk,
   iptnGlobal,
+  theSessionGlobal,
+  balfolkEu,
+  fasolaGlobal,
+  resartisGlobal,
   // Community Orchards
   orchardProjectUk,
   appleDayUk,

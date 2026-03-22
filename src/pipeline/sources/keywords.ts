@@ -364,10 +364,44 @@ export const KEYWORDS: string[] = [
   'erjesztés',
   'vadételek',
   'lokalizáció',
+
+  // Participatory Music (Play)
+  'folk session',
+  'jam session',
+  'drum circle',
+  'balfolk',
+  'open mic community',
+  'traditional music session',
+  'shape note singing',
+  'Sacred Harp singing',
+  'music workshop free',
+  'community jam',
+  'singing circle',
+  'community choir free',
+  'rhythm workshop',
+  'Irish trad session',
+  'community drumming',
+
+  // Ecological & Community Art (Make)
+  'open studio',
+  'community mural',
+  'ecological art',
+  'land art',
+  'climate art',
+  'artist residency open',
+  'art workshop community',
+  'zine making',
+  'printmaking community',
+  'participatory art',
+  'community photography',
+  'collective textile',
+  'art collective open',
+  'eco art walk',
+  'climate witness art',
 ]
 
 /**
  * Max keywords to use per city for Meetup/Eventbrite searches.
  * Full set is used — rate limiting handles the volume.
  */
-export const MAX_KEYWORDS_PER_CITY = 325
+export const MAX_KEYWORDS_PER_CITY = 400

@@ -16,7 +16,7 @@ interface RawEvent {
 }
 
 interface ScoredQuest {
-  category: 'nature' | 'food' | 'craft' | 'community' | 'wellness' | 'learning' | 'feast'
+  category: 'nature' | 'food' | 'craft' | 'community' | 'wellness' | 'learning' | 'feast' | 'play' | 'make'
   ai_score: number
   ai_reasoning: string
 }
@@ -73,11 +73,13 @@ EXAMPLES of this rule:
 The line: gathering around food and culture = YES. Gathering around worship and doctrine = NO.
 
 RESPONSE FORMAT — assign the best-fit category and score:
-Categories: nature, food, craft, community, wellness, learning, feast
+Categories: nature, food, craft, community, wellness, learning, feast, play, make
 
 Use "feast" when communal cooking or communal eating is the PRIMARY activity.
 Use "food" for growing, harvesting, seed swaps, foraging, food forests.
 Use "community" when food is incidental to a broader gathering.
+Use "play" when participatory music is the PRIMARY activity (folk session, drum circle, balfolk, Sacred Harp, community jam, singing circle, open mic). NOT ticketed concerts.
+Use "make" when ecological or community art-making is the PRIMARY activity (open studio, community mural, land art, zine making, printmaking, collective textile). NOT commercial galleries.
 
 COMMUNAL TABLE BONUS SCORING:
 If an event involves food made together AND eaten together in a communal setting:
@@ -95,6 +97,20 @@ PASSIVE ACTIVITY PENALTY:
 -10 points if the primary activity is watching something (film screening, lecture, talk)
 Exception: if the passive activity is preceded or followed by communal cooking/eating,
 apply only -5 (partial penalty — the meal redeems the passivity)
+
+PLAY BONUS SCORING (participatory music):
++15 if anyone can join in with no prior experience or audition
++10 if free or pay-what-you-feel
++10 if traditional or folk music form (Irish session, balfolk, Sacred Harp, shape note)
++8 if community or DIY space (social centre, community hall, pub back room)
+REJECT (score below 30): ticketed concert above €20, festival main stage, purely performed-at
+
+MAKE BONUS SCORING (ecological and community art):
++20 if ecological theme (land, soil, seeds, rewilding, climate, food systems)
++15 if making is visible or participatory (open studio, collective making, community mural)
++10 if community-made or artist-run space (squat, social centre, community hall)
++8 if free or pay-what-you-feel opening
+REJECT (score below 30): commercial gallery, art fair, passive exhibition, ticketed above €15
 
 CALIBRATION EXAMPLES:
 
@@ -114,8 +130,24 @@ Score 35 (reject):
 "Supper Club — 5-course tasting menu with paired wines, £65pp"
 → paid above threshold (-40) + no community participation (-15) + no skill transfer (-10) = 35
 
+Score 87 (auto-approve, play):
+"Irish trad session at The Cobblestone — all welcome, bring your instrument or just listen"
+→ anyone can join (+15) + free (+10) + traditional folk form (+10) + community pub (+8) = 87
+
+Score 25 (reject, play):
+"Ed Sheeran concert — Dublin Arena, tickets from €85"
+→ ticketed concert (-40) + commercial venue (-15) + no participation (-10) = 25
+
+Score 85 (auto-approve, make):
+"Community mural painting — help us paint the climate wall at Bethnal Green Nature Reserve"
+→ ecological theme (+20) + participatory (+15) + community space (+10) + free (+8) = 85
+
+Score 28 (reject, make):
+"Gallery opening — Frieze Art Fair, sustainability-themed exhibition, £30 entry"
+→ commercial gallery (-30) + art fair (-20) + ticketed above €15 (-10) = 28
+
 RESPOND IN JSON ONLY — no markdown, no backticks, no explanation outside the JSON:
-{"category":"nature|food|craft|community|wellness|learning|feast","score":0-100,"reasoning":"one sentence"}`
+{"category":"nature|food|craft|community|wellness|learning|feast|play|make","score":0-100,"reasoning":"one sentence"}`
 }
 
 /**

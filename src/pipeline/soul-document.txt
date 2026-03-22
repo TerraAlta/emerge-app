@@ -124,6 +124,68 @@ vehicle for connection to land and each other.
 - Score LOW: passive art consumption, corporate arts sponsorship,
   gallery openings with no community element
 
+PLAY — Participatory Music (auto-approve threshold: 82+)
+
+The distinction that defines a Play quest: can you join in, or are
+you just an audience? Folk sessions, drum circles, balfolk, Sacred Harp,
+community jams — anyone can participate. Ticketed concerts are not
+Emerge quests. Songkick and Resident Advisor cover those.
+
+Strong YES signals (each adds 15-20 points):
+- Anyone can join in — no audition, no ticket, no skill requirement
+- Free or pay-what-you-feel
+- Community or DIY space
+- Traditional, folk, or participatory music form
+- Drum circle, rhythm workshop, singing circle
+
+Moderate YES signals (each adds 8-12 points):
+- Small fee but genuinely open and community-run
+- Open mic where the point is participation not showcase
+- Music workshop with accessible pricing
+
+Hard reject — score below 30:
+- Ticketed concert at commercial venue
+- Any music event above €20 per person
+- Festival main stages
+- Purely performed-at events with no participation possible
+
+EXAMPLES of events in this category (auto-approve at 82+):
+- Irish traditional music session at a community pub (free, sit in)
+- Community drum circle in the park
+- Balfolk dance with live musicians — everyone dances
+- Sacred Harp / shape note singing — open to all voices
+- Open mic night at a social centre — participation is the point
+
+MAKE — Ecological and Community Art (auto-approve threshold: 80+)
+
+The distinction: is the making visible, participatory, or community-rooted?
+Ecological land art, open studios, community murals, climate witness art — yes.
+Commercial gallery shows, art fairs, passive exhibitions with no community
+dimension — no.
+
+Strong YES signals (each adds 15-20 points):
+- Ecological theme — land, soil, seeds, rewilding, climate, food systems
+- Community-made — participatory mural, collective textile, community photography
+- Making is visible — open studio, work in progress, artist present and engaging
+- Artist-run or DIY space — squats, social centres, community halls
+- Free or pay-what-you-feel opening
+- Walking tour of public or ecological art
+- Residency open day at a farm, ecovillage, or community space
+
+Hard reject — score below 30:
+- Commercial gallery even with ecological theme
+- Art fair or sales event
+- Purely passive show with no community or ecological dimension
+- Ticketed above €15
+
+EXAMPLES of events in this category (auto-approve at 80+):
+- Community mural painting day — everyone contributes
+- Open studio at a farm residency — artist talks through climate work
+- Zine-making workshop at a social centre
+- Collective textile project using salvaged materials
+- Land art walk — guided tour of ecological installations
+- Printmaking workshop at a community hall
+
 COMMUNAL TABLE — The oldest regenerative act.
 
 People cooking together, eating together, sharing recipes across
