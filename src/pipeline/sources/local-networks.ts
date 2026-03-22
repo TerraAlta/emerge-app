@@ -1285,6 +1285,21 @@ const LOCAL_ORGS: LocalOrg[] = [
     city: 'London', country: 'United Kingdom', lat: 51.5074, lng: -0.1278,
     urls: ['https://www.anft.earth/find-a-guide/'],
   },
+  {
+    name: 'Nature & Therapy UK',
+    city: 'London', country: 'United Kingdom', lat: 51.5074, lng: -0.1278,
+    urls: ['https://natureandtherapy.co.uk/events/'],
+  },
+  {
+    name: 'Climate Psychology Alliance',
+    city: 'London', country: 'United Kingdom', lat: 51.5074, lng: -0.1278,
+    urls: ['https://www.climatepsychologyalliance.org/events'],
+  },
+  {
+    name: 'Work That Reconnects UK',
+    city: 'London', country: 'United Kingdom', lat: 51.5074, lng: -0.1278,
+    urls: ['https://workthatreconnects.org/events/'],
+  },
 ]
 
 // ─── Scraper Logic ──────────────────────────────────────────────────────────
