@@ -14,150 +14,157 @@ interface Props {
 /* ── Full skill taxonomy from the Emerge soul document ── */
 const SKILL_SECTIONS = [
   {
-    key: 'land', emoji: '\u{1F33F}', title: 'Land & Nature',
+    key: 'land', emoji: '🌿', title: 'Land & Nature',
     skills: [
-      { key: 'grow',       emoji: '\u{1F331}', label: 'Grow',        questTypes: ['nature', 'food'] },
-      { key: 'forage',     emoji: '\u{1F344}', label: 'Forage',      questTypes: ['nature', 'food'] },
-      { key: 'compost',    emoji: '\u{267B}\u{FE0F}', label: 'Compost',     questTypes: ['nature'] },
-      { key: 'seed-save',  emoji: '\u{1F33E}', label: 'Seed Save',   questTypes: ['nature', 'food'] },
-      { key: 'rewild',     emoji: '\u{1F3DE}\u{FE0F}', label: 'Rewild',      questTypes: ['nature'] },
-      { key: 'prune',      emoji: '\u{2702}\u{FE0F}', label: 'Prune',       questTypes: ['nature'] },
-      { key: 'graft',      emoji: '\u{1F333}', label: 'Graft',       questTypes: ['nature'] },
-      { key: 'beekeep',    emoji: '\u{1F41D}', label: 'Beekeep',     questTypes: ['nature', 'food'] },
-      { key: 'agroforest', emoji: '\u{1F332}', label: 'Agroforest',  questTypes: ['nature'] },
+      { key: 'grow', emoji: '🌱', label: 'Grow', questTypes: ['nature', 'food'] },
+      { key: 'forage', emoji: '🍄', label: 'Forage', questTypes: ['nature', 'food'] },
+      { key: 'compost', emoji: '♻️', label: 'Compost', questTypes: ['nature'] },
+      { key: 'seed-save', emoji: '🌾', label: 'Seed Save', questTypes: ['nature', 'food'] },
+      { key: 'rewild', emoji: '🏞️', label: 'Rewild', questTypes: ['nature'] },
+      { key: 'prune', emoji: '✂️', label: 'Prune', questTypes: ['nature'] },
+      { key: 'graft', emoji: '🌳', label: 'Graft', questTypes: ['nature'] },
+      { key: 'beekeep', emoji: '🐝', label: 'Beekeep', questTypes: ['nature', 'food'] },
+      { key: 'agroforest', emoji: '🌲', label: 'Agroforest', questTypes: ['nature'] },
     ],
   },
   {
-    key: 'build', emoji: '\u{1F3D7}\u{FE0F}', title: 'Build',
+    key: 'build', emoji: '🏗️', title: 'Build',
     skills: [
-      { key: 'natural-build', emoji: '\u{1F9F1}', label: 'Natural Build',  questTypes: ['craft'] },
-      { key: 'cob-adobe',     emoji: '\u{1FAA8}', label: 'Cob & Adobe',    questTypes: ['craft'] },
-      { key: 'straw-bale',    emoji: '\u{1F33E}', label: 'Straw Bale',     questTypes: ['craft'] },
-      { key: 'timber-frame',  emoji: '\u{1FAB5}', label: 'Timber Frame',   questTypes: ['craft'] },
-      { key: 'design',        emoji: '\u{1F4D0}', label: 'Design',         questTypes: ['craft', 'learning'] },
-      { key: 'earthworks',    emoji: '\u{26CF}\u{FE0F}', label: 'Earthworks',    questTypes: ['craft', 'nature'] },
+      { key: 'natural-build', emoji: '🧱', label: 'Natural Build', questTypes: ['craft'] },
+      { key: 'cob-adobe', emoji: '🪨', label: 'Cob & Adobe', questTypes: ['craft'] },
+      { key: 'straw-bale', emoji: '🌾', label: 'Straw Bale', questTypes: ['craft'] },
+      { key: 'timber-frame', emoji: '🪵', label: 'Timber Frame', questTypes: ['craft'] },
+      { key: 'design', emoji: '📐', label: 'Design', questTypes: ['craft', 'learning'] },
+      { key: 'earthworks', emoji: '⛏️', label: 'Earthworks', questTypes: ['craft', 'nature'] },
     ],
   },
   {
-    key: 'tools', emoji: '\u{26A1}', title: 'Tools & Repair',
+    key: 'tools', emoji: '⚡', title: 'Tools & Repair',
     skills: [
-      { key: 'repair',      emoji: '\u{1F527}', label: 'Repair',        questTypes: ['craft'] },
-      { key: 'make',         emoji: '\u{1F528}', label: 'Make',          questTypes: ['craft'] },
-      { key: 'sew-mend',    emoji: '\u{1FAA1}', label: 'Sew & Mend',   questTypes: ['craft'] },
-      { key: 'bike-fix',    emoji: '\u{1F6B2}', label: 'Bike Fix',     questTypes: ['craft'] },
-      { key: 'electronics', emoji: '\u{1F50C}', label: 'Electronics',  questTypes: ['craft'] },
-      { key: 'energy',      emoji: '\u{2600}\u{FE0F}', label: 'Energy Systems', questTypes: ['craft'] },
+      { key: 'repair', emoji: '🔧', label: 'Repair', questTypes: ['craft'] },
+      { key: 'make-things', emoji: '🔨', label: 'Make', questTypes: ['craft'] },
+      { key: 'sew-mend', emoji: '🪡', label: 'Sew & Mend', questTypes: ['craft'] },
+      { key: 'bike-fix', emoji: '🚲', label: 'Bike Fix', questTypes: ['craft'] },
+      { key: 'electronics', emoji: '🔌', label: 'Electronics', questTypes: ['craft'] },
+      { key: 'energy', emoji: '☀️', label: 'Energy Systems', questTypes: ['craft'] },
     ],
   },
   {
-    key: 'food', emoji: '\u{1F372}', title: 'Food & Kitchen',
+    key: 'food', emoji: '🍲', title: 'Food & Kitchen',
     skills: [
-      { key: 'cook',         emoji: '\u{1F373}', label: 'Cook',           questTypes: ['food', 'community'] },
-      { key: 'ferment',      emoji: '\u{1FAD9}', label: 'Ferment',       questTypes: ['food'] },
-      { key: 'brew-press',   emoji: '\u{1F37A}', label: 'Brew & Press',  questTypes: ['food'] },
-      { key: 'bake-bread',   emoji: '\u{1F35E}', label: 'Bake Bread',   questTypes: ['food'] },
-      { key: 'preserve',     emoji: '\u{1FAD9}', label: 'Preserve',      questTypes: ['food'] },
-      { key: 'wild-food',    emoji: '\u{1F33F}', label: 'Wild Food Cook', questTypes: ['food', 'nature'] },
+      { key: 'cook', emoji: '🍳', label: 'Cook', questTypes: ['food', 'community', 'feast'] },
+      { key: 'ferment', emoji: '🫙', label: 'Ferment', questTypes: ['food'] },
+      { key: 'brew-press', emoji: '🍺', label: 'Brew & Press', questTypes: ['food'] },
+      { key: 'bake-bread', emoji: '🍞', label: 'Bake Bread', questTypes: ['food'] },
+      { key: 'preserve', emoji: '🫙', label: 'Preserve', questTypes: ['food'] },
+      { key: 'wild-food', emoji: '🌿', label: 'Wild Food Cook', questTypes: ['food', 'nature'] },
     ],
   },
   {
-    key: 'arts', emoji: '\u{1F3AD}', title: 'Arts & Culture',
+    key: 'arts', emoji: '🎭', title: 'Arts & Culture',
     skills: [
-      { key: 'sing',        emoji: '\u{1F3B5}', label: 'Sing',         questTypes: ['community'] },
-      { key: 'drum',        emoji: '\u{1FA98}', label: 'Drum',         questTypes: ['community'] },
-      { key: 'facilitate',  emoji: '\u{1F91D}', label: 'Facilitate',   questTypes: ['community', 'learning'] },
-      { key: 'theatre',     emoji: '\u{1F3AD}', label: 'Theatre',      questTypes: ['community'] },
-      { key: 'storytelling', emoji: '\u{1F4D6}', label: 'Storytelling', questTypes: ['community', 'learning'] },
-      { key: 'dance',       emoji: '\u{1F483}', label: 'Dance',        questTypes: ['community', 'wellness'] },
-      { key: 'craft',       emoji: '\u{1F9F6}', label: 'Craft',        questTypes: ['craft'] },
-      { key: 'weave',       emoji: '\u{1F9F5}', label: 'Weave',        questTypes: ['craft'] },
-      { key: 'draw',        emoji: '\u{1F3A8}', label: 'Draw',         questTypes: ['community'] },
+      { key: 'sing', emoji: '🎵', label: 'Sing', questTypes: ['community', 'play'] },
+      { key: 'drum', emoji: '🪘', label: 'Drum', questTypes: ['community', 'play'] },
+      { key: 'facilitate', emoji: '🤝', label: 'Facilitate', questTypes: ['community', 'learning'] },
+      { key: 'theatre', emoji: '🎭', label: 'Theatre', questTypes: ['community', 'play'] },
+      { key: 'storytelling', emoji: '📖', label: 'Storytelling', questTypes: ['community', 'learning'] },
+      { key: 'dance', emoji: '💃', label: 'Dance', questTypes: ['community', 'wellness', 'play'] },
+      { key: 'craft-art', emoji: '🧶', label: 'Craft', questTypes: ['craft', 'make'] },
+      { key: 'weave', emoji: '🧵', label: 'Weave', questTypes: ['craft', 'make'] },
+      { key: 'draw', emoji: '🎨', label: 'Draw', questTypes: ['community', 'make'] },
     ],
   },
   {
-    key: 'care', emoji: '\u{1F338}', title: 'Care & Wellbeing',
+    key: 'care', emoji: '🌸', title: 'Care & Wellbeing',
     skills: [
-      { key: 'birth-support', emoji: '\u{1F476}', label: 'Birth Support',  questTypes: ['wellness', 'community'] },
-      { key: 'postnatal',     emoji: '\u{1F49B}', label: 'Postnatal Care', questTypes: ['wellness', 'community'] },
-      { key: 'first-aid',     emoji: '\u{1FA79}', label: 'First Aid',     questTypes: ['wellness'] },
-      { key: 'grief-hold',    emoji: '\u{1F49A}', label: 'Grief Hold',    questTypes: ['wellness', 'community'] },
-      { key: 'mediate',       emoji: '\u{2696}\u{FE0F}', label: 'Mediate',       questTypes: ['wellness', 'community'] },
+      { key: 'birth-support', emoji: '👶', label: 'Birth Support', questTypes: ['wellness', 'community'] },
+      { key: 'postnatal', emoji: '💛', label: 'Postnatal Care', questTypes: ['wellness', 'community'] },
+      { key: 'first-aid', emoji: '🩹', label: 'First Aid', questTypes: ['wellness'] },
+      { key: 'grief-hold', emoji: '💚', label: 'Grief Hold', questTypes: ['wellness', 'community'] },
+      { key: 'mediate', emoji: '⚖️', label: 'Mediate', questTypes: ['wellness', 'community'] },
     ],
   },
   {
-    key: 'restore', emoji: '\u{1F527}', title: 'Restore',
+    key: 'restore', emoji: '🔧', title: 'Restore',
     skills: [
-      { key: 'restore-land', emoji: '\u{1F33F}', label: 'Restore',       questTypes: ['nature'] },
-      { key: 'habitat-work', emoji: '\u{1F426}', label: 'Habitat Work',  questTypes: ['nature'] },
-      { key: 'tree-plant',   emoji: '\u{1F333}', label: 'Tree Plant',    questTypes: ['nature'] },
-      { key: 'clean-clear',  emoji: '\u{1F9F9}', label: 'Clean & Clear', questTypes: ['nature', 'community'] },
-      { key: 'survey',       emoji: '\u{1F50D}', label: 'Survey',        questTypes: ['nature', 'learning'] },
-      { key: 'map-skill',    emoji: '\u{1F5FA}\u{FE0F}', label: 'Map',          questTypes: ['nature', 'learning'] },
+      { key: 'restore-land', emoji: '🌿', label: 'Restore', questTypes: ['nature'] },
+      { key: 'habitat-work', emoji: '🐦', label: 'Habitat Work', questTypes: ['nature'] },
+      { key: 'tree-plant', emoji: '🌳', label: 'Tree Plant', questTypes: ['nature'] },
+      { key: 'clean-clear', emoji: '🧹', label: 'Clean & Clear', questTypes: ['nature', 'community'] },
+      { key: 'survey', emoji: '🔍', label: 'Survey', questTypes: ['nature', 'learning'] },
+      { key: 'map-skill', emoji: '🗺️', label: 'Map', questTypes: ['nature', 'learning'] },
     ],
   },
   {
-    key: 'organise', emoji: '\u{1F91D}', title: 'Organise',
+    key: 'organise', emoji: '🤝', title: 'Organise',
     skills: [
-      { key: 'facilitate-org', emoji: '\u{1F4CB}', label: 'Facilitate',     questTypes: ['community'] },
-      { key: 'translate',      emoji: '\u{1F310}', label: 'Translate',      questTypes: ['community'] },
-      { key: 'cook-many',      emoji: '\u{1F959}', label: 'Cook for Many',  questTypes: ['food', 'community'] },
-      { key: 'host',           emoji: '\u{1F3E0}', label: 'Host',           questTypes: ['community'] },
-      { key: 'teach',          emoji: '\u{1F4DA}', label: 'Teach',          questTypes: ['learning'] },
-      { key: 'interpret',      emoji: '\u{1F5E3}\u{FE0F}', label: 'Interpret',      questTypes: ['community'] },
+      { key: 'facilitate-org', emoji: '📋', label: 'Facilitate', questTypes: ['community'] },
+      { key: 'translate', emoji: '🌐', label: 'Translate', questTypes: ['community'] },
+      { key: 'cook-many', emoji: '🥙', label: 'Cook for Many', questTypes: ['food', 'community', 'feast'] },
+      { key: 'host', emoji: '🏠', label: 'Host', questTypes: ['community'] },
+      { key: 'teach', emoji: '📚', label: 'Teach', questTypes: ['learning'] },
+      { key: 'interpret', emoji: '🗣️', label: 'Interpret', questTypes: ['community'] },
     ],
   },
   {
-    key: 'movements', emoji: '\u{1F30D}', title: 'Movements & Ideas',
+    key: 'movements', emoji: '🌍', title: 'Movements & Ideas',
     skills: [
-      { key: 'ecocide',        emoji: '\u{2696}\u{FE0F}', label: 'Nature Rights',     questTypes: ['community', 'learning'] },
-      { key: 'degrowth',       emoji: '\u{1F331}', label: 'Degrowth',         questTypes: ['community', 'learning'] },
-      { key: 'doughnut',       emoji: '\u{1F369}', label: 'Doughnut Econ',    questTypes: ['community', 'learning'] },
-      { key: 'circular',       emoji: '\u{267B}\u{FE0F}', label: 'Circular Econ',    questTypes: ['craft', 'community'] },
-      { key: 'ecofeminist',    emoji: '\u{1F338}', label: 'Ecofeminism',      questTypes: ['community', 'wellness'] },
-      { key: 'activist-art',   emoji: '\u{1F3A8}', label: 'Activist Art',     questTypes: ['community'] },
-      { key: 'food-sovereign', emoji: '\u{1F33E}', label: 'Food Sovereignty', questTypes: ['food', 'community'] },
-      { key: 'localisation',   emoji: '\u{1F3D8}\u{FE0F}', label: 'Localisation',    questTypes: ['community', 'learning'] },
-      { key: 'transition',     emoji: '\u{1F504}', label: 'Transition',       questTypes: ['community'] },
+      { key: 'ecocide', emoji: '⚖️', label: 'Nature Rights', questTypes: ['community', 'learning'] },
+      { key: 'degrowth', emoji: '🌱', label: 'Degrowth', questTypes: ['community', 'learning'] },
+      { key: 'doughnut', emoji: '🍩', label: 'Doughnut Econ', questTypes: ['community', 'learning'] },
+      { key: 'circular', emoji: '♻️', label: 'Circular Econ', questTypes: ['craft', 'community'] },
+      { key: 'ecofeminist', emoji: '🌸', label: 'Ecofeminism', questTypes: ['community', 'wellness'] },
+      { key: 'activist-art', emoji: '🎨', label: 'Activist Art', questTypes: ['community', 'make'] },
+      { key: 'food-sovereign', emoji: '🌾', label: 'Food Sovereignty', questTypes: ['food', 'community'] },
+      { key: 'localisation', emoji: '🏘️', label: 'Localisation', questTypes: ['community', 'learning'] },
+      { key: 'transition', emoji: '🔄', label: 'Transition', questTypes: ['community'] },
     ],
   },
 ]
 
-// Flatten all skills for lookup
 const ALL_SKILLS = SKILL_SECTIONS.flatMap(s => s.skills)
 
+type SkillState = 'have' | 'want'
+
 export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
-  const [userSkills, setUserSkills] = useState<string[]>([])
+  const [skillsHave, setSkillsHave] = useState<string[]>([])
+  const [skillsWant, setSkillsWant] = useState<string[]>([])
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
+  const [tappedSkill, setTappedSkill] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
       const { data } = await supabase
         .from('profiles')
-        .select('skills')
+        .select('skills_have, skills_want')
         .eq('id', userId)
         .single()
-      if (data?.skills && Array.isArray(data.skills)) {
-        setUserSkills(data.skills as string[])
-      }
+      if (data?.skills_have && Array.isArray(data.skills_have)) setSkillsHave(data.skills_have)
+      if (data?.skills_want && Array.isArray(data.skills_want)) setSkillsWant(data.skills_want)
     }
     load()
   }, [userId])
 
-  const toggleSkill = useCallback(async (skill: string) => {
-    setSaving(true)
-    const updated = userSkills.includes(skill)
-      ? userSkills.filter(s => s !== skill)
-      : [...userSkills, skill]
-    setUserSkills(updated)
+  const setSkillState = useCallback(async (skill: string, state: SkillState | null) => {
+    let newHave = skillsHave.filter(s => s !== skill)
+    let newWant = skillsWant.filter(s => s !== skill)
+
+    if (state === 'have') newHave.push(skill)
+    if (state === 'want') newWant.push(skill)
+
+    setSkillsHave(newHave)
+    setSkillsWant(newWant)
+    setTappedSkill(null)
+
     await supabase
       .from('profiles')
-      .update({ skills: updated })
+      .update({ skills_have: newHave, skills_want: newWant })
       .eq('id', userId)
-    setSaving(false)
-  }, [userSkills, userId])
+  }, [skillsHave, skillsWant, userId])
 
-  // Filter quests by selected skill's quest types
+  const totalSkills = skillsHave.length + skillsWant.length
+
+  // Filter quests by selected skill
   const filteredQuests = selectedSkill
     ? quests.filter(q => {
         const sk = ALL_SKILLS.find(s => s.key === selectedSkill)
@@ -169,7 +176,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
     <div className="font-body" style={{ background: '#0D1A0B' }}>
       <div className="w-full">
 
-        {/* ── Intro / Invitation ── */}
+        {/* Intro */}
         <div className="px-4 pb-2" style={{ paddingTop: 'calc(20px + var(--sat, 0px))' }}>
           <h1 className="font-heading text-[20px] font-light" style={{ color: '#E8F2E0' }}>
             Your <em style={{ color: '#C8913A' }}>Skills</em>
@@ -178,37 +185,37 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
             What can you offer? What do you want to learn?
           </p>
           <p className="text-[11px] mt-2.5 leading-[1.6]" style={{ color: 'rgba(232,242,224,0.55)' }}>
-            Skills you add shape the quests Emerge shows you — and tell the community what you bring.
+            Tap any skill, then choose: <strong style={{ color: '#C8913A' }}>I have this</strong> or <strong style={{ color: '#8CB87A' }}>I want to learn</strong>.
           </p>
-          <p className="text-[11px] mt-1 leading-[1.6]" style={{ color: 'rgba(232,242,224,0.45)' }}>
-            Every quest is a chance to teach what you know, or learn what you don&apos;t.
+          <p className="text-[11px] mt-1 leading-[1.6]" style={{ color: 'rgba(232,242,224,0.4)' }}>
+            People joining the same quest can see your skills. Organisers can plan better.
           </p>
 
-          {/* Explanation pills */}
+          {/* Legend pills */}
           <div className="flex gap-2 mt-3 mb-1">
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[9px]"
               style={{ background: 'rgba(200,145,58,0.10)', border: '0.5px solid rgba(200,145,58,0.25)', color: '#C8913A' }}
             >
-              🎁 Skills you have — help others
+              I have this
             </span>
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[9px]"
               style={{ background: 'rgba(45,90,30,0.25)', border: '0.5px solid rgba(45,90,30,0.5)', color: '#8CB87A' }}
             >
-              🌱 Skills you want — find quests
+              I want to learn
             </span>
           </div>
         </div>
 
-        {/* ── Your skills summary (if any added) ── */}
-        {userSkills.length > 0 && (
+        {/* Your skills summary */}
+        {totalSkills > 0 && (
           <div className="px-4 pt-2 pb-3">
             <div className="text-[9px] uppercase mb-2" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>
-              {userSkills.length} skill{userSkills.length !== 1 ? 's' : ''} added
+              {totalSkills} skill{totalSkills !== 1 ? 's' : ''} added
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {userSkills.map(sk => {
+              {skillsHave.map(sk => {
                 const skill = ALL_SKILLS.find(s => s.key === sk)
                 if (!skill) return null
                 return (
@@ -222,63 +229,121 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
                   </span>
                 )
               })}
+              {skillsWant.map(sk => {
+                const skill = ALL_SKILLS.find(s => s.key === sk)
+                if (!skill) return null
+                return (
+                  <span
+                    key={sk}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium cursor-pointer active:scale-95 transition-transform"
+                    style={{ background: 'rgba(45,90,30,0.2)', border: '0.5px solid rgba(45,90,30,0.4)', color: '#8CB87A' }}
+                    onClick={() => setSelectedSkill(selectedSkill === sk ? null : sk)}
+                  >
+                    {skill.emoji} {skill.label}
+                  </span>
+                )
+              })}
             </div>
           </div>
         )}
 
-        {/* ── Skill sections ── */}
+        {/* Skill sections */}
         {SKILL_SECTIONS.map(section => (
           <div key={section.key} className="mb-1">
-            {/* Section header */}
             <div className="px-4 pt-3 pb-2">
               <span className="text-[9px] font-semibold uppercase" style={{ color: '#C8913A', letterSpacing: '0.1em' }}>
                 {section.emoji} {section.title}
               </span>
             </div>
 
-            {/* Skill cards — 3 per row */}
             <div className="grid grid-cols-3 gap-2 px-3 pb-2">
               {section.skills.map(skill => {
-                const isOwned = userSkills.includes(skill.key)
+                const isHave = skillsHave.includes(skill.key)
+                const isWant = skillsWant.includes(skill.key)
                 const isSelected = selectedSkill === skill.key
+                const isTapped = tappedSkill === skill.key
+
                 return (
-                  <div
-                    key={skill.key}
-                    className="rounded-[12px] px-2 py-2.5 text-center cursor-pointer active:scale-[0.96] transition-all"
-                    onClick={() => setSelectedSkill(isSelected ? null : skill.key)}
-                    style={{
-                      background: isSelected
-                        ? 'rgba(200,145,58,0.15)'
-                        : isOwned
-                          ? 'rgba(200,145,58,0.06)'
-                          : '#162814',
-                      border: isSelected
-                        ? '1px solid rgba(200,145,58,0.5)'
-                        : isOwned
-                          ? '0.5px solid rgba(200,145,58,0.25)'
-                          : '0.5px solid rgba(200,145,58,0.08)',
-                      opacity: isOwned || isSelected ? 1 : 0.6,
-                    }}
-                  >
-                    <div className="text-[20px] mb-0.5">{skill.emoji}</div>
+                  <div key={skill.key} className="relative">
                     <div
-                      className="text-[9px] font-medium leading-tight"
-                      style={{ color: isSelected || isOwned ? '#C8913A' : '#E8F2E0' }}
-                    >
-                      {skill.label}
-                    </div>
-                    {/* Add/check button */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleSkill(skill.key) }}
-                      className="mt-1.5 text-[7px] uppercase font-semibold px-2 py-0.5 rounded-full"
+                      className="rounded-[12px] px-2 py-2.5 text-center cursor-pointer active:scale-[0.96] transition-all"
+                      onClick={() => {
+                        if (isHave || isWant) {
+                          // Already set — tap toggles off
+                          setSkillState(skill.key, null)
+                        } else {
+                          // Not set — show have/want picker
+                          setTappedSkill(isTapped ? null : skill.key)
+                        }
+                      }}
                       style={{
-                        background: isOwned ? 'rgba(200,145,58,0.2)' : 'rgba(232,242,224,0.06)',
-                        color: isOwned ? '#C8913A' : 'rgba(232,242,224,0.3)',
-                        letterSpacing: '0.04em',
+                        background: isSelected
+                          ? 'rgba(200,145,58,0.15)'
+                          : isHave
+                            ? 'rgba(200,145,58,0.08)'
+                            : isWant
+                              ? 'rgba(45,90,30,0.15)'
+                              : '#162814',
+                        border: isSelected
+                          ? '1px solid rgba(200,145,58,0.5)'
+                          : isHave
+                            ? '0.5px solid rgba(200,145,58,0.3)'
+                            : isWant
+                              ? '0.5px solid rgba(45,90,30,0.4)'
+                              : '0.5px solid rgba(200,145,58,0.08)',
+                        opacity: isHave || isWant || isSelected || isTapped ? 1 : 0.6,
                       }}
                     >
-                      {isOwned ? '✓ Added' : '+ Add'}
-                    </button>
+                      <div className="text-[20px] mb-0.5">{skill.emoji}</div>
+                      <div
+                        className="text-[9px] font-medium leading-tight"
+                        style={{ color: isHave ? '#C8913A' : isWant ? '#8CB87A' : '#E8F2E0' }}
+                      >
+                        {skill.label}
+                      </div>
+                      {/* State indicator */}
+                      {isHave && (
+                        <div className="mt-1 text-[7px] uppercase font-semibold px-2 py-0.5 rounded-full inline-block"
+                          style={{ background: 'rgba(200,145,58,0.2)', color: '#C8913A', letterSpacing: '0.04em' }}>
+                          I have
+                        </div>
+                      )}
+                      {isWant && (
+                        <div className="mt-1 text-[7px] uppercase font-semibold px-2 py-0.5 rounded-full inline-block"
+                          style={{ background: 'rgba(45,90,30,0.3)', color: '#8CB87A', letterSpacing: '0.04em' }}>
+                          Want
+                        </div>
+                      )}
+                      {!isHave && !isWant && (
+                        <div className="mt-1 text-[7px] uppercase font-semibold px-2 py-0.5 rounded-full inline-block"
+                          style={{ background: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.3)', letterSpacing: '0.04em' }}>
+                          + Add
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Have/Want picker popup */}
+                    {isTapped && (
+                      <div
+                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 translate-y-full z-20 flex gap-1 p-1.5 rounded-[10px]"
+                        style={{ background: 'rgba(10,20,10,0.97)', border: '0.5px solid rgba(200,145,58,0.3)', boxShadow: '0 4px 16px rgba(0,0,0,0.5)' }}
+                      >
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSkillState(skill.key, 'have') }}
+                          className="px-3 py-1.5 rounded-full text-[9px] font-semibold whitespace-nowrap"
+                          style={{ background: 'rgba(200,145,58,0.15)', color: '#C8913A', border: '0.5px solid rgba(200,145,58,0.3)' }}
+                        >
+                          I have this
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSkillState(skill.key, 'want') }}
+                          className="px-3 py-1.5 rounded-full text-[9px] font-semibold whitespace-nowrap"
+                          style={{ background: 'rgba(45,90,30,0.2)', color: '#8CB87A', border: '0.5px solid rgba(45,90,30,0.4)' }}
+                        >
+                          Want to learn
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -286,7 +351,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
           </div>
         ))}
 
-        {/* ── Filtered quests for selected skill ── */}
+        {/* Filtered quests for selected skill */}
         {selectedSkill && (
           <div className="px-3 pt-2 pb-4">
             <div className="px-1 pb-2 text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}>

@@ -149,6 +149,53 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
       results = results.filter((q) => q.category === category)
     }
 
+    // Soft-sort: boost quests matching user's "want to learn" skills
+    // Fetch user skills_want and apply a small priority boost
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData?.user?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('skills_want')
+          .eq('id', userData.user.id)
+          .single()
+        if (profile?.skills_want && Array.isArray(profile.skills_want) && profile.skills_want.length > 0) {
+          // Build a set of quest categories the user wants to learn
+          const wantCategories = new Set<string>()
+          const SKILL_QUEST_MAP: Record<string, string[]> = {
+            'grow': ['nature', 'food'], 'forage': ['nature', 'food'], 'compost': ['nature'],
+            'seed-save': ['nature', 'food'], 'rewild': ['nature'], 'prune': ['nature'],
+            'graft': ['nature'], 'beekeep': ['nature', 'food'], 'agroforest': ['nature'],
+            'natural-build': ['craft'], 'cob-adobe': ['craft'], 'straw-bale': ['craft'],
+            'timber-frame': ['craft'], 'design': ['craft', 'learning'], 'earthworks': ['craft', 'nature'],
+            'repair': ['craft'], 'make-things': ['craft'], 'sew-mend': ['craft'],
+            'bike-fix': ['craft'], 'electronics': ['craft'], 'energy': ['craft'],
+            'cook': ['food', 'community', 'feast'], 'ferment': ['food'], 'brew-press': ['food'],
+            'bake-bread': ['food'], 'preserve': ['food'], 'wild-food': ['food', 'nature'],
+            'sing': ['community', 'play'], 'drum': ['community', 'play'],
+            'facilitate': ['community', 'learning'], 'theatre': ['community', 'play'],
+            'dance': ['community', 'wellness', 'play'], 'craft-art': ['craft', 'make'],
+            'weave': ['craft', 'make'], 'draw': ['community', 'make'],
+            'cook-many': ['food', 'community', 'feast'],
+          }
+          for (const sk of profile.skills_want) {
+            const cats = SKILL_QUEST_MAP[sk as string]
+            if (cats) cats.forEach(c => wantCategories.add(c))
+          }
+          // Stable soft-sort: matching quests float up, everything else stays in place
+          if (wantCategories.size > 0) {
+            results.sort((a, b) => {
+              const aMatch = wantCategories.has(a.category) ? 1 : 0
+              const bMatch = wantCategories.has(b.category) ? 1 : 0
+              return bMatch - aMatch // matching quests first, rest unchanged
+            })
+          }
+        }
+      }
+    } catch {
+      // Skills boost is optional — never break the feed
+    }
+
     setQuests(results)
     setLoading(false)
   }, [location, radiusKm, category])
