@@ -8,6 +8,7 @@ import AuthScreen from '@/components/AuthScreen'
 import QuestDetail from '@/components/QuestDetail'
 import PostQuest from '@/components/PostQuest'
 import SkillsScreen from '@/components/SkillsScreen'
+import DigestSettings from '@/components/DigestSettings'
 import TrustScreen from '@/components/TrustScreen'
 import OnboardingSplash from '@/components/OnboardingSplash'
 import SubmitEvent from '@/components/SubmitEvent'
@@ -360,6 +361,7 @@ function QuestBoard({
 }) {
   const [showMap, setShowMap] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [radiusKm, setRadiusKm] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('emerge-radius')
@@ -463,6 +465,13 @@ function QuestBoard({
                   <p className="text-[9px]" style={{ color: 'rgba(232,242,224,0.35)' }}>Signed in</p>
                 </div>
                 <button
+                  onClick={() => { setShowMenu(false); setShowSettings(true) }}
+                  className="w-full text-left px-3 py-1.5 rounded-md text-[11px]"
+                  style={{ color: '#E8F2E0' }}
+                >
+                  Settings
+                </button>
+                <button
                   onClick={() => { setShowMenu(false); onSignOut() }}
                   className="w-full text-left px-3 py-1.5 rounded-md text-[11px]"
                   style={{ color: '#D4785A' }}
@@ -474,6 +483,7 @@ function QuestBoard({
           </div>
         </div>
         {showMenu && <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />}
+        {showSettings && <DigestSettings userId={userId} onClose={() => setShowSettings(false)} />}
 
         {/* Location indicator */}
         <div className="px-4 pb-1">

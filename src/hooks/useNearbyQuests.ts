@@ -35,6 +35,14 @@ function getSavedLocation(): SavedLocation | null {
 
 function saveLocation(loc: SavedLocation) {
   localStorage.setItem(LOCATION_KEY, JSON.stringify(loc))
+  // Sync to profiles for digest emails (fire-and-forget)
+  supabase.auth.getUser().then(({ data }) => {
+    if (data?.user?.id) {
+      supabase.from('profiles').update({
+        saved_lat: loc.lat, saved_lng: loc.lng, saved_city: loc.name,
+      }).eq('id', data.user.id).then(() => {})
+    }
+  })
 }
 
 export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
