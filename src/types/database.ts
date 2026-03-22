@@ -2,7 +2,7 @@ export interface Quest {
   id: string
   title: string
   description: string
-  category: 'nature' | 'food' | 'craft' | 'community' | 'wellness' | 'learning' | 'feast'
+  category: 'nature' | 'food' | 'craft' | 'community' | 'wellness' | 'learning' | 'feast' | 'play' | 'make'
   address: string
   starts_at: string
   ends_at: string | null
