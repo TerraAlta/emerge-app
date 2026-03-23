@@ -1,9 +1,15 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let _supabase: SupabaseClient | null = null
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return _supabase
+}
 
 /** Detect Anthropic credit/billing errors */
 export function isCreditError(err: unknown): boolean {
@@ -33,7 +39,7 @@ export async function notifyPipelineFailure(
 ): Promise<void> {
   try {
     // 1. Check if we already alerted in the last hour
-    const { data: recent } = await supabase
+    const { data: recent } = await getSupabase()
       .from('pipeline_errors')
       .select('created_at')
       .eq('reason', reason)
@@ -46,7 +52,7 @@ export async function notifyPipelineFailure(
     }
 
     // 2. Log to Supabase
-    await supabase.from('pipeline_errors').insert({
+    await getSupabase().from('pipeline_errors').insert({
       reason,
       details,
     })
@@ -85,7 +91,7 @@ export async function notifyPipelineFailure(
 
 async function getLastQuestTimestamp(): Promise<string | null> {
   try {
-    const { data } = await supabase
+    const { data } = await getSupabase()
       .from('quests')
       .select('created_at')
       .order('created_at', { ascending: false })

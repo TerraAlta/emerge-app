@@ -10,7 +10,7 @@
 import type { RawEvent, SourceFetcher } from './types'
 import { stripHtml, hashStr, extractJsonLd } from './utils'
 import { CITIES } from './cities'
-import { KEYWORDS, MAX_KEYWORDS_PER_CITY } from './keywords'
+import { getKeywordsForCity, getCityBatch } from './keyword-selector'
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
 const FETCH_TIMEOUT = 10_000
@@ -54,9 +54,10 @@ export const eventbriteCities: SourceFetcher = {
   async fetch() {
     const seen = new Set<string>()
     const allEvents: RawEvent[] = []
-    const keywords = KEYWORDS.slice(0, MAX_KEYWORDS_PER_CITY)
+    const batch = getCityBatch(CITIES, 20)
 
-    for (const city of CITIES) {
+    for (const city of batch) {
+      const keywords = getKeywordsForCity(city)
       for (const keyword of keywords) {
         try {
           const events = await scrapeEventbriteSearch(city.name, city.country, keyword, city.lat, city.lng)
@@ -78,7 +79,7 @@ export const eventbriteCities: SourceFetcher = {
       }
     }
 
-    console.log(`[eventbrite-cities] Total: ${allEvents.length} unique events from ${CITIES.length} cities`)
+    console.log(`[eventbrite-cities] Total: ${allEvents.length} unique events from ${batch.length} cities (batch)`)
     return allEvents
   },
 }
