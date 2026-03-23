@@ -285,7 +285,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
                       if (!email) { setError('Enter your email first'); return }
                       setSubmitting(true)
                       const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
-                        redirectTo: window.location.origin,
+                        redirectTo: `${window.location.origin}/auth/callback`,
                       })
                       setSubmitting(false)
                       if (resetErr) { setError(resetErr.message) }

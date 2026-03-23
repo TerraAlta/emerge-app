@@ -22,6 +22,10 @@ export async function GET(request: NextRequest) {
     if (error) {
       return NextResponse.redirect(`${origin}?error=auth_callback_error`)
     }
+    // Recovery flow: redirect to password change page instead of home
+    if (type === 'recovery') {
+      return NextResponse.redirect(`${origin}/reset-password`)
+    }
     return NextResponse.redirect(`${origin}?confirmed=true`)
   }
 
