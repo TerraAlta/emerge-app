@@ -183,7 +183,7 @@ export async function scoreQuest(event: RawEvent): Promise<ScoredQuest | null> {
   let message
   try {
     message = await getClient().messages.create({
-      model: 'claude-haiku-4-5-20241022',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 200,
       system: buildSystemPrompt(),
       messages: [
