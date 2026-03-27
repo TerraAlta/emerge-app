@@ -5,13 +5,14 @@
  *
  * Usage: npx tsx scripts/run-full-pipeline-v2.ts [--dry-run] [--eventbrite-only] [--score-only]
  */
-import { readFileSync, appendFileSync, existsSync } from 'fs'
+import { readFileSync, appendFileSync, existsSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 import { createClient } from '@supabase/supabase-js'
 import { scoreQuest } from '../src/pipeline/score-quest'
 import { CITIES, type City } from '../src/pipeline/sources/cities'
 import { getFullKeywordsForCity } from '../src/pipeline/sources/keyword-selector'
 import { stripHtml, extractJsonLd } from '../src/pipeline/sources/utils'
+import { runPipeline } from '../src/pipeline/orchestrator'
 
 // Load env
 const envContent = readFileSync(resolve(process.cwd(), '.env.local'), 'utf-8')
@@ -283,9 +284,34 @@ async function scoreAndInsert(events: any[], stats: any) {
 async function main() {
   const stats = { cities: 0, searches: 0, rawEvents: 0, preFiltered: 0, scored: 0, inserted: 0, filtered: 0, errors: 0 }
 
-  log(`\n🌍 Emerge FULL Pipeline v2 — ${CITIES.length} cities`)
+  log(`\n🌍 Emerge FULL Pipeline v2 — ${CITIES.length} cities + 234 network sources`)
   log(`Mode: ${dryRun ? 'DRY RUN' : 'LIVE'} | Concurrency: ${CONCURRENCY}`)
   log('─'.repeat(60))
+
+  // ── Phase 0: Run all 234 network sources via orchestrator ──
+  if (!scoreOnly) {
+    log(`\n🌐 Phase 0: Running 234 network sources (orchestrator)...`)
+    try {
+      const orchResults = await runPipeline({
+        scoreThreshold: 50,
+        dryRun,
+        supabase: dryRun ? undefined : supabase,
+      })
+      let orchTotal = 0, orchInserted = 0, orchFiltered = 0, orchErrors = 0
+      for (const r of orchResults) {
+        orchTotal += r.fetched
+        orchInserted += r.inserted
+        orchFiltered += r.filtered
+        orchErrors += r.errors
+        if (r.fetched > 0) {
+          log(`  ✓ ${r.source}: ${r.fetched} fetched → ${r.inserted} inserted, ${r.filtered} filtered`)
+        }
+      }
+      log(`\n📊 Phase 0 complete: ${orchTotal} fetched → ${orchInserted} inserted, ${orchFiltered} filtered, ${orchErrors} errors`)
+    } catch (err: any) {
+      log(`  ⚠️ Orchestrator error: ${err.message} — continuing with Eventbrite...`)
+    }
+  }
 
   let allFiltered: any[] = []
 
