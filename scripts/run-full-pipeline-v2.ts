@@ -296,6 +296,7 @@ async function main() {
         scoreThreshold: 50,
         dryRun,
         supabase: dryRun ? undefined : supabase,
+        cacheOnly: false,  // Normal mode: fetch, score, and insert
       })
       let orchTotal = 0, orchInserted = 0, orchFiltered = 0, orchErrors = 0
       for (const r of orchResults) {

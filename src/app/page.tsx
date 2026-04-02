@@ -327,7 +327,7 @@ function QuestBoard({
   })
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
   const [attendedCount, setAttendedCount] = useState(0)
-  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, setManualLocation } = useNearbyQuests({ radiusKm })
+  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, setManualLocation } = useNearbyQuests({ radiusKm, searchKeyword: keywordSearch || null })
 
   // Fetch quests attended count
   useEffect(() => {
@@ -346,6 +346,7 @@ function QuestBoard({
   const [searchResults, setSearchResults] = useState<Array<{ lat: number; lng: number; name: string; detail: string; cc: string }>>([])
   const [searching, setSearching] = useState(false)
   const [showCitySearch, setShowCitySearch] = useState(false)
+  const [keywordSearch, setKeywordSearch] = useState('')
 
   // City search via Nominatim — with dedup, country sort, full labels
   const handleCitySearch = async () => {
@@ -648,6 +649,22 @@ function QuestBoard({
               })}
             </div>
           )}
+        </div>
+
+        {/* Keyword search input */}
+        <div className="px-4 pb-3">
+          <input
+            type="text"
+            placeholder="Search quests... (permaculture, repair, yoga, etc.)"
+            value={keywordSearch}
+            onChange={(e) => setKeywordSearch(e.target.value)}
+            className="w-full rounded-[10px] px-3 py-2 text-[13px] outline-none transition-all"
+            style={{
+              background: 'rgba(200,145,58,0.08)',
+              border: keywordSearch ? '0.5px solid rgba(200,145,58,0.4)' : '0.5px solid rgba(200,145,58,0.2)',
+              color: '#E8F2E0',
+            }}
+          />
         </div>
 
         {/* National mode label */}

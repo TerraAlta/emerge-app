@@ -11,6 +11,7 @@ interface NearbyQuest extends Quest {
 interface UseNearbyQuestsOptions {
   radiusKm?: number | 'national'
   category?: Quest['category'] | null
+  searchKeyword?: string | null
 }
 
 interface SavedLocation {
@@ -48,7 +49,7 @@ function saveLocation(loc: SavedLocation) {
 }
 
 export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
-  const { radiusKm = 25, category = null } = options
+  const { radiusKm = 25, category = null, searchKeyword = null } = options
 
   const [quests, setQuests] = useState<NearbyQuest[]>([])
   const [loading, setLoading] = useState(true)
@@ -149,6 +150,7 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
         user_country: countryCode,
         user_lat: location.lat,
         user_lng: location.lng,
+        search_keyword: searchKeyword || null,
       })
       data = result.data
       dbError = result.error
@@ -158,6 +160,7 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
         user_lat: location.lat,
         user_lng: location.lng,
         radius_km: km,
+        search_keyword: searchKeyword || null,
       })
       data = result.data
       dbError = result.error
@@ -223,7 +226,7 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
 
     setQuests(results)
     setLoading(false)
-  }, [location, radiusKm, category, countryCode])
+  }, [location, radiusKm, category, countryCode, searchKeyword])
 
   useEffect(() => {
     fetchQuests()

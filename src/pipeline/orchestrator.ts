@@ -535,6 +535,7 @@ interface OrchestratorOptions {
   scoreThreshold?: number
   dryRun?: boolean    // if true, skip Supabase insert
   supabase?: any      // Supabase client for inserts
+  cacheOnly?: boolean // if true, skip scoring (cache raw events only)
 }
 
 /** Geocode an address string to lat/lng via Nominatim */
@@ -551,7 +552,7 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
 }
 
 export async function runPipeline(opts: OrchestratorOptions = {}): Promise<OrchestratorResult[]> {
-  const { scoreThreshold = 50, dryRun = false, supabase } = opts
+  const { scoreThreshold = 50, dryRun = false, supabase, cacheOnly = false } = opts
   const results: OrchestratorResult[] = []
 
   for (const source of SOURCES) {
@@ -589,6 +590,12 @@ export async function runPipeline(opts: OrchestratorOptions = {}): Promise<Orche
     }
     // Filter out events that still have no coordinates after geocoding
     events = events.filter(e => !(e.lat === 0 && e.lng === 0))
+
+    // If cacheOnly mode, skip scoring and just return fetched count
+    if (cacheOnly) {
+      results.push(result)
+      continue
+    }
 
     // 3. Score each event with AI
     for (const event of events) {
