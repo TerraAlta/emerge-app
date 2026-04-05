@@ -60,17 +60,17 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
   const [locationLoading, setLocationLoading] = useState(true)
   const [countryCode, setCountryCode] = useState<string>('')
 
-  // Reverse geocode to get city name and country code
+  // Reverse geocode to get city name and country code (Photon/Komoot — no rate limits)
   const reverseGeocode = useCallback(async (lat: number, lng: number): Promise<{ name: string; countryCode: string }> => {
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`,
-        { headers: { 'Accept-Language': 'en' } }
+        `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&limit=1&lang=en`
       )
       const data = await res.json()
-      const addr = data.address
-      const name = addr?.city || addr?.town || addr?.village || addr?.municipality || addr?.county || 'Unknown'
-      const countryCode = (addr?.country_code || '').toUpperCase()
+      const p = data?.features?.[0]?.properties
+      if (!p) return { name: 'Unknown', countryCode: '' }
+      const name = p.city || p.town || p.village || p.locality || p.name || p.county || 'Unknown'
+      const countryCode = (p.countrycode || '').toUpperCase()
       return { name, countryCode }
     } catch {
       return { name: 'Unknown', countryCode: '' }

@@ -61,15 +61,14 @@ export default function FullScreenMap({ initialPin, onConfirm, onCancel }: Props
     geocodeTimer.current = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${currentCenter.lat}&lon=${currentCenter.lng}&format=json&zoom=16`,
-          { headers: { 'User-Agent': 'Emerge/1.0' } }
+          `https://photon.komoot.io/reverse?lat=${currentCenter.lat}&lon=${currentCenter.lng}&limit=1&lang=en`
         )
         const data = await res.json()
+        const p = data?.features?.[0]?.properties
         const parts = []
-        if (data.address?.road) parts.push(data.address.road)
-        if (data.address?.suburb) parts.push(data.address.suburb)
-        if (data.address?.city || data.address?.town || data.address?.village)
-          parts.push(data.address.city || data.address.town || data.address.village)
+        if (p?.street) parts.push(p.street)
+        if (p?.district || p?.locality) parts.push(p.district || p.locality)
+        if (p?.city || p?.town || p?.village) parts.push(p.city || p.town || p.village)
         setAddress(parts.join(', ') || `${currentCenter.lat.toFixed(4)}, ${currentCenter.lng.toFixed(4)}`)
       } catch {
         setAddress(`${currentCenter.lat.toFixed(4)}, ${currentCenter.lng.toFixed(4)}`)

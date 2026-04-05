@@ -325,6 +325,7 @@ function QuestBoard({
     }
     return 25
   })
+  const [keywordSearch, setKeywordSearch] = useState('')
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
   const [attendedCount, setAttendedCount] = useState(0)
   const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, setManualLocation } = useNearbyQuests({ radiusKm, searchKeyword: keywordSearch || null })
@@ -346,27 +347,30 @@ function QuestBoard({
   const [searchResults, setSearchResults] = useState<Array<{ lat: number; lng: number; name: string; detail: string; cc: string }>>([])
   const [searching, setSearching] = useState(false)
   const [showCitySearch, setShowCitySearch] = useState(false)
-  const [keywordSearch, setKeywordSearch] = useState('')
 
   // City search via Nominatim — with dedup, country sort, full labels
+  const [citySearchError, setCitySearchError] = useState('')
   const handleCitySearch = async () => {
     if (!citySearch.trim()) return
     setSearching(true)
+    setCitySearchError('')
     try {
+      // Use Photon (Komoot) — OSM-based, no rate limits, no CORS issues
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(citySearch)}&format=json&limit=8&addressdetails=1`,
-        { headers: { 'Accept-Language': 'en' } }
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(citySearch)}&limit=8&lang=en`
       )
+      if (!res.ok) throw new Error(`Search failed (${res.status})`)
       const data = await res.json()
-      let results: Array<{ lat: number; lng: number; name: string; detail: string; cc: string }> = data.map((r: any) => {
-        const addr = r.address || {}
-        const city = addr.city || addr.town || addr.village || r.display_name.split(',')[0]
-        const region = addr.state || addr.county || ''
-        const country = addr.country || ''
-        const cc = (addr.country_code || '').toUpperCase()
+      let results: Array<{ lat: number; lng: number; name: string; detail: string; cc: string }> = (data.features || []).map((f: any) => {
+        const p = f.properties || {}
+        const coords = f.geometry?.coordinates || [0, 0]
+        const city = p.city || p.name || p.locality || 'Unknown'
+        const region = p.state || p.county || ''
+        const country = p.country || ''
+        const cc = (p.countrycode || '').toUpperCase()
         return {
-          lat: parseFloat(r.lat),
-          lng: parseFloat(r.lon),
+          lat: coords[1],
+          lng: coords[0],
           name: city,
           detail: [region, country].filter(Boolean).join(', '),
           cc,
@@ -388,9 +392,12 @@ function QuestBoard({
         const bMatch = b.cc === countryCode ? 1 : 0
         return bMatch - aMatch
       })
-      setSearchResults(deduped.slice(0, 4))
+      const final = deduped.slice(0, 4)
+      setSearchResults(final)
+      if (final.length === 0) setCitySearchError('No results found. Try a different name.')
     } catch {
       setSearchResults([])
+      setCitySearchError('Search unavailable. Please try again.')
     }
     setSearching(false)
   }
@@ -522,6 +529,9 @@ function QuestBoard({
                   {searching ? '...' : 'Search'}
                 </button>
               </div>
+              {citySearchError && (
+                <p className="text-[11px] mt-2 px-1" style={{ color: '#D4785A' }}>{citySearchError}</p>
+              )}
               {searchResults.length > 0 && (
                 <div className="mt-2 space-y-1">
                   {searchResults.map((r, i) => (
