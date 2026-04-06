@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { isCreditError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
+import { encrypt } from '@/lib/crypto'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
       {
         user_id: user_id ?? null,
         platform: 'luma',
-        api_key_encrypted: api_key, // In production, encrypt with a server-side key
+        api_key_encrypted: encrypt(api_key),
         organiser_name: calendarName,
         last_synced_at: new Date().toISOString(),
       },

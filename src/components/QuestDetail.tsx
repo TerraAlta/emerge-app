@@ -92,6 +92,10 @@ export default function QuestDetail({
   const [loading, setLoading] = useState(true)
   const [animateIn, setAnimateIn] = useState(false)
   const [showShare, setShowShare] = useState(false)
+  const [showReport, setShowReport] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reportSent, setReportSent] = useState(false)
+  const [reportSubmitting, setReportSubmitting] = useState(false)
 
   // Slide-in animation
   useEffect(() => {
@@ -435,9 +439,66 @@ export default function QuestDetail({
 
           {/* Safety footer */}
           <div className="mt-4 mb-6 text-center space-y-2">
-            <button className="text-[12px] underline" style={{ color: 'rgba(232,242,224,0.25)' }}>
-              Report this quest
-            </button>
+            {reportSent ? (
+              <p className="text-[12px]" style={{ color: '#8FBF7A' }}>✓ Report submitted — thank you</p>
+            ) : showReport ? (
+              <div className="rounded-[12px] px-3.5 py-3 text-left mx-4" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.2)' }}>
+                <p className="text-[12px] mb-2" style={{ color: 'rgba(232,242,224,0.55)' }}>Why are you reporting this quest?</p>
+                <div className="space-y-1.5 mb-3">
+                  {['Spam or fake event', 'Inappropriate content', 'Wrong location or date', 'Safety concern', 'Other'].map(r => (
+                    <button
+                      key={r}
+                      onClick={() => setReportReason(r)}
+                      className="w-full text-left rounded-[8px] px-2.5 py-2 text-[12px] transition-colors"
+                      style={{
+                        background: reportReason === r ? 'rgba(200,145,58,0.15)' : 'rgba(232,242,224,0.04)',
+                        border: reportReason === r ? '0.5px solid rgba(200,145,58,0.4)' : '0.5px solid transparent',
+                        color: reportReason === r ? '#C8913A' : 'rgba(232,242,224,0.5)',
+                      }}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setShowReport(false); setReportReason('') }}
+                    className="flex-1 py-2 rounded-[8px] text-[11px]"
+                    style={{ background: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.4)', border: 'none', cursor: 'pointer' }}
+                  >Cancel</button>
+                  <button
+                    onClick={async () => {
+                      if (!reportReason || !userId) return
+                      setReportSubmitting(true)
+                      await supabase.from('quest_reports').insert({
+                        quest_id: quest.id,
+                        reported_by: userId,
+                        reason: reportReason,
+                      })
+                      setReportSubmitting(false)
+                      setReportSent(true)
+                      setShowReport(false)
+                    }}
+                    disabled={!reportReason || reportSubmitting}
+                    className="flex-1 py-2 rounded-[8px] text-[11px] font-semibold"
+                    style={{
+                      background: reportReason ? '#D4785A' : 'rgba(232,242,224,0.06)',
+                      color: reportReason ? '#0D1A0B' : 'rgba(232,242,224,0.3)',
+                      border: 'none', cursor: reportReason ? 'pointer' : 'default',
+                      opacity: reportSubmitting ? 0.6 : 1,
+                    }}
+                  >{reportSubmitting ? 'Sending...' : 'Submit report'}</button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => userId ? setShowReport(true) : onNeedAuth()}
+                className="text-[12px] underline"
+                style={{ color: 'rgba(232,242,224,0.25)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                Report this quest
+              </button>
+            )}
             <p className="text-[13px] leading-relaxed px-4" style={{ color: 'rgba(232,242,224,0.18)' }}>
               Exact location shared after joining &mdash; your location is never shared with others.
             </p>

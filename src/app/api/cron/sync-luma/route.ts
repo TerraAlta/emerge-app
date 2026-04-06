@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { isCreditError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
+import { decrypt, isEncrypted } from '@/lib/crypto'
 
 export const maxDuration = 300
 
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
   for (const cal of calendars) {
     try {
       const res = await fetch('https://api.lu.ma/public/v1/calendar/list-events', {
-        headers: { 'x-luma-api-key': cal.api_key_encrypted, Accept: 'application/json' },
+        headers: { 'x-luma-api-key': isEncrypted(cal.api_key_encrypted) ? decrypt(cal.api_key_encrypted) : cal.api_key_encrypted, Accept: 'application/json' },
         signal: AbortSignal.timeout(15_000),
       })
 

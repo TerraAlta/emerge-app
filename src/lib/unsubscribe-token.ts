@@ -1,6 +1,7 @@
 import { createHmac } from 'crypto'
 
-const SECRET = process.env.UNSUBSCRIBE_SECRET || process.env.CRON_SECRET || 'emerge-unsub-default'
+const SECRET = process.env.UNSUBSCRIBE_SECRET || process.env.CRON_SECRET
+if (!SECRET) throw new Error('UNSUBSCRIBE_SECRET or CRON_SECRET env var required')
 
 /** Generate a deterministic unsubscribe token for a user */
 export function generateUnsubscribeToken(userId: string): string {
