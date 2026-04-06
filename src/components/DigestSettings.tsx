@@ -35,14 +35,22 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
   async function toggle(val: boolean) {
     setEnabled(val)
     setSaving(true)
-    await supabase.from('profiles').update({ email_digest_enabled: val }).eq('id', userId)
+    try {
+      await supabase.from('profiles').update({ email_digest_enabled: val }).eq('id', userId)
+    } catch (err) {
+      console.error('Failed to update digest enabled:', err)
+    }
     setSaving(false)
   }
 
   async function changeRadius(km: number) {
     setRadius(km)
     setSaving(true)
-    await supabase.from('profiles').update({ email_digest_radius_km: km }).eq('id', userId)
+    try {
+      await supabase.from('profiles').update({ email_digest_radius_km: km }).eq('id', userId)
+    } catch (err) {
+      console.error('Failed to update digest radius:', err)
+    }
     setSaving(false)
   }
 

@@ -212,7 +212,7 @@ function BottomNav({
         {tabs.map(tab => {
           if (tab.key === 'post') {
             return (
-              <div key="post" className="flex flex-col items-center gap-1 cursor-pointer -mt-5" onClick={onPostQuest}>
+              <div key="post" className="flex flex-col items-center gap-1 cursor-pointer -mt-5" onClick={onPostQuest} role="button" aria-label="Post quest">
                 <div
                   className="w-11 h-11 rounded-full flex items-center justify-center text-xl font-light"
                   style={{ background: '#C8913A', color: '#0D1A0B', boxShadow: '0 2px 12px rgba(200,145,58,0.35)' }}
@@ -229,6 +229,8 @@ function BottomNav({
               key={tab.key}
               className="flex flex-col items-center gap-1 cursor-pointer"
               onClick={() => onTabChange(tab.key as TabKey)}
+              role="button"
+              aria-label={tab.label}
             >
               <span
                 className="text-[15px]"

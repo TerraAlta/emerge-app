@@ -44,9 +44,11 @@ function getDirectionsUrl(lat: number, lng: number): string {
 }
 
 export default function MapScreen({ quests, userLocation, onSelectQuest }: Props) {
+  // Default center: Lisbon, Portugal — used when user location is unavailable
+  const DEFAULT_CENTER: [number, number] = [38.72, -9.14]
   const center: [number, number] = userLocation
     ? [userLocation.lat, userLocation.lng]
-    : [38.72, -9.14]
+    : DEFAULT_CENTER
 
   return (
     <div className="flex flex-col w-full" style={{ background: '#0D1A0B', minHeight: 'calc(100dvh - 72px)' }}>
@@ -192,6 +194,7 @@ function QuestDot({
       ref={markerRef}
       center={[q.lat, q.lng]}
       radius={8}
+      aria-label={`Quest: ${q.title}`}
       pathOptions={{
         color,
         fillColor: color,

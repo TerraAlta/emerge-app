@@ -30,7 +30,8 @@ function getSavedLocation(): SavedLocation | null {
     const raw = localStorage.getItem(LOCATION_KEY)
     if (!raw) return null
     return JSON.parse(raw)
-  } catch {
+  } catch (err) {
+    console.error('Failed to parse saved location:', err)
     return null
   }
 }
@@ -72,7 +73,8 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
       const name = p.city || p.town || p.village || p.locality || p.name || p.county || 'Unknown'
       const countryCode = (p.countrycode || '').toUpperCase()
       return { name, countryCode }
-    } catch {
+    } catch (err) {
+      console.error('Reverse geocode failed:', err)
       return { name: 'Unknown', countryCode: '' }
     }
   }, [])
@@ -220,8 +222,9 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
           }
         }
       }
-    } catch {
+    } catch (err) {
       // Skills boost is optional — never break the feed
+      console.error('Skills boost failed (non-fatal):', err)
     }
 
     setQuests(results)

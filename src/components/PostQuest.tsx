@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
+import { sanitizeTitle, sanitizeText, validateCoordinates } from '@/lib/sanitize'
 
 const PinMap = dynamic(() => import('./PinMap'), {
   ssr: false,
@@ -134,12 +135,15 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
     const startsAt = new Date(`${date}T${time}`).toISOString()
 
+    const coords = validateCoordinates(pin.lat, pin.lng)
+    if (!coords) { setError('Invalid location coordinates.'); setSubmitting(false); return }
+
     const { error: dbError } = await supabase.from('quests').insert({
-      title: title.trim(),
-      description: description.trim(),
+      title: sanitizeTitle(title),
+      description: sanitizeText(description),
       category: selectedTypes[0],
-      geog: `POINT(${pin.lng} ${pin.lat})`,
-      address: locationName.trim(),
+      geog: `POINT(${coords.lng} ${coords.lat})`,
+      address: sanitizeText(locationName, 500),
       starts_at: startsAt,
       source_name: 'user',
       source_url: null,

@@ -1,5 +1,6 @@
 import { createServiceClient } from '@/lib/supabase'
 import { scoreQuest } from './score-quest'
+import { sanitizeTitle, sanitizeText, validateCoordinates } from '@/lib/sanitize'
 
 interface RawEvent {
   title: string
@@ -36,12 +37,13 @@ export async function ingestEvents(events: RawEvent[]) {
         continue
       }
 
+      const coords = validateCoordinates(event.lat, event.lng)
       const { error } = await supabase.from('quests').insert({
-        title: event.title,
-        description: event.description,
+        title: sanitizeTitle(event.title),
+        description: sanitizeText(event.description),
         category: scored.category,
-        geog: `POINT(${event.lng} ${event.lat})` as any,
-        address: event.location,
+        geog: coords ? `POINT(${coords.lng} ${coords.lat})` as any : null,
+        address: sanitizeText(event.location, 500),
         starts_at: event.starts_at,
         ends_at: event.ends_at ?? null,
         source_url: event.source_url ?? null,

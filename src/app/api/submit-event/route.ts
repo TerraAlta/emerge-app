@@ -3,11 +3,26 @@ import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import * as cheerio from 'cheerio'
 import { isCreditError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
+import { buildScoringPrompt } from '@/lib/scoring-prompt'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
+
+// Simple in-memory rate limiter: max 10 submissions per IP per hour
+const rateLimitMap = new Map<string, { count: number; reset: number }>()
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now > entry.reset) {
+    rateLimitMap.set(ip, { count: 1, reset: now + 3600_000 })
+    return true
+  }
+  if (entry.count >= 10) return false
+  entry.count++
+  return true
+}
 
 let _ai: Anthropic | null = null
 function getAI() {
@@ -119,15 +134,28 @@ async function geocode(address: string): Promise<{ lat: number; lng: number } | 
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json({ error: 'Too many submissions. Try again in an hour.' }, { status: 429 })
+    }
+
     const { url } = await request.json()
     if (!url || typeof url !== 'string') {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
-    // Validate URL
+    // Validate URL — only allow http/https, block private IPs
     let parsed: URL
     try { parsed = new URL(url) } catch {
       return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      return NextResponse.json({ error: 'Only HTTP/HTTPS URLs are allowed' }, { status: 400 })
+    }
+    const host = parsed.hostname.toLowerCase()
+    if (host === 'localhost' || host.startsWith('127.') || host.startsWith('10.') || host.startsWith('192.168.') || host.startsWith('172.') || host === '0.0.0.0' || host.endsWith('.local') || host === '[::1]') {
+      return NextResponse.json({ error: 'Private/local URLs are not allowed' }, { status: 400 })
     }
 
     // 1. Extract event data
@@ -148,7 +176,7 @@ export async function POST(request: NextRequest) {
       aiResult = await getAI().messages.create({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 200,
-        system: `You are the Emerge curation AI. HARD REJECT FIRST: If the PRIMARY purpose is prayer, mass, sermon, worship, religious instruction, scripture study, proselytising, or religious rite, return {"score":0,"reason":"religious_content","category":"community"}. The cultural OCCASION (Eid, Diwali, Nowruz, Christmas) does NOT make it religious — only the PURPOSE does. Test: if food and gathering were removed, would it still be a religious service? If yes, reject. NEW AGE HARD REJECT: crystals, astrology, energy healing, chakra, ayahuasca, plant medicine ceremony, guru, tarot, angel healing = score 0 reason new_age_content. Score this event 0-100 for alignment with regenerative community practice. Regenerative means: hands-on, local, builds real-world relationships, involves making/growing/repairing/sharing together. NOT talks about sustainability, NOT corporate wellness, NOT purely online. COMMUNAL TABLE BONUS: +20 if communal cooking + eating + seasonal/cultural celebration. +15 if communal cooking + eating. +10 if communal eating from rescued food. +15 DIASPORA BONUS if minority community leads a cultural food celebration (Nowruz, Eid, Diwali, Lunar New Year). Use "feast" category when communal cooking/eating is the primary activity. Use "play" when participatory music is primary (folk session, drum circle, balfolk, Sacred Harp, community jam). NOT ticketed concerts. Use "make" when ecological/community art-making is primary (open studio, community mural, land art, zine making). NOT commercial galleries. PLAY BONUS: +15 anyone can join, +10 free, +10 folk/traditional. REJECT if ticketed above €20. MAKE BONUS: +20 ecological theme, +15 participatory, +10 community space. REJECT if commercial gallery or ticketed above €15. -10 PASSIVE PENALTY for watching-only events. Return JSON only: {"score":number,"reason":"string","category":"nature|food|craft|community|wellness|learning|feast|play|make"}`,
+        system: buildScoringPrompt(),
         messages: [{
           role: 'user',
           content: `Event: "${event.title}"\nDescription: "${event.description}"\nLocation: "${event.location_name}"\nOrganiser: "${event.organizer}"`,

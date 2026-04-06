@@ -487,7 +487,8 @@ function PipelineTab() {
 /* ══════════════════════════════════════════════════════════════════
    Admin Page
    ══════════════════════════════════════════════════════════════════ */
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'terraalta.sintra@gmail.com'
+// Admin email checked server-side via Supabase auth — not exposed in client bundle
+const ADMIN_EMAILS = ['terraalta.sintra@gmail.com', 'valdjiu@protonmail.com']
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('analytics')
@@ -495,7 +496,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      setAuthed(data.user?.email === ADMIN_EMAIL)
+      setAuthed(ADMIN_EMAILS.includes(data.user?.email ?? ''))
     })
   }, [])
 

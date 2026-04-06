@@ -38,7 +38,8 @@ export default function SharePopup({ questId, questTitle, questDate, questLocati
       await navigator.clipboard.writeText(shareUrl)
       setCopied(true)
       setTimeout(() => setCopied(false), 1800)
-    } catch {
+    } catch (err) {
+      console.error('Clipboard API failed, using fallback:', err)
       // Fallback for older browsers
       const ta = document.createElement('textarea')
       ta.value = shareUrl

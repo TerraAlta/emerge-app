@@ -162,6 +162,16 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
       .eq('id', userId)
   }, [skillsHave, skillsWant, userId])
 
+  const handleSkillTap = useCallback((skillKey: string) => {
+    const isHave = skillsHave.includes(skillKey)
+    const isWant = skillsWant.includes(skillKey)
+    if (isHave || isWant) {
+      setSkillState(skillKey, null)
+    } else {
+      setTappedSkill(prev => prev === skillKey ? null : skillKey)
+    }
+  }, [skillsHave, skillsWant, setSkillState])
+
   const totalSkills = skillsHave.length + skillsWant.length
 
   // Filter quests by selected skill
@@ -267,15 +277,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
                   <div key={skill.key} className="relative">
                     <div
                       className="rounded-[12px] px-2 py-2.5 text-center cursor-pointer active:scale-[0.96] transition-all"
-                      onClick={() => {
-                        if (isHave || isWant) {
-                          // Already set — tap toggles off
-                          setSkillState(skill.key, null)
-                        } else {
-                          // Not set — show have/want picker
-                          setTappedSkill(isTapped ? null : skill.key)
-                        }
-                      }}
+                      onClick={() => handleSkillTap(skill.key)}
                       style={{
                         background: isSelected
                           ? 'rgba(200,145,58,0.15)'
