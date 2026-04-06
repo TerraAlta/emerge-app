@@ -12,14 +12,19 @@ export function daysUntil(iso: string): number {
   return Math.round((localEvent.getTime() - localToday.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-/** Check if event time is effectively "no time captured" (midnight) */
-function isMidnight(d: Date): boolean {
+/** Check if event time is effectively "no time captured" (midnight UTC or local) */
+function isMidnight(d: Date, iso?: string): boolean {
+  // Check UTC midnight — pipeline events stored as date-only default to T00:00:00Z
+  if (iso && (iso.endsWith('T00:00:00+00:00') || iso.endsWith('T00:00:00Z') || iso.endsWith('T00:00:00.000Z') || /T00:00:\d{2}(\.\d+)?\+00:00$/.test(iso))) {
+    return true
+  }
+  // Also treat local midnight as no time
   return d.getHours() === 0 && d.getMinutes() === 0
 }
 
 /** Format time string, or return null if midnight (no time captured) */
-function formatTime(d: Date): string | null {
-  if (isMidnight(d)) return null
+function formatTime(d: Date, iso?: string): string | null {
+  if (isMidnight(d, iso)) return null
   return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
 
@@ -30,7 +35,7 @@ function formatTime(d: Date): string | null {
 export function formatDate(iso: string): string {
   const d = new Date(iso)
   const days = daysUntil(iso)
-  const time = formatTime(d)
+  const time = formatTime(d, iso)
 
   if (days === 0) return time ? `Today ${time}` : 'Today'
   if (days === 1) return time ? `Tomorrow ${time}` : 'Tomorrow'
@@ -44,7 +49,7 @@ export function formatDate(iso: string): string {
 export function formatDateTime(iso: string): string {
   const d = new Date(iso)
   const days = daysUntil(iso)
-  const time = formatTime(d)
+  const time = formatTime(d, iso)
 
   let dayStr: string
   if (days === 0) dayStr = 'Today'

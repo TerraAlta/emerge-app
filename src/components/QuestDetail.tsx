@@ -56,8 +56,9 @@ const trustBadge: Record<string, { label: string; color: string }> = {
 
 // formatDateTime imported from @/lib/dateUtils
 
-function formatDuration(start: string, end: string) {
+function formatDuration(start: string, end: string): string | null {
   const hours = Math.round((new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60) * 10) / 10
+  if (hours <= 0) return null // same time or invalid — hide duration
   if (hours < 24) return `${hours}h`
   return `${Math.round(hours / 24)} day${Math.round(hours / 24) > 1 ? 's' : ''}`
 }
@@ -251,7 +252,7 @@ export default function QuestDetail({
             <span className="text-lg mt-0.5">{'\u{1F4C5}'}</span>
             <div>
               <p className="text-[13px] font-medium">{formatDateTime(quest.starts_at)}</p>
-              {quest.ends_at && (
+              {quest.ends_at && formatDuration(quest.starts_at, quest.ends_at) && (
                 <p className="text-[13px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
                   {formatDuration(quest.starts_at, quest.ends_at)} duration
                 </p>
