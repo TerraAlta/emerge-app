@@ -24,6 +24,7 @@ interface Quest {
   starts_at: string
   ends_at: string | null
   source_name: string
+  source_url: string | null
   ai_score: number
   ai_reasoning: string
   max_participants: number | null
@@ -307,6 +308,38 @@ export default function QuestDetail({
             <p className="text-[13px] leading-relaxed whitespace-pre-line" style={{ color: 'rgba(232,242,224,0.7)' }}>
               {quest.description}
             </p>
+          </div>
+
+          {/* Action buttons — view source + get directions */}
+          <div className="flex gap-2 mb-2.5">
+            {quest.source_url && (
+              <a
+                href={quest.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium active:scale-95 transition-transform"
+                style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.2)', color: '#C8913A', textDecoration: 'none' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+                View original event
+              </a>
+            )}
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${quest.lat},${quest.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${quest.source_url ? '' : 'flex-1'} flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium active:scale-95 transition-transform`}
+              style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.2)', color: '#E8F2E0', textDecoration: 'none', minWidth: quest.source_url ? 'auto' : undefined, paddingLeft: 16, paddingRight: 16 }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8F2E0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="3 11 22 2 13 21 11 13 3 11" />
+              </svg>
+              Directions
+            </a>
           </div>
 
           {/* AI reasoning */}
