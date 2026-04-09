@@ -82,57 +82,57 @@ function ResetPasswordForm() {
   }
 
   const inputStyle = {
-    background: 'rgba(232,242,224,0.08)',
-    border: '0.5px solid rgba(232,242,224,0.15)',
-    color: '#E8F2E0',
+    background: 'var(--color-pill-bg)',
+    border: '0.5px solid var(--color-text-faint)',
+    color: 'var(--color-text)',
     outline: 'none',
   }
 
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: '#0D1A0B' }}
+      style={{ background: 'var(--color-bg)' }}
     >
       <div
         className="w-full max-w-[340px] rounded-2xl p-6"
         style={{
-          background: '#162814',
-          border: '0.5px solid rgba(200,145,58,0.3)',
+          background: 'var(--color-card)',
+          border: '0.5px solid var(--color-amber-border)',
         }}
       >
         <h1
           className="text-xl font-light italic text-center mb-1"
-          style={{ color: '#C8913A', fontFamily: 'Fraunces, serif' }}
+          style={{ color: 'var(--color-amber)', fontFamily: 'Fraunces, serif' }}
         >
           Set new password
         </h1>
         <p
           className="text-center text-[12px] mb-6"
-          style={{ color: 'rgba(232,242,224,0.5)' }}
+          style={{ color: 'var(--color-text-secondary)' }}
         >
           Choose a new password for your account
         </p>
 
         {verifying ? (
-          <p className="text-center text-[12px]" style={{ color: 'rgba(232,242,224,0.4)' }}>
+          <p className="text-center text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
             Verifying reset link...
           </p>
         ) : success ? (
           <div className="text-center">
-            <p className="text-[13px] font-medium" style={{ color: '#C8913A' }}>
+            <p className="text-[13px] font-medium" style={{ color: 'var(--color-amber)' }}>
               Password updated
             </p>
-            <p className="text-[11px] mt-2" style={{ color: 'rgba(232,242,224,0.45)' }}>
+            <p className="text-[11px] mt-2" style={{ color: 'var(--color-text-secondary)' }}>
               Redirecting you to Emerge...
             </p>
           </div>
         ) : !sessionReady ? (
           <div className="text-center">
-            <p className="text-[12px] mb-4" style={{ color: '#E57373' }}>{error}</p>
+            <p className="text-[12px] mb-4" style={{ color: 'var(--color-error)' }}>{error}</p>
             <button
               onClick={() => router.push('/')}
               className="text-[12px] underline"
-              style={{ color: '#C8913A', background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{ color: 'var(--color-amber)', background: 'none', border: 'none', cursor: 'pointer' }}
             >
               Back to login
             </button>
@@ -152,7 +152,7 @@ function ResetPasswordForm() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px]"
-                style={{ color: 'rgba(232,242,224,0.4)', background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ color: 'var(--color-text-secondary)', background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 {showPassword ? 'Hide' : 'Show'}
               </button>
@@ -168,7 +168,7 @@ function ResetPasswordForm() {
             />
 
             {error && (
-              <p className="text-[11px] text-center" style={{ color: '#E57373' }}>
+              <p className="text-[11px] text-center" style={{ color: 'var(--color-error)' }}>
                 {error}
               </p>
             )}
@@ -178,8 +178,8 @@ function ResetPasswordForm() {
               disabled={submitting}
               className="w-full py-2.5 rounded-full text-[13px] font-semibold"
               style={{
-                background: '#C8913A',
-                color: '#0D1A0B',
+                background: 'var(--color-amber)',
+                color: 'var(--color-pill-active-text)',
                 border: 'none',
                 cursor: 'pointer',
                 opacity: submitting ? 0.6 : 1,
@@ -197,8 +197,8 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D1A0B' }}>
-        <p className="text-[12px]" style={{ color: 'rgba(232,242,224,0.4)' }}>Loading...</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+        <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>Loading...</p>
       </div>
     }>
       <ResetPasswordForm />

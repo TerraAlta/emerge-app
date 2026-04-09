@@ -8,8 +8,8 @@ import { sanitizeTitle, sanitizeText, validateCoordinates } from '@/lib/sanitize
 const PinMap = dynamic(() => import('./PinMap'), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full rounded-[12px] flex items-center justify-center" style={{ background: '#162814' }}>
-      <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.25)' }}>Loading map...</span>
+    <div className="h-full w-full rounded-[12px] flex items-center justify-center" style={{ background: 'var(--color-card)' }}>
+      <span className="text-[12px]" style={{ color: 'var(--color-text-muted)' }}>Loading map...</span>
     </div>
   ),
 })
@@ -166,9 +166,9 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
     width: '100%',
     padding: '11px 14px',
     borderRadius: 10,
-    border: '0.5px solid rgba(200,145,58,0.2)',
-    background: '#162814',
-    color: '#E8F2E0',
+    border: '0.5px solid var(--color-amber-border)',
+    background: 'var(--color-card)',
+    color: 'var(--color-text)',
     fontSize: 13,
     fontFamily: 'var(--font-outfit), sans-serif',
     outline: 'none',
@@ -179,31 +179,31 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
       <div
         className="fixed inset-0 z-50 font-body flex justify-center overflow-y-auto transition-transform duration-200 ease-out"
         style={{
-          background: '#0D1A0B',
-          color: '#E8F2E0',
+          background: 'var(--color-bg)',
+          color: 'var(--color-text)',
           transform: animateIn ? 'translateX(0)' : 'translateX(100%)',
         }}
       >
         <div className="w-full pb-10" style={{ maxWidth: 390 }}>
 
           {/* Top bar */}
-          <div className="flex items-center justify-between px-4 pb-2 sticky top-0 z-10" style={{ background: '#0D1A0B', paddingTop: 'calc(20px + var(--sat, 0px))' }}>
+          <div className="flex items-center justify-between px-4 pb-2 sticky top-0 z-10" style={{ background: 'var(--color-bg)', paddingTop: 'calc(20px + var(--sat, 0px))' }}>
             <button onClick={handleBack} className="flex items-center gap-1.5">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
               </svg>
-              <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.4)' }}>Back</span>
+              <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>Back</span>
             </button>
-            <span className="text-[13px] font-medium" style={{ color: 'rgba(232,242,224,0.35)' }}>New quest</span>
+            <span className="text-[13px] font-medium" style={{ color: 'var(--color-text-muted)' }}>New quest</span>
             <div className="w-[50px]" />
           </div>
 
           {/* Header */}
           <div className="px-4 pt-2 pb-4">
-            <h1 className="font-heading text-[22px] font-light leading-tight" style={{ color: '#E8F2E0' }}>
-              Add a <em style={{ color: '#C8913A' }}>quest</em>
+            <h1 className="font-heading text-[22px] font-light leading-tight" style={{ color: 'var(--color-text)' }}>
+              Add a <em style={{ color: 'var(--color-amber)' }}>quest</em>
             </h1>
-            <p className="text-[13px] mt-1" style={{ color: 'rgba(232,242,224,0.4)' }}>
+            <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-secondary)' }}>
               Something real for your community to do together.
             </p>
           </div>
@@ -215,26 +215,26 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               onClick={() => setMode('form')}
               className="flex-1 rounded-[12px] px-3 py-3 text-left transition-all"
               style={{
-                background: '#162814',
-                border: mode === 'form' ? '1px solid #C8913A' : '0.5px solid rgba(200,145,58,0.15)',
+                background: 'var(--color-card)',
+                border: mode === 'form' ? '1px solid var(--color-amber)' : '0.5px solid var(--color-text-faint)',
               }}
             >
               <div className="text-[14px] mb-0.5">🌱</div>
-              <div className="text-[13px] font-medium" style={{ color: '#E8F2E0' }}>Fill in the details</div>
-              <div className="text-[11px]" style={{ color: 'rgba(232,242,224,0.35)' }}>Create a quest directly</div>
+              <div className="text-[13px] font-medium" style={{ color: 'var(--color-text)' }}>Fill in the details</div>
+              <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>Create a quest directly</div>
             </button>
             <button
               type="button"
               onClick={() => setMode('url')}
               className="flex-1 rounded-[12px] px-3 py-3 text-left transition-all"
               style={{
-                background: '#162814',
-                border: mode === 'url' ? '1px solid #C8913A' : '0.5px solid rgba(200,145,58,0.15)',
+                background: 'var(--color-card)',
+                border: mode === 'url' ? '1px solid var(--color-amber)' : '0.5px solid var(--color-text-faint)',
               }}
             >
               <div className="text-[14px] mb-0.5">🔗</div>
-              <div className="text-[13px] font-medium" style={{ color: '#E8F2E0' }}>I have an event URL</div>
-              <div className="text-[11px]" style={{ color: 'rgba(232,242,224,0.35)' }}>Eventbrite, Luma, your site...</div>
+              <div className="text-[13px] font-medium" style={{ color: 'var(--color-text)' }}>I have an event URL</div>
+              <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>Eventbrite, Luma, your site...</div>
             </button>
           </div>
 
@@ -249,7 +249,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                 onKeyDown={e => e.key === 'Enter' && urlStatus === 'idle' && handleUrlSubmit()}
                 disabled={urlStatus === 'fetching' || urlStatus === 'scoring'}
                 className="w-full rounded-xl px-4 py-3.5 text-[13px] outline-none"
-                style={{ background: '#162814', color: '#E8F2E0', border: '0.5px solid rgba(200,145,58,0.2)' }}
+                style={{ background: 'var(--color-card)', color: 'var(--color-text)', border: '0.5px solid var(--color-amber-border)' }}
               />
 
               {(urlStatus === 'idle' || urlStatus === 'error' || urlStatus === 'done') && (
@@ -257,7 +257,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   onClick={handleUrlSubmit}
                   disabled={!url.trim()}
                   className="w-full mt-3 py-3 rounded-full text-[13px] font-semibold transition-opacity disabled:opacity-40"
-                  style={{ background: '#C8913A', color: '#0D1A0B' }}
+                  style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)' }}
                 >
                   Fetch details
                 </button>
@@ -265,42 +265,42 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {urlStatus === 'fetching' && (
                 <div className="mt-6 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#C8913A' }} />
-                  <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.5)' }}>Fetching event details&hellip;</span>
+                  <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-amber)' }} />
+                  <span className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>Fetching event details&hellip;</span>
                 </div>
               )}
               {urlStatus === 'scoring' && (
                 <div className="mt-6 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#C8913A' }} />
-                  <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.5)' }}>Checking regenerative alignment&hellip;</span>
+                  <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-amber)' }} />
+                  <span className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>Checking regenerative alignment&hellip;</span>
                 </div>
               )}
 
               {urlStatus === 'done' && urlResult && (
-                <div className="mt-6 rounded-xl px-4 py-4" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.15)' }}>
+                <div className="mt-6 rounded-xl px-4 py-4" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-text-faint)' }}>
                   {urlResult.approved && (
                     <>
-                      <p className="text-[13px] font-medium mb-1" style={{ color: '#C8913A' }}>Your quest is live!</p>
-                      <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
+                      <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-amber)' }}>Your quest is live!</p>
+                      <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                         &ldquo;{urlResult.title}&rdquo; will appear for people nearby.
                       </p>
-                      <p className="text-[12px] mt-2 italic" style={{ color: 'rgba(232,242,224,0.3)' }}>
+                      <p className="text-[12px] mt-2 italic" style={{ color: 'var(--color-text-muted)' }}>
                         Score: {urlResult.score}/100 &middot; {urlResult.reason}
                       </p>
                     </>
                   )}
                   {urlResult.queued && (
                     <>
-                      <p className="text-[13px] font-medium mb-1" style={{ color: '#E8F2E0' }}>We&apos;re reviewing it</p>
-                      <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
+                      <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>We&apos;re reviewing it</p>
+                      <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                         &ldquo;{urlResult.title}&rdquo; is queued for review — usually within 24h.
                       </p>
                     </>
                   )}
                   {!urlResult.approved && !urlResult.queued && (
                     <>
-                      <p className="text-[13px] font-medium mb-1" style={{ color: '#E8F2E0' }}>Not quite right for Emerge</p>
-                      <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.6)' }}>
+                      <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>Not quite right for Emerge</p>
+                      <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                         {urlResult.reason}
                       </p>
                     </>
@@ -309,8 +309,8 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               )}
 
               {urlStatus === 'error' && urlResult?.error && (
-                <div className="mt-6 rounded-xl px-4 py-3" style={{ background: '#162814', border: '0.5px solid rgba(200,80,60,0.3)' }}>
-                  <p className="text-[12px]" style={{ color: 'rgba(232,242,224,0.6)' }}>{urlResult.error}</p>
+                <div className="mt-6 rounded-xl px-4 py-3" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-error)' }}>
+                  <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>{urlResult.error}</p>
                 </div>
               )}
             </div>
@@ -322,7 +322,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* FIX 2 — Title with "e.g." placeholder */}
               <div>
-                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
                   Quest title
                 </label>
                 <input
@@ -331,14 +331,14 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--color-amber)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--color-amber-border)'}
                 />
               </div>
 
               {/* FIX 3 — Multi-select type dropdown */}
               <div ref={dropdownRef}>
-                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
                   Quest type
                 </label>
                 <button
@@ -348,7 +348,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   style={{
                     ...inputStyle,
                     cursor: 'pointer',
-                    color: selectedTypes.length > 0 ? '#E8F2E0' : 'rgba(232,242,224,0.35)',
+                    color: selectedTypes.length > 0 ? 'var(--color-text)' : 'var(--color-text-muted)',
                   }}
                 >
                   <span className="text-[13px]">
@@ -356,7 +356,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                       ? 'Select quest type(s)'
                       : `${selectedTypes.length} type${selectedTypes.length > 1 ? 's' : ''} selected`}
                   </span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(232,242,224,0.4)" strokeWidth="2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
                     <path d="M6 9l6 6 6-6" />
                   </svg>
                 </button>
@@ -364,7 +364,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                 {typeDropdownOpen && (
                   <div
                     className="mt-1 rounded-[10px] overflow-hidden"
-                    style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.25)' }}
+                    style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}
                   >
                     {TYPES.map(t => {
                       const isSelected = selectedTypes.includes(t.key)
@@ -375,15 +375,15 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                           onClick={() => toggleType(t.key)}
                           className="w-full flex items-center justify-between px-3 py-2.5 text-left"
                           style={{
-                            background: isSelected ? 'rgba(200,145,58,0.1)' : 'transparent',
-                            borderBottom: '0.5px solid rgba(232,242,224,0.04)',
+                            background: isSelected ? 'var(--color-amber-bg)' : 'transparent',
+                            borderBottom: '0.5px solid var(--color-pill-bg)',
                           }}
                         >
-                          <span className="text-[12px]" style={{ color: '#E8F2E0' }}>
+                          <span className="text-[12px]" style={{ color: 'var(--color-text)' }}>
                             {t.emoji} {t.label}
                           </span>
                           {isSelected && (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="2.5">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-amber)" strokeWidth="2.5">
                               <path d="M20 6L9 17l-5-5" />
                             </svg>
                           )}
@@ -402,7 +402,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                         <span
                           key={key}
                           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-medium"
-                          style={{ background: 'rgba(200,145,58,0.15)', color: '#C8913A', border: '0.5px solid rgba(200,145,58,0.3)' }}
+                          style={{ background: 'var(--color-amber-light)', color: 'var(--color-amber)', border: '0.5px solid var(--color-amber-border)' }}
                         >
                           {t?.emoji} {t?.label}
                           <button type="button" onClick={() => removeType(key)} className="ml-0.5 opacity-60 hover:opacity-100">&times;</button>
@@ -415,7 +415,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* Description */}
               <div>
-                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
                   What will people do?
                 </label>
                 <textarea
@@ -424,15 +424,15 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   onChange={e => setDescription(e.target.value)}
                   rows={4}
                   style={{ ...inputStyle, resize: 'none' }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--color-amber)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--color-amber-border)'}
                 />
               </div>
 
               {/* Date + Time */}
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                  <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
                     Date
                   </label>
                   <input
@@ -440,12 +440,12 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                     value={date}
                     onChange={e => setDate(e.target.value)}
                     style={{ ...inputStyle, colorScheme: 'dark' }}
-                    onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-                    onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+                    onFocus={e => e.target.style.borderColor = 'var(--color-amber)'}
+                    onBlur={e => e.target.style.borderColor = 'var(--color-amber-border)'}
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                  <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
                     Time
                   </label>
                   <input
@@ -453,15 +453,15 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                     value={time}
                     onChange={e => setTime(e.target.value)}
                     style={{ ...inputStyle, colorScheme: 'dark' }}
-                    onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-                    onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+                    onFocus={e => e.target.style.borderColor = 'var(--color-amber)'}
+                    onBlur={e => e.target.style.borderColor = 'var(--color-amber-border)'}
                   />
                 </div>
               </div>
 
               {/* Location */}
               <div>
-                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
                   Meeting place
                 </label>
                 <input
@@ -470,34 +470,34 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   value={locationName}
                   onChange={e => setLocationName(e.target.value)}
                   style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--color-amber)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--color-amber-border)'}
                 />
               </div>
 
               {/* FIX 4 & 5 — Map: collapsed preview + full-screen expand (dark tiles) */}
               <div>
-                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
                   Location on map
                 </label>
                 <div
                   className="relative h-[160px] rounded-[12px] overflow-hidden cursor-pointer"
-                  style={{ border: '0.5px solid rgba(200,145,58,0.15)' }}
+                  style={{ border: '0.5px solid var(--color-text-faint)' }}
                   onClick={() => setShowFullMap(true)}
                 >
                   <PinMap pin={pin} onPin={() => setShowFullMap(true)} />
                   {/* Overlay button */}
-                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(10,20,10,0.4)', pointerEvents: 'none' }}>
+                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'var(--color-map-overlay)', pointerEvents: 'none' }}>
                     <div
                       className="px-4 py-2 rounded-full text-[12px] font-medium"
-                      style={{ background: 'rgba(10,20,10,0.85)', color: '#C8913A', border: '0.5px solid rgba(200,145,58,0.4)' }}
+                      style={{ background: 'var(--color-map-btn-bg)', color: 'var(--color-amber)', border: '0.5px solid var(--color-amber-border)' }}
                     >
                       📍 {pin ? 'Tap to move pin' : 'Tap to set location'}
                     </div>
                   </div>
                 </div>
                 {pin && (
-                  <p className="text-[13px] mt-1" style={{ color: 'rgba(232,242,224,0.3)' }}>
+                  <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
                     {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
                   </p>
                 )}
@@ -505,8 +505,8 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* Spots */}
               <div>
-                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
-                  Spots available <span style={{ color: 'rgba(232,242,224,0.2)' }}>(optional)</span>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
+                  Spots available <span style={{ color: 'var(--color-text-muted)' }}>(optional)</span>
                 </label>
                 <input
                   type="number"
@@ -516,14 +516,14 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   min={1}
                   max={500}
                   style={{ ...inputStyle, maxWidth: 200 }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--color-amber)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--color-amber-border)'}
                 />
               </div>
 
               {/* Cost */}
               <div>
-                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+                <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
                   Cost
                 </label>
                 <div className="flex gap-2 mb-2">
@@ -534,9 +534,9 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                       onClick={() => setCostType(c)}
                       className="px-4 py-1.5 rounded-full text-[13px] font-medium transition-all"
                       style={{
-                        background: costType === c ? '#C8913A' : '#162814',
-                        color: costType === c ? '#0D1A0B' : 'rgba(232,242,224,0.5)',
-                        border: costType === c ? '0.5px solid #C8913A' : '0.5px solid rgba(200,145,58,0.15)',
+                        background: costType === c ? 'var(--color-amber)' : 'var(--color-card)',
+                        color: costType === c ? 'var(--color-pill-active-text)' : 'var(--color-text-secondary)',
+                        border: costType === c ? '0.5px solid var(--color-amber)' : '0.5px solid var(--color-text-faint)',
                       }}
                     >
                       {c === 'free' ? 'Free' : 'Paid'}
@@ -545,7 +545,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                 </div>
                 {costType === 'paid' && (
                   <div className="flex items-center gap-2" style={{ maxWidth: 160 }}>
-                    <span className="text-[14px]" style={{ color: 'rgba(232,242,224,0.4)' }}>&euro;</span>
+                    <span className="text-[14px]" style={{ color: 'var(--color-text-secondary)' }}>&euro;</span>
                     <input
                       type="number"
                       placeholder="0.00"
@@ -554,8 +554,8 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                       min={0}
                       step={0.5}
                       style={inputStyle}
-                      onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-                      onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+                      onFocus={e => e.target.style.borderColor = 'var(--color-amber)'}
+                      onBlur={e => e.target.style.borderColor = 'var(--color-amber-border)'}
                     />
                   </div>
                 )}
@@ -564,9 +564,9 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               {/* Safety notes */}
               <div
                 className="rounded-[12px] px-3.5 py-3"
-                style={{ background: 'rgba(200,145,58,0.05)', border: '0.5px solid rgba(200,145,58,0.1)' }}
+                style={{ background: 'var(--color-pill-bg)', border: '0.5px solid var(--color-amber-bg)' }}
               >
-                <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.35)' }}>
+                <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
                   🛡️ Location will be shown as approximate until someone joins.
                   Your quest will be reviewed if flagged by the community.
                 </p>
@@ -574,7 +574,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
 
               {/* Error */}
               {error && (
-                <p className="text-[12px]" style={{ color: '#D4785A' }}>{error}</p>
+                <p className="text-[12px]" style={{ color: 'var(--color-error)' }}>{error}</p>
               )}
 
               {/* Submit */}
@@ -583,8 +583,8 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                 disabled={submitting}
                 className="w-full py-3.5 rounded-[12px] text-[14px] font-semibold transition-opacity"
                 style={{
-                  background: '#C8913A',
-                  color: '#0D1A0B',
+                  background: 'var(--color-amber)',
+                  color: 'var(--color-pill-active-text)',
                   opacity: submitting ? 0.6 : 1,
                   letterSpacing: '0.02em',
                 }}

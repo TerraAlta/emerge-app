@@ -51,25 +51,25 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
     : DEFAULT_CENTER
 
   return (
-    <div className="flex flex-col w-full" style={{ background: '#0D1A0B', minHeight: 'calc(100dvh - 72px)' }}>
+    <div className="flex flex-col w-full" style={{ background: 'var(--color-bg)', minHeight: 'calc(100dvh - 72px)' }}>
       {/* Header */}
-      <div className="shrink-0 px-4 pb-3" style={{ background: '#0D1A0B', paddingTop: 'calc(16px + var(--sat, 0px))' }}>
-        <h1 className="font-heading text-[20px] font-light" style={{ color: '#E8F2E0' }}>
-          Living <em style={{ color: '#C8913A' }}>Map</em>
+      <div className="shrink-0 px-4 pb-3" style={{ background: 'var(--color-bg)', paddingTop: 'calc(16px + var(--sat, 0px))' }}>
+        <h1 className="font-heading text-[20px] font-light" style={{ color: 'var(--color-text)' }}>
+          Living <em style={{ color: 'var(--color-amber)' }}>Map</em>
         </h1>
-        <p className="text-[12px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+        <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
           {quests.length} quest{quests.length !== 1 ? 's' : ''} near you
         </p>
       </div>
 
       {/* Map area */}
-      <div className="relative overflow-hidden" style={{ height: 'calc(100dvh - 72px - 56px)', borderTop: '0.5px solid rgba(232,242,224,0.06)' }}>
+      <div className="relative overflow-hidden" style={{ height: 'calc(100dvh - 72px - 56px)', borderTop: '0.5px solid var(--color-pill-bg)' }}>
         <style>{`
           .map-screen-container .leaflet-tile-pane {
             filter: none !important;
           }
           .map-screen-container .leaflet-container {
-            background: #0D1A0B;
+            background: var(--color-bg);
           }
           /* Override Leaflet popup styles for dark theme */
           .map-screen-container .leaflet-popup-content-wrapper {
@@ -124,16 +124,16 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
                 <CircleMarker
                   center={[userLocation.lat, userLocation.lng]}
                   radius={14}
-                  pathOptions={{ color: '#C8913A', fillColor: '#C8913A', fillOpacity: 0.15, weight: 1, opacity: 0.4 }}
+                  pathOptions={{ color: 'var(--color-amber)', fillColor: 'var(--color-amber)', fillOpacity: 0.15, weight: 1, opacity: 0.4 }}
                 />
                 <CircleMarker
                   center={[userLocation.lat, userLocation.lng]}
                   radius={6}
-                  pathOptions={{ color: '#C8913A', fillColor: '#C8913A', fillOpacity: 0.9, weight: 2 }}
+                  pathOptions={{ color: 'var(--color-amber)', fillColor: 'var(--color-amber)', fillOpacity: 0.9, weight: 2 }}
                 >
                   <Popup>
                     <div style={{ padding: '8px 10px' }}>
-                      <span style={{ fontWeight: 600, color: '#E8F2E0', fontSize: 11 }}>You are here</span>
+                      <span style={{ fontWeight: 600, color: 'var(--color-text)', fontSize: 11 }}>You are here</span>
                     </div>
                   </Popup>
                 </CircleMarker>
@@ -143,7 +143,7 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
             {/* Quest pins */}
             {quests.map((q) => {
               const cat = CATEGORIES[q.category as keyof typeof CATEGORIES]
-              const color = cat?.color ?? '#C8913A'
+              const color = cat?.color ?? 'var(--color-amber)'
               const pill = PILL_COLORS[q.category] ?? { bg: '#FFF8E1', text: '#A0522D' }
               return (
                 <QuestDot key={q.id} quest={q} color={color} pill={pill} cat={cat} onSelect={onSelectQuest} />
@@ -155,17 +155,17 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
         {/* Legend overlay */}
         <div
           className="absolute bottom-4 left-3 right-3 rounded-[12px] px-3 py-2.5 flex flex-wrap gap-2 z-[1000]"
-          style={{ background: 'rgba(22,40,20,0.92)', border: '0.5px solid rgba(200,145,58,0.2)', backdropFilter: 'blur(8px)' }}
+          style={{ background: 'rgba(22,40,20,0.92)', border: '0.5px solid var(--color-amber-border)', backdropFilter: 'blur(8px)' }}
         >
           {Object.entries(CATEGORIES).map(([key, cat]) => (
             <div key={key} className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full" style={{ background: cat.color }} />
-              <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.5)' }}>{cat.label}</span>
+              <span className="text-[10px]" style={{ color: 'var(--color-text-secondary)' }}>{cat.label}</span>
             </div>
           ))}
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full" style={{ background: '#C8913A', boxShadow: '0 0 4px #C8913A' }} />
-            <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.5)' }}>You</span>
+            <div className="w-2 h-2 rounded-full" style={{ background: 'var(--color-amber)', boxShadow: '0 0 4px var(--color-amber)' }} />
+            <span className="text-[10px]" style={{ color: 'var(--color-text-secondary)' }}>You</span>
           </div>
         </div>
       </div>
@@ -245,7 +245,7 @@ function QuestDot({
             style={{
               fontSize: 13,
               fontWeight: 600,
-              color: '#E8F2E0',
+              color: 'var(--color-text)',
               lineHeight: 1.35,
               marginBottom: 4,
               display: '-webkit-box',
@@ -258,15 +258,15 @@ function QuestDot({
           </div>
 
           {/* Date · Location · Distance */}
-          <div style={{ fontSize: 12, color: 'rgba(232,242,224,0.55)', lineHeight: 1.4, marginBottom: 4 }}>
+          <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', lineHeight: 1.4, marginBottom: 4 }}>
             {formatDate(q.starts_at)} · {q.address || 'Location TBC'} · {q.distance_km.toFixed(1)}km away
           </div>
 
           {/* Source tag */}
           {q.source_name && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10 }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8913A', flexShrink: 0 }} />
-              <span style={{ fontSize: 13, color: '#C8913A', fontWeight: 500 }}>via {q.source_name}</span>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-amber)', flexShrink: 0 }} />
+              <span style={{ fontSize: 13, color: 'var(--color-amber)', fontWeight: 500 }}>via {q.source_name}</span>
             </div>
           )}
 
@@ -280,7 +280,7 @@ function QuestDot({
                 textAlign: 'center',
                 padding: '6px 0',
                 borderRadius: 9999,
-                background: '#C8913A',
+                background: 'var(--color-amber)',
                 color: '#fff',
                 fontSize: 13,
                 fontWeight: 600,
@@ -301,11 +301,11 @@ function QuestDot({
                 padding: '6px 0',
                 borderRadius: 9999,
                 background: 'transparent',
-                color: 'rgba(232,242,224,0.7)',
+                color: 'var(--color-text-secondary)',
                 fontSize: 13,
                 fontWeight: 500,
                 textDecoration: 'none',
-                border: '1px solid rgba(232,242,224,0.2)',
+                border: '1px solid var(--color-text-muted)',
                 lineHeight: 1.3,
               }}
             >

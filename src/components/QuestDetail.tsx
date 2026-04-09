@@ -9,8 +9,8 @@ import { formatDateTime } from '@/lib/dateUtils'
 const DetailMap = dynamic(() => import('./DetailMap'), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full rounded-[12px] flex items-center justify-center" style={{ background: '#162814' }}>
-      <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.25)' }}>Loading map...</span>
+    <div className="h-full w-full rounded-[12px] flex items-center justify-center" style={{ background: 'var(--color-card)' }}>
+      <span className="text-[12px]" style={{ color: 'var(--color-text-muted)' }}>Loading map...</span>
     </div>
   ),
 })
@@ -49,9 +49,9 @@ const typeLabel: Record<string, string> = {
 }
 
 const trustBadge: Record<string, { label: string; color: string }> = {
-  newcomer:    { label: 'Newcomer', color: 'rgba(232,242,224,0.3)' },
-  participant: { label: 'Participant', color: '#8FBF7A' },
-  contributor: { label: 'Contributor', color: '#C8913A' },
+  newcomer:    { label: 'Newcomer', color: 'var(--color-text-muted)' },
+  participant: { label: 'Participant', color: 'var(--color-success)' },
+  contributor: { label: 'Contributor', color: 'var(--color-amber)' },
   steward:     { label: 'Steward', color: '#D4A054' },
 }
 
@@ -189,32 +189,32 @@ export default function QuestDetail({
     <div
       className="fixed inset-0 z-50 font-body flex justify-center overflow-y-auto transition-transform duration-200 ease-out"
       style={{
-        background: '#0D1A0B',
-        color: '#E8F2E0',
+        background: 'var(--color-bg)',
+        color: 'var(--color-text)',
         transform: animateIn ? 'translateX(0)' : 'translateX(100%)',
       }}
     >
       <div className="w-full pb-36" style={{ maxWidth: 390 }}>
 
         {/* ── Top bar ── */}
-        <div className="flex items-center justify-between px-4 pb-3 sticky top-0 z-10" style={{ background: '#0D1A0B', paddingTop: 'calc(20px + var(--sat, 0px))' }}>
+        <div className="flex items-center justify-between px-4 pb-3 sticky top-0 z-10" style={{ background: 'var(--color-bg)', paddingTop: 'calc(20px + var(--sat, 0px))' }}>
           <button onClick={handleBack} className="flex items-center gap-1.5">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
             </svg>
-            <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.4)' }}>Back</span>
+            <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>Back</span>
           </button>
 
           <span
             className="text-[13px] font-semibold uppercase px-2.5 py-1 rounded-full"
-            style={{ background: 'rgba(200,145,58,0.15)', color: '#C8913A', letterSpacing: '0.08em' }}
+            style={{ background: 'var(--color-amber-light)', color: 'var(--color-amber)', letterSpacing: '0.08em' }}
           >
             {typeEmoji[quest.category] ?? ''} {typeLabel[quest.category] ?? quest.category}
           </span>
 
           {/* Share button */}
           <button onClick={handleShare} className="opacity-50 hover:opacity-80 transition-opacity" title="Share this quest">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-amber)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
               <polyline points="16 6 12 2 8 6" />
               <line x1="12" y1="2" x2="12" y2="15" />
@@ -226,23 +226,23 @@ export default function QuestDetail({
         <div className="px-4">
 
           {/* Title */}
-          <h1 className="font-heading text-[24px] font-light leading-snug mt-1 mb-2" style={{ color: '#E8F2E0' }}>
+          <h1 className="font-heading text-[24px] font-light leading-snug mt-1 mb-2" style={{ color: 'var(--color-text)' }}>
             {quest.title}
           </h1>
 
           {/* Organiser + source */}
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.45)' }}>
+            <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
               via {quest.source_name}
             </span>
-            <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.2)' }}>&middot;</span>
-            <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.45)' }}>
+            <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>&middot;</span>
+            <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
               {quest.distance_km.toFixed(1)}km away
             </span>
             {quest.ai_score > 0 && (
               <>
-                <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.2)' }}>&middot;</span>
-                <span className="text-[12px] font-medium" style={{ color: '#C8913A' }}>
+                <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>&middot;</span>
+                <span className="text-[12px] font-medium" style={{ color: 'var(--color-amber)' }}>
                   {quest.ai_score} regen
                 </span>
               </>
@@ -252,13 +252,13 @@ export default function QuestDetail({
           {/* Date + time */}
           <div
             className="flex items-start gap-3 rounded-[12px] px-3.5 py-3 mb-2.5"
-            style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+            style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
           >
             <span className="text-lg mt-0.5">{'\u{1F4C5}'}</span>
             <div>
               <p className="text-[13px] font-medium">{formatDateTime(quest.starts_at)}</p>
               {quest.ends_at && formatDuration(quest.starts_at, quest.ends_at) && (
-                <p className="text-[13px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                <p className="text-[13px] mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
                   {formatDuration(quest.starts_at, quest.ends_at)} duration
                 </p>
               )}
@@ -268,7 +268,7 @@ export default function QuestDetail({
           {/* Location + map */}
           <div
             className="rounded-[12px] overflow-hidden mb-2.5"
-            style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+            style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
           >
             <div className="px-3.5 py-3 flex items-start gap-3">
               <span className="text-lg mt-0.5">{'\u{1F4CD}'}</span>
@@ -276,7 +276,7 @@ export default function QuestDetail({
                 <p className="text-[13px] font-medium">
                   {joined ? quest.address : approximateLocation(quest.address)}
                 </p>
-                <p className="text-[13px] mt-0.5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                <p className="text-[13px] mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
                   {joined
                     ? `${quest.distance_km.toFixed(1)}km from you \u2014 exact location`
                     : `Approximate area \u2014 exact location after joining`
@@ -293,12 +293,12 @@ export default function QuestDetail({
           {joined && quest.address && (
             <div
               className="rounded-[12px] px-3.5 py-2.5 mb-2.5 flex items-center gap-2"
-              style={{ background: 'rgba(45,90,30,0.15)', border: '0.5px solid rgba(45,90,30,0.3)' }}
+              style={{ background: 'var(--color-grove)', border: '0.5px solid var(--color-success-bg)' }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8FBF7A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6L9 17l-5-5" />
               </svg>
-              <span className="text-[13px]" style={{ color: '#8FBF7A' }}>
+              <span className="text-[13px]" style={{ color: 'var(--color-success)' }}>
                 Full address: {quest.address}
               </span>
             </div>
@@ -307,9 +307,9 @@ export default function QuestDetail({
           {/* Description */}
           <div
             className="rounded-[12px] px-3.5 py-3 mb-2.5"
-            style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+            style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
           >
-            <p className="text-[13px] leading-relaxed whitespace-pre-line" style={{ color: 'rgba(232,242,224,0.7)' }}>
+            <p className="text-[13px] leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-text-secondary)' }}>
               {quest.description}
             </p>
           </div>
@@ -322,9 +322,9 @@ export default function QuestDetail({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium active:scale-95 transition-transform"
-                style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.2)', color: '#C8913A', textDecoration: 'none' }}
+                style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)', color: 'var(--color-amber)', textDecoration: 'none' }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8913A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" y1="14" x2="21" y2="3" />
@@ -337,9 +337,9 @@ export default function QuestDetail({
               target="_blank"
               rel="noopener noreferrer"
               className={`${quest.source_url ? '' : 'flex-1'} flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium active:scale-95 transition-transform`}
-              style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.2)', color: '#E8F2E0', textDecoration: 'none', minWidth: quest.source_url ? 'auto' : undefined, paddingLeft: 16, paddingRight: 16 }}
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)', color: 'var(--color-text)', textDecoration: 'none', minWidth: quest.source_url ? 'auto' : undefined, paddingLeft: 16, paddingRight: 16 }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8F2E0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="3 11 22 2 13 21 11 13 3 11" />
               </svg>
               Directions
@@ -350,12 +350,12 @@ export default function QuestDetail({
           {quest.ai_reasoning && (
             <div
               className="rounded-[12px] px-3.5 py-3 mb-2.5"
-              style={{ background: 'rgba(200,145,58,0.06)', border: '0.5px solid rgba(200,145,58,0.12)' }}
+              style={{ background: 'var(--color-pill-bg)', border: '0.5px solid var(--color-border)' }}
             >
-              <p className="text-[13px] uppercase font-medium mb-1" style={{ color: '#C8913A', letterSpacing: '0.08em' }}>
+              <p className="text-[13px] uppercase font-medium mb-1" style={{ color: 'var(--color-amber)', letterSpacing: '0.08em' }}>
                 Why this quest matters
               </p>
-              <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.5)' }}>
+              <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                 {quest.ai_reasoning}
               </p>
             </div>
@@ -365,22 +365,22 @@ export default function QuestDetail({
           {!loading && (
             <div
               className="rounded-[12px] px-3.5 py-3 mb-2.5"
-              style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.55)' }}>
+                <span className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
                   {count} going{spotsLeft !== null && ` \u00b7 ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
                 </span>
                 {maxSpots && (
-                  <span className="text-[12px]" style={{ color: 'rgba(232,242,224,0.25)' }}>{count}/{maxSpots}</span>
+                  <span className="text-[12px]" style={{ color: 'var(--color-text-muted)' }}>{count}/{maxSpots}</span>
                 )}
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(232,242,224,0.06)' }}>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-pill-bg)' }}>
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
                     width: maxSpots ? `${fillPct}%` : `${Math.min(100, count * 12)}%`,
-                    background: fillPct > 80 ? '#D4785A' : '#C8913A',
+                    background: fillPct > 80 ? 'var(--color-error)' : 'var(--color-amber)',
                   }}
                 />
               </div>
@@ -391,14 +391,14 @@ export default function QuestDetail({
           {!loading && (
             <div
               className="rounded-[12px] px-3.5 py-3 mb-2.5"
-              style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
             >
-              <p className="text-[13px] uppercase font-medium mb-2.5" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.08em' }}>
+              <p className="text-[13px] uppercase font-medium mb-2.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
                 Going {count > 0 ? `\u2014 first names only until you meet in person` : ''}
               </p>
 
               {count === 0 ? (
-                <p className="text-[12px]" style={{ color: 'rgba(232,242,224,0.4)' }}>
+                <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
                   Be the first to join this quest.
                 </p>
               ) : (
@@ -410,12 +410,12 @@ export default function QuestDetail({
                       <div key={p.user_id} className="flex items-center gap-1.5">
                         <div
                           className="w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-semibold shrink-0"
-                          style={{ background: '#1E3A1A', border: '1.5px solid #C8913A', color: '#C8913A' }}
+                          style={{ background: 'var(--color-avatar-bg)', border: '1.5px solid var(--color-amber)', color: 'var(--color-amber)' }}
                         >
                           {initial}
                         </div>
                         <div>
-                          <p className="text-[13px] font-medium" style={{ color: '#E8F2E0' }}>
+                          <p className="text-[13px] font-medium" style={{ color: 'var(--color-text)' }}>
                             {p.first_name || 'Explorer'}
                           </p>
                           <p className="text-[8px]" style={{ color: badge.color }}>
@@ -427,7 +427,7 @@ export default function QuestDetail({
                   })}
                   {count > 6 && (
                     <div className="flex items-center">
-                      <span className="text-[13px]" style={{ color: 'rgba(232,242,224,0.35)' }}>
+                      <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
                         +{count - 6} more
                       </span>
                     </div>
@@ -440,10 +440,10 @@ export default function QuestDetail({
           {/* Safety footer */}
           <div className="mt-4 mb-6 text-center space-y-2">
             {reportSent ? (
-              <p className="text-[12px]" style={{ color: '#8FBF7A' }}>✓ Report submitted — thank you</p>
+              <p className="text-[12px]" style={{ color: 'var(--color-success)' }}>✓ Report submitted — thank you</p>
             ) : showReport ? (
-              <div className="rounded-[12px] px-3.5 py-3 text-left mx-4" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.2)' }}>
-                <p className="text-[12px] mb-2" style={{ color: 'rgba(232,242,224,0.55)' }}>Why are you reporting this quest?</p>
+              <div className="rounded-[12px] px-3.5 py-3 text-left mx-4" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}>
+                <p className="text-[12px] mb-2" style={{ color: 'var(--color-text-secondary)' }}>Why are you reporting this quest?</p>
                 <div className="space-y-1.5 mb-3">
                   {['Spam or fake event', 'Inappropriate content', 'Wrong location or date', 'Safety concern', 'Other'].map(r => (
                     <button
@@ -451,9 +451,9 @@ export default function QuestDetail({
                       onClick={() => setReportReason(r)}
                       className="w-full text-left rounded-[8px] px-2.5 py-2 text-[12px] transition-colors"
                       style={{
-                        background: reportReason === r ? 'rgba(200,145,58,0.15)' : 'rgba(232,242,224,0.04)',
-                        border: reportReason === r ? '0.5px solid rgba(200,145,58,0.4)' : '0.5px solid transparent',
-                        color: reportReason === r ? '#C8913A' : 'rgba(232,242,224,0.5)',
+                        background: reportReason === r ? 'var(--color-amber-light)' : 'var(--color-pill-bg)',
+                        border: reportReason === r ? '0.5px solid var(--color-amber-border)' : '0.5px solid transparent',
+                        color: reportReason === r ? 'var(--color-amber)' : 'var(--color-text-secondary)',
                       }}
                     >
                       {r}
@@ -464,7 +464,7 @@ export default function QuestDetail({
                   <button
                     onClick={() => { setShowReport(false); setReportReason('') }}
                     className="flex-1 py-2 rounded-[8px] text-[11px]"
-                    style={{ background: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.4)', border: 'none', cursor: 'pointer' }}
+                    style={{ background: 'var(--color-pill-bg)', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer' }}
                   >Cancel</button>
                   <button
                     onClick={async () => {
@@ -482,8 +482,8 @@ export default function QuestDetail({
                     disabled={!reportReason || reportSubmitting}
                     className="flex-1 py-2 rounded-[8px] text-[11px] font-semibold"
                     style={{
-                      background: reportReason ? '#D4785A' : 'rgba(232,242,224,0.06)',
-                      color: reportReason ? '#0D1A0B' : 'rgba(232,242,224,0.3)',
+                      background: reportReason ? 'var(--color-error)' : 'var(--color-pill-bg)',
+                      color: reportReason ? 'var(--color-pill-active-text)' : 'var(--color-text-muted)',
                       border: 'none', cursor: reportReason ? 'pointer' : 'default',
                       opacity: reportSubmitting ? 0.6 : 1,
                     }}
@@ -494,12 +494,12 @@ export default function QuestDetail({
               <button
                 onClick={() => userId ? setShowReport(true) : onNeedAuth()}
                 className="text-[12px] underline"
-                style={{ color: 'rgba(232,242,224,0.25)', background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 Report this quest
               </button>
             )}
-            <p className="text-[13px] leading-relaxed px-4" style={{ color: 'rgba(232,242,224,0.18)' }}>
+            <p className="text-[13px] leading-relaxed px-4" style={{ color: 'var(--color-text-faint)' }}>
               Exact location shared after joining &mdash; your location is never shared with others.
             </p>
           </div>
@@ -508,7 +508,7 @@ export default function QuestDetail({
         {/* ── Fixed bottom action ── */}
         <div
           className="fixed bottom-0 left-0 right-0 flex justify-center z-50"
-          style={{ background: 'linear-gradient(transparent, #0D1A0B 30%)' }}
+          style={{ background: 'linear-gradient(var(--color-gradient-top), var(--color-gradient-bottom) 30%)' }}
         >
           <div className="w-full px-4 pb-6 pt-4" style={{ maxWidth: 390 }}>
             {joined ? (
@@ -517,13 +517,13 @@ export default function QuestDetail({
                 disabled={joining}
                 className="w-full py-3.5 rounded-[12px] flex items-center justify-center gap-2 text-[13px] font-semibold transition-opacity"
                 style={{
-                  background: 'rgba(45,90,30,0.3)',
-                  border: '0.5px solid rgba(45,90,30,0.5)',
-                  color: '#8FBF7A',
+                  background: 'var(--color-success-bg)',
+                  border: '0.5px solid var(--color-success)',
+                  color: 'var(--color-success)',
                   opacity: joining ? 0.6 : 1,
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8FBF7A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
                 Joined
@@ -534,8 +534,8 @@ export default function QuestDetail({
                 disabled={joining || (spotsLeft !== null && spotsLeft <= 0)}
                 className="w-full py-3.5 rounded-[12px] text-[14px] font-semibold transition-opacity"
                 style={{
-                  background: '#C8913A',
-                  color: '#0D1A0B',
+                  background: 'var(--color-amber)',
+                  color: 'var(--color-pill-active-text)',
                   opacity: joining || (spotsLeft !== null && spotsLeft <= 0) ? 0.5 : 1,
                   letterSpacing: '0.02em',
                 }}

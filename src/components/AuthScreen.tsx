@@ -11,10 +11,10 @@ interface Props {
 function SeedlingIcon({ size = 34 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 36 36" fill="none">
-      <circle cx="18" cy="22" r="10" fill="rgba(200,145,58,0.15)" stroke="rgba(200,145,58,0.3)" strokeWidth="0.8" />
-      <path d="M18 22 Q14 16 13 10 Q16 14 18 12 Q20 14 23 10 Q22 16 18 22Z" fill="#C8913A" opacity="0.9" />
-      <path d="M18 22 L18 30" stroke="rgba(200,145,58,0.5)" strokeWidth="1.2" strokeLinecap="round" />
-      <circle cx="18" cy="22" r="2" fill="#C8913A" />
+      <circle cx="18" cy="22" r="10" fill="var(--color-amber-light)" stroke="var(--color-amber-border)" strokeWidth="0.8" />
+      <path d="M18 22 Q14 16 13 10 Q16 14 18 12 Q20 14 23 10 Q22 16 18 22Z" fill="var(--color-amber)" opacity="0.9" />
+      <path d="M18 22 L18 30" stroke="var(--color-text-secondary)" strokeWidth="1.2" strokeLinecap="round" />
+      <circle cx="18" cy="22" r="2" fill="var(--color-amber)" />
     </svg>
   )
 }
@@ -75,9 +75,9 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
     width: '100%',
     padding: '12px 14px',
     borderRadius: 10,
-    border: '0.5px solid rgba(200,145,58,0.2)',
-    background: '#162814',
-    color: '#E8F2E0',
+    border: '0.5px solid var(--color-amber-border)',
+    background: 'var(--color-card)',
+    color: 'var(--color-text)',
     fontSize: 14,
     fontFamily: 'var(--font-outfit), sans-serif',
     outline: 'none',
@@ -87,7 +87,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
   return (
     <div
       className="min-h-screen flex justify-center font-body"
-      style={{ background: '#0D1A0B', color: '#E8F2E0' }}
+      style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}
     >
       <div className="w-full flex flex-col items-center px-6" style={{ maxWidth: 390, paddingTop: 'calc(16px + var(--sat, 0px))' }}>
 
@@ -101,23 +101,23 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
               transform: 'translateX(-50%)',
               width: 280,
               height: 280,
-              background: 'radial-gradient(circle, rgba(200,145,58,0.14) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, var(--color-amber-bg) 0%, transparent 70%)',
             }}
           />
           <div className="flex items-center gap-2.5 relative z-10">
             <SeedlingIcon />
             <span
               className="font-heading text-[36px] font-light tracking-tight leading-none"
-              style={{ color: '#E8F2E0', letterSpacing: '-0.01em' }}
+              style={{ color: 'var(--color-text)', letterSpacing: '-0.01em' }}
             >
-              em<span style={{ color: '#C8913A' }}>e</span>rge
+              em<span style={{ color: 'var(--color-amber)' }}>e</span>rge
             </span>
           </div>
           <p
             className="text-center mt-2.5 relative z-10"
             style={{
               fontSize: 10,
-              color: 'rgba(232,242,224,0.4)',
+              color: 'var(--color-text-secondary)',
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
             }}
@@ -129,7 +129,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
         {/* Mode toggle */}
         <div
           className="flex rounded-full p-0.5 mb-6 w-full"
-          style={{ background: '#162814', maxWidth: 260 }}
+          style={{ background: 'var(--color-card)', maxWidth: 260 }}
         >
           {(['login', 'signup'] as const).map(m => (
             <button
@@ -137,8 +137,8 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
               onClick={() => { setMode(m); setError(''); setConfirmMessage('') }}
               className="flex-1 py-2 rounded-full text-[12px] font-medium transition-all"
               style={{
-                background: mode === m ? '#C8913A' : 'transparent',
-                color: mode === m ? '#0D1A0B' : 'rgba(232,242,224,0.5)',
+                background: mode === m ? 'var(--color-amber)' : 'transparent',
+                color: mode === m ? 'var(--color-pill-active-text)' : 'var(--color-text-secondary)',
                 letterSpacing: '0.04em',
               }}
             >
@@ -156,8 +156,8 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
               value={firstName}
               onChange={e => setFirstName(e.target.value)}
               style={inputStyle}
-              onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+              onFocus={e => e.target.style.borderColor = 'var(--color-amber)'}
+              onBlur={e => e.target.style.borderColor = 'var(--color-amber-border)'}
             />
           )}
 
@@ -168,8 +168,8 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
             onChange={e => setEmail(e.target.value)}
             required
             style={inputStyle}
-            onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+            onFocus={e => e.target.style.borderColor = 'var(--color-amber)'}
+            onBlur={e => e.target.style.borderColor = 'var(--color-amber-border)'}
           />
 
           <div style={{ position: 'relative' }}>
@@ -181,8 +181,8 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
               required
               minLength={6}
               style={{ ...inputStyle, paddingRight: 44 }}
-              onFocus={e => e.target.style.borderColor = 'rgba(200,145,58,0.6)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(200,145,58,0.2)'}
+              onFocus={e => e.target.style.borderColor = 'var(--color-amber)'}
+              onBlur={e => e.target.style.borderColor = 'var(--color-amber-border)'}
             />
             <button
               type="button"
@@ -190,7 +190,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
               style={{
                 position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
                 background: 'none', border: 'none', cursor: 'pointer',
-                color: 'rgba(200,145,58,0.5)', fontSize: 13, padding: 4,
+                color: 'var(--color-text-secondary)', fontSize: 13, padding: 4,
                 fontFamily: 'var(--font-outfit), sans-serif',
               }}
             >
@@ -200,15 +200,16 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
 
           {/* Error */}
           {error && (
-            <p className="text-[12px] px-1" style={{ color: '#D4785A' }}>
+            <p className="text-[12px] px-1" style={{ color: 'var(--color-error)' }}>
               {error}
             </p>
           )}
 
           {/* Confirm message */}
           {confirmMessage && (
-            <p className="text-[12px] px-1" style={{ color: '#C8913A' }}>
+            <p className="text-[12px] px-1" style={{ color: 'var(--color-amber)' }}>
               {confirmMessage}
+
             </p>
           )}
 
@@ -218,8 +219,8 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
             disabled={submitting}
             className="w-full py-3 rounded-[10px] text-[13px] font-semibold transition-opacity"
             style={{
-              background: '#C8913A',
-              color: '#0D1A0B',
+              background: 'var(--color-amber)',
+              color: 'var(--color-pill-active-text)',
               opacity: submitting ? 0.6 : 1,
               letterSpacing: '0.02em',
               marginTop: 8,
@@ -236,7 +237,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
               type="button"
               onClick={() => setShowForgot(true)}
               className="w-full text-center text-[11px] mt-2"
-              style={{ color: 'rgba(200,145,58,0.5)', background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{ color: 'var(--color-text-secondary)', background: 'none', border: 'none', cursor: 'pointer' }}
             >
               Forgot password?
             </button>
@@ -245,24 +246,24 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
 
         {/* Forgot password form */}
         {showForgot && (
-          <div className="mt-4 rounded-[12px] px-4 py-4" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.2)' }}>
+          <div className="mt-4 rounded-[12px] px-4 py-4" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}>
             {forgotSent ? (
               <div className="text-center">
-                <p className="text-[13px] font-medium" style={{ color: '#C8913A' }}>Check your email</p>
-                <p className="text-[11px] mt-1" style={{ color: 'rgba(232,242,224,0.45)' }}>
+                <p className="text-[13px] font-medium" style={{ color: 'var(--color-amber)' }}>Check your email</p>
+                <p className="text-[11px] mt-1" style={{ color: 'var(--color-text-secondary)' }}>
                   We sent a password reset link to {email || 'your email'}.
                 </p>
                 <button
                   onClick={() => { setShowForgot(false); setForgotSent(false) }}
                   className="text-[11px] mt-3 underline"
-                  style={{ color: '#C8913A', background: 'none', border: 'none', cursor: 'pointer' }}
+                  style={{ color: 'var(--color-amber)', background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                   Back to login
                 </button>
               </div>
             ) : (
               <>
-                <p className="text-[12px] mb-3" style={{ color: 'rgba(232,242,224,0.55)' }}>
+                <p className="text-[12px] mb-3" style={{ color: 'var(--color-text-secondary)' }}>
                   Enter your email and we&apos;ll send you a reset link.
                 </p>
                 <input
@@ -276,7 +277,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
                   <button
                     onClick={() => setShowForgot(false)}
                     className="flex-1 py-2.5 rounded-[8px] text-[11px]"
-                    style={{ background: 'rgba(232,242,224,0.06)', color: 'rgba(232,242,224,0.4)', border: 'none', cursor: 'pointer' }}
+                    style={{ background: 'var(--color-pill-bg)', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer' }}
                   >
                     Cancel
                   </button>
@@ -293,7 +294,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
                     }}
                     disabled={submitting}
                     className="flex-1 py-2.5 rounded-[8px] text-[11px] font-semibold"
-                    style={{ background: '#C8913A', color: '#0D1A0B', border: 'none', cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}
+                    style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}
                   >
                     {submitting ? 'Sending...' : 'Send reset link'}
                   </button>
@@ -306,7 +307,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
         {/* Footer */}
         <p
           className="mt-8 text-[11px] text-center leading-relaxed"
-          style={{ color: 'rgba(232,242,224,0.25)' }}
+          style={{ color: 'var(--color-text-muted)' }}
         >
           {mode === 'login'
             ? "Don\u2019t have an account? "
@@ -315,18 +316,18 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
           <button
             onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setConfirmMessage('') }}
             className="underline"
-            style={{ color: '#C8913A' }}
+            style={{ color: 'var(--color-amber)' }}
           >
             {mode === 'login' ? 'Sign up' : 'Log in'}
           </button>
         </p>
 
         {/* Legal + credit */}
-        <p className="mt-10 text-[8px] text-center leading-[1.7] px-2" style={{ color: 'rgba(232,242,224,0.18)' }}>
+        <p className="mt-10 text-[8px] text-center leading-[1.7] px-2" style={{ color: 'var(--color-text-faint)' }}>
           By signing up you agree that Emerge is a community platform. We aggregate publicly available events and do not organise or endorse them. Attend at your own risk. Your data is stored securely and never shared.
         </p>
-        <p className="mt-2 text-[8px] text-center" style={{ color: 'rgba(232,242,224,0.15)' }}>
-          Created by Pedro Valdjiu · <a href="https://terralta.org" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(200,145,58,0.35)', textDecoration: 'underline' }}>terralta.org</a>
+        <p className="mt-2 text-[8px] text-center" style={{ color: 'var(--color-text-faint)' }}>
+          Created by Pedro Valdjiu · <a href="https://terralta.org" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-amber-border)', textDecoration: 'underline' }}>terralta.org</a>
         </p>
       </div>
     </div>

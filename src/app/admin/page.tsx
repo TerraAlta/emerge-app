@@ -40,10 +40,10 @@ interface PipelineSource {
 function SeedlingIcon({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 36 36" fill="none">
-      <circle cx="18" cy="22" r="10" fill="rgba(200,145,58,0.15)" stroke="rgba(200,145,58,0.3)" strokeWidth="0.8" />
-      <path d="M18 22 Q14 16 13 10 Q16 14 18 12 Q20 14 23 10 Q22 16 18 22Z" fill="#C8913A" opacity="0.9" />
-      <path d="M18 22 L18 30" stroke="rgba(200,145,58,0.5)" strokeWidth="1.2" strokeLinecap="round" />
-      <circle cx="18" cy="22" r="2" fill="#C8913A" />
+      <circle cx="18" cy="22" r="10" fill="var(--color-amber-light)" stroke="var(--color-amber-border)" strokeWidth="0.8" />
+      <path d="M18 22 Q14 16 13 10 Q16 14 18 12 Q20 14 23 10 Q22 16 18 22Z" fill="var(--color-amber)" opacity="0.9" />
+      <path d="M18 22 L18 30" stroke="var(--color-text-secondary)" strokeWidth="1.2" strokeLinecap="round" />
+      <circle cx="18" cy="22" r="2" fill="var(--color-amber)" />
     </svg>
   )
 }
@@ -53,12 +53,12 @@ function StatCard({ label, value }: { label: string; value: string | number | nu
   return (
     <div
       className="rounded-[12px] px-4 py-3 flex-1 min-w-[140px]"
-      style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+      style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
     >
-      <div className="text-[22px] font-semibold font-heading" style={{ color: '#C8913A' }}>
+      <div className="text-[22px] font-semibold font-heading" style={{ color: 'var(--color-amber)' }}>
         {value === null ? '\u2014' : value}
       </div>
-      <div className="text-[10px] mt-0.5 uppercase" style={{ color: 'rgba(232,242,224,0.4)', letterSpacing: '0.08em' }}>
+      <div className="text-[10px] mt-0.5 uppercase" style={{ color: 'var(--color-text-secondary)', letterSpacing: '0.08em' }}>
         {label}
       </div>
     </div>
@@ -70,7 +70,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
     <h2
       className="text-[9px] uppercase px-1 mb-2"
-      style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.1em' }}
+      style={{ color: 'var(--color-text-muted)', letterSpacing: '0.1em' }}
     >
       {children}
     </h2>
@@ -219,11 +219,11 @@ function AnalyticsTab() {
       <div className="space-y-4 animate-pulse">
         <div className="flex gap-3 flex-wrap">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="rounded-[12px] h-[68px] flex-1 min-w-[140px]" style={{ background: '#162814' }} />
+            <div key={i} className="rounded-[12px] h-[68px] flex-1 min-w-[140px]" style={{ background: 'var(--color-card)' }} />
           ))}
         </div>
         {[1, 2, 3].map(i => (
-          <div key={i} className="rounded-[12px] h-[120px]" style={{ background: '#162814' }} />
+          <div key={i} className="rounded-[12px] h-[120px]" style={{ background: 'var(--color-card)' }} />
         ))}
       </div>
     )
@@ -244,10 +244,10 @@ function AnalyticsTab() {
         <SectionHeader>Most active cities</SectionHeader>
         <div
           className="rounded-[12px] overflow-hidden"
-          style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+          style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
         >
           {cities.length === 0 ? (
-            <div className="px-4 py-6 text-center text-[11px]" style={{ color: 'rgba(232,242,224,0.3)' }}>
+            <div className="px-4 py-6 text-center text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
               No location data yet
             </div>
           ) : (
@@ -255,17 +255,17 @@ function AnalyticsTab() {
               <div
                 key={city.location_name}
                 className="flex items-center justify-between px-4 py-2.5"
-                style={{ borderBottom: i < cities.length - 1 ? '0.5px solid rgba(232,242,224,0.04)' : 'none' }}
+                style={{ borderBottom: i < cities.length - 1 ? '0.5px solid var(--color-pill-bg)' : 'none' }}
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="text-[10px] font-mono w-5 text-right" style={{ color: 'rgba(232,242,224,0.25)' }}>
+                  <span className="text-[10px] font-mono w-5 text-right" style={{ color: 'var(--color-text-muted)' }}>
                     {i + 1}
                   </span>
-                  <span className="text-[12px]" style={{ color: '#E8F2E0' }}>
+                  <span className="text-[12px]" style={{ color: 'var(--color-text)' }}>
                     {city.location_name}
                   </span>
                 </div>
-                <span className="text-[11px] font-semibold" style={{ color: '#C8913A' }}>
+                <span className="text-[11px] font-semibold" style={{ color: 'var(--color-amber)' }}>
                   {city.count}
                 </span>
               </div>
@@ -279,10 +279,10 @@ function AnalyticsTab() {
         <SectionHeader>Recent signups</SectionHeader>
         <div
           className="rounded-[12px] overflow-hidden"
-          style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+          style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
         >
           {signups.length === 0 ? (
-            <div className="px-4 py-6 text-center text-[11px]" style={{ color: 'rgba(232,242,224,0.3)' }}>
+            <div className="px-4 py-6 text-center text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
               {stats.totalUsers === null ? 'Profiles table restricted by RLS \u2014 needs an RPC function' : 'No signups yet'}
             </div>
           ) : (
@@ -290,12 +290,12 @@ function AnalyticsTab() {
               <div
                 key={i}
                 className="flex items-center justify-between px-4 py-2.5"
-                style={{ borderBottom: i < signups.length - 1 ? '0.5px solid rgba(232,242,224,0.04)' : 'none' }}
+                style={{ borderBottom: i < signups.length - 1 ? '0.5px solid var(--color-pill-bg)' : 'none' }}
               >
-                <span className="text-[12px]" style={{ color: '#E8F2E0' }}>
+                <span className="text-[12px]" style={{ color: 'var(--color-text)' }}>
                   {u.first_name || 'Anonymous'}
                 </span>
-                <span className="text-[10px]" style={{ color: 'rgba(232,242,224,0.35)' }}>
+                <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
                   {fmtShortDate(u.created_at)}
                 </span>
               </div>
@@ -309,10 +309,10 @@ function AnalyticsTab() {
         <SectionHeader>Most popular quests</SectionHeader>
         <div
           className="rounded-[12px] overflow-hidden"
-          style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+          style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
         >
           {popular.length === 0 ? (
-            <div className="px-4 py-6 text-center text-[11px]" style={{ color: 'rgba(232,242,224,0.3)' }}>
+            <div className="px-4 py-6 text-center text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
               {stats.questsJoined === null ? 'Participants table restricted by RLS \u2014 needs an RPC function' : 'No participants yet'}
             </div>
           ) : (
@@ -320,12 +320,12 @@ function AnalyticsTab() {
               <div
                 key={q.id}
                 className="flex items-center justify-between px-4 py-2.5 gap-3"
-                style={{ borderBottom: i < popular.length - 1 ? '0.5px solid rgba(232,242,224,0.04)' : 'none' }}
+                style={{ borderBottom: i < popular.length - 1 ? '0.5px solid var(--color-pill-bg)' : 'none' }}
               >
-                <span className="text-[12px] truncate flex-1" style={{ color: '#E8F2E0' }}>
+                <span className="text-[12px] truncate flex-1" style={{ color: 'var(--color-text)' }}>
                   {q.title}
                 </span>
-                <span className="text-[11px] font-semibold shrink-0" style={{ color: '#C8913A' }}>
+                <span className="text-[11px] font-semibold shrink-0" style={{ color: 'var(--color-amber)' }}>
                   {q.participant_count} joined
                 </span>
               </div>
@@ -399,9 +399,9 @@ function PipelineTab() {
   if (loading) {
     return (
       <div className="space-y-3 animate-pulse">
-        <div className="rounded-[12px] h-[52px]" style={{ background: '#162814' }} />
+        <div className="rounded-[12px] h-[52px]" style={{ background: 'var(--color-card)' }} />
         {[1, 2, 3, 4, 5].map(i => (
-          <div key={i} className="rounded-[12px] h-[48px]" style={{ background: '#162814' }} />
+          <div key={i} className="rounded-[12px] h-[48px]" style={{ background: 'var(--color-card)' }} />
         ))}
       </div>
     )
@@ -411,24 +411,24 @@ function PipelineTab() {
     <div className="space-y-4">
       {/* Summary pills */}
       <div className="flex gap-3">
-        <div className="rounded-[12px] px-4 py-2.5 flex-1" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
-          <div className="text-[18px] font-semibold font-heading" style={{ color: '#C8913A' }}>{totalSources}</div>
-          <div className="text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.4)', letterSpacing: '0.08em' }}>Total sources</div>
+        <div className="rounded-[12px] px-4 py-2.5 flex-1" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
+          <div className="text-[18px] font-semibold font-heading" style={{ color: 'var(--color-amber)' }}>{totalSources}</div>
+          <div className="text-[9px] uppercase" style={{ color: 'var(--color-text-secondary)', letterSpacing: '0.08em' }}>Total sources</div>
         </div>
-        <div className="rounded-[12px] px-4 py-2.5 flex-1" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
+        <div className="rounded-[12px] px-4 py-2.5 flex-1" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
           <div className="text-[18px] font-semibold font-heading" style={{ color: '#4ADE80' }}>{activeSources}</div>
-          <div className="text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.4)', letterSpacing: '0.08em' }}>Active</div>
+          <div className="text-[9px] uppercase" style={{ color: 'var(--color-text-secondary)', letterSpacing: '0.08em' }}>Active</div>
         </div>
-        <div className="rounded-[12px] px-4 py-2.5 flex-1" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
+        <div className="rounded-[12px] px-4 py-2.5 flex-1" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
           <div className="text-[18px] font-semibold font-heading" style={{ color: '#FACC15' }}>{staleSources}</div>
-          <div className="text-[9px] uppercase" style={{ color: 'rgba(232,242,224,0.4)', letterSpacing: '0.08em' }}>Stale</div>
+          <div className="text-[9px] uppercase" style={{ color: 'var(--color-text-secondary)', letterSpacing: '0.08em' }}>Stale</div>
         </div>
       </div>
 
       {/* Table header */}
       <div
         className="flex items-center gap-3 px-4 py-2 text-[9px] uppercase"
-        style={{ color: 'rgba(232,242,224,0.3)', letterSpacing: '0.08em' }}
+        style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}
       >
         <span className="w-3" />
         <span className="flex-1">Source</span>
@@ -439,10 +439,10 @@ function PipelineTab() {
       {/* Source rows */}
       <div
         className="rounded-[12px] overflow-hidden"
-        style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+        style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
       >
         {sources.length === 0 ? (
-          <div className="px-4 py-8 text-center text-[11px]" style={{ color: 'rgba(232,242,224,0.3)' }}>
+          <div className="px-4 py-8 text-center text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
             No quest sources found
           </div>
         ) : (
@@ -450,16 +450,16 @@ function PipelineTab() {
             <div
               key={src.source_name}
               className="flex items-center gap-3 px-4 py-3"
-              style={{ borderBottom: i < sources.length - 1 ? '0.5px solid rgba(232,242,224,0.04)' : 'none' }}
+              style={{ borderBottom: i < sources.length - 1 ? '0.5px solid var(--color-pill-bg)' : 'none' }}
             >
               <StatusDot status={src.status} />
-              <span className="flex-1 text-[12px] truncate" style={{ color: '#E8F2E0' }}>
+              <span className="flex-1 text-[12px] truncate" style={{ color: 'var(--color-text)' }}>
                 {src.source_name}
               </span>
-              <span className="w-14 text-right text-[12px] font-semibold" style={{ color: '#C8913A' }}>
+              <span className="w-14 text-right text-[12px] font-semibold" style={{ color: 'var(--color-amber)' }}>
                 {src.quest_count}
               </span>
-              <span className="w-24 text-right text-[10px]" style={{ color: 'rgba(232,242,224,0.35)' }}>
+              <span className="w-24 text-right text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
                 {src.last_event_date ? fmtDate(src.last_event_date) : '\u2014'}
               </span>
             </div>
@@ -476,7 +476,7 @@ function PipelineTab() {
         ].map(item => (
           <div key={item.status} className="flex items-center gap-1.5">
             <StatusDot status={item.status} />
-            <span className="text-[9px]" style={{ color: 'rgba(232,242,224,0.35)' }}>{item.label}</span>
+            <span className="text-[9px]" style={{ color: 'var(--color-text-muted)' }}>{item.label}</span>
           </div>
         ))}
       </div>
@@ -502,19 +502,19 @@ export default function AdminPage() {
 
   if (authed === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D1A0B' }}>
-        <div className="text-[11px] animate-pulse" style={{ color: 'rgba(232,242,224,0.3)' }}>Loading…</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+        <div className="text-[11px] animate-pulse" style={{ color: 'var(--color-text-muted)' }}>Loading…</div>
       </div>
     )
   }
 
   if (!authed) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6" style={{ background: '#0D1A0B' }}>
-        <p className="text-[13px] text-center" style={{ color: 'rgba(232,242,224,0.5)' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6" style={{ background: 'var(--color-bg)' }}>
+        <p className="text-[13px] text-center" style={{ color: 'var(--color-text-secondary)' }}>
           Admin access restricted.
         </p>
-        <a href="/" className="text-[11px]" style={{ color: '#C8913A', textDecoration: 'underline' }}>
+        <a href="/" className="text-[11px]" style={{ color: 'var(--color-amber)', textDecoration: 'underline' }}>
           Back to app
         </a>
       </div>
@@ -522,22 +522,22 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen font-body" style={{ background: '#0D1A0B' }}>
+    <div className="min-h-screen font-body" style={{ background: 'var(--color-bg)' }}>
       {/* Header */}
       <div className="px-6 pt-8 pb-4">
         <div className="flex items-center gap-2 mb-1">
           <SeedlingIcon size={22} />
-          <span className="font-heading text-[22px] font-light" style={{ color: '#E8F2E0', letterSpacing: '-0.01em' }}>
-            em<span style={{ color: '#C8913A' }}>e</span>rge
+          <span className="font-heading text-[22px] font-light" style={{ color: 'var(--color-text)', letterSpacing: '-0.01em' }}>
+            em<span style={{ color: 'var(--color-amber)' }}>e</span>rge
           </span>
           <span
             className="text-[9px] uppercase px-1.5 py-0.5 rounded-full ml-1"
-            style={{ background: 'rgba(200,145,58,0.15)', color: '#C8913A', letterSpacing: '0.06em', border: '0.5px solid rgba(200,145,58,0.25)' }}
+            style={{ background: 'var(--color-amber-light)', color: 'var(--color-amber)', letterSpacing: '0.06em', border: '0.5px solid var(--color-amber-border)' }}
           >
             Admin
           </span>
         </div>
-        <p className="text-[10px]" style={{ color: 'rgba(232,242,224,0.35)', letterSpacing: '0.04em' }}>
+        <p className="text-[10px]" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.04em' }}>
           Platform overview &amp; pipeline health
         </p>
       </div>
@@ -546,7 +546,7 @@ export default function AdminPage() {
       <div className="px-6 pb-5">
         <div
           className="inline-flex rounded-[10px] p-0.5"
-          style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}
+          style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
         >
           {(['analytics', 'pipeline'] as const).map(tab => {
             const isActive = activeTab === tab
@@ -556,8 +556,8 @@ export default function AdminPage() {
                 onClick={() => setActiveTab(tab)}
                 className="px-5 py-2 rounded-[8px] text-[11px] font-medium transition-all"
                 style={{
-                  background: isActive ? 'rgba(200,145,58,0.18)' : 'transparent',
-                  color: isActive ? '#C8913A' : 'rgba(232,242,224,0.4)',
+                  background: isActive ? 'var(--color-amber-light)' : 'transparent',
+                  color: isActive ? 'var(--color-amber)' : 'var(--color-text-secondary)',
                   letterSpacing: '0.04em',
                 }}
               >
@@ -578,7 +578,7 @@ export default function AdminPage() {
         <a
           href="/"
           className="text-[10px] inline-block"
-          style={{ color: 'rgba(200,145,58,0.4)', textDecoration: 'underline' }}
+          style={{ color: 'var(--color-text-secondary)', textDecoration: 'underline' }}
         >
           Back to app
         </a>

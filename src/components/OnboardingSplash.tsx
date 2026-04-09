@@ -25,14 +25,14 @@ export default function OnboardingSplash() {
       className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
       style={{ background: 'rgba(0,0,0,0.65)' }}
     >
-      <div className="rounded-2xl p-6 max-w-sm w-full" style={{ background: '#162814', border: '0.5px solid rgba(200,145,58,0.12)' }}>
+      <div className="rounded-2xl p-6 max-w-sm w-full" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
         {/* Eyebrow */}
-        <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: '#C8913A' }}>
+        <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-amber)' }}>
           Welcome to Emerge
         </p>
 
         {/* Headline */}
-        <h2 className="font-heading text-3xl font-light italic leading-tight mb-5" style={{ color: '#E8F2E0' }}>
+        <h2 className="font-heading text-3xl font-light italic leading-tight mb-5" style={{ color: 'var(--color-text)' }}>
           Not every event.<br />
           The right ones.
         </h2>
@@ -47,11 +47,11 @@ export default function OnboardingSplash() {
             <div key={i} className="flex gap-3">
               <span
                 className="flex-none w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white mt-0.5"
-                style={{ background: '#C8913A' }}
+                style={{ background: 'var(--color-amber)' }}
               >
                 {i + 1}
               </span>
-              <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(232,242,224,0.7)' }}>
+              <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                 {text}
               </p>
             </div>
@@ -59,10 +59,10 @@ export default function OnboardingSplash() {
         </div>
 
         {/* Divider */}
-        <div className="mb-4" style={{ borderTop: '0.5px solid rgba(200,145,58,0.12)' }} />
+        <div className="mb-4" style={{ borderTop: '0.5px solid var(--color-border)' }} />
 
         {/* Note */}
-        <p className="text-[11px] italic mb-5" style={{ color: 'rgba(232,242,224,0.4)' }}>
+        <p className="text-[11px] italic mb-5" style={{ color: 'var(--color-text-secondary)' }}>
           No chat, no profiles. The best conversations happen face to face.
         </p>
 
@@ -70,7 +70,7 @@ export default function OnboardingSplash() {
         <button
           onClick={dismiss}
           className="w-full py-3 rounded-full text-[13px] font-semibold text-white transition-opacity active:opacity-80"
-          style={{ background: '#C8913A' }}
+          style={{ background: 'var(--color-amber)' }}
         >
           Show me what&apos;s nearby &rarr;
         </button>

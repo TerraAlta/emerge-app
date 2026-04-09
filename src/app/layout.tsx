@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0D1A0B',
+  themeColor: '#F5F2EC',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -64,12 +64,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-startup-image" href="/icons/icon-512.svg" />
       </head>
-      <body className="bg-emerge-soil font-body min-h-screen" style={{ color: '#E8F2E0' }}>
+      <body className="font-body min-h-screen" style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
         {children}
-        {/* Service Worker registration */}
+        {/* Theme init + Service Worker registration */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              (function(){
+                var t=localStorage.getItem('emerge-theme')||'light';
+                document.documentElement.setAttribute('data-theme',t);
+                var m=document.querySelector('meta[name="theme-color"]');
+                if(m)m.setAttribute('content',t==='dark'?'#0D1A0B':'#F5F2EC');
+              })();
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(
