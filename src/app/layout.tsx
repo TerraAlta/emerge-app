@@ -17,11 +17,11 @@ export const metadata: Metadata = {
     siteName: 'Emerge',
     images: [
       {
-        url: '/og-image.svg',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Emerge — Regenerative Community Quests',
-        type: 'image/svg+xml',
+        type: 'image/png',
       },
     ],
     locale: 'en_US',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Emerge — Regenerative Community Quests',
     description: 'Real quests. Real community. Real change. Discover regenerative events near you.',
-    images: ['/og-image.svg'],
+    images: ['/og-image.png'],
   },
   appleWebApp: {
     capable: true,
