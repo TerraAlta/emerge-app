@@ -100,6 +100,24 @@
   display: none;
 }
 
+/* Global font size bump — +2px for readability on mobile */
+html {
+  font-size: 17px;
+  -webkit-text-size-adjust: 100%;
+}
+/* Scale all arbitrary Tailwind text sizes up by ~2px via a subtle zoom on the app shell */
+body {
+  font-size: calc(1rem + 0.5px);
+}
+/* Bump the smallest text classes so they remain readable */
+.text-\[7px\] { font-size: 9px !important; }
+.text-\[8px\] { font-size: 10px !important; }
+.text-\[9px\] { font-size: 11px !important; }
+.text-\[10px\] { font-size: 12px !important; }
+.text-\[11px\] { font-size: 13px !important; }
+.text-\[12px\] { font-size: 14px !important; }
+.text-\[13px\] { font-size: 15px !important; }
+
 /* Pulse animation for user location */
 @keyframes pulse-ring {
   0% { transform: scale(1); opacity: 0.6; }
