@@ -190,8 +190,8 @@ export default function Home() {
   )
 }
 
-/* ── Bottom Nav ── */
-function BottomNav({
+/* ── Top Nav (horizontal pill bar) ── */
+function TopNav({
   activeTab,
   onTabChange,
   onPostQuest,
@@ -200,56 +200,47 @@ function BottomNav({
   onTabChange: (tab: TabKey) => void
   onPostQuest: () => void
 }) {
-  const tabs: { key: TabKey | 'post'; icon: string; label: string }[] = [
-    { key: 'quests', icon: '\u25C8', label: 'Quests' },
-    { key: 'map',    icon: '\u25C9', label: 'Map' },
-    { key: 'post',   icon: '+',      label: 'Post' },
-    { key: 'skills', icon: '\u25CE', label: 'Skills' },
-    { key: 'trust',  icon: '\u25CB', label: 'Trust' },
+  const tabs: { key: TabKey | 'post'; label: string; icon: string }[] = [
+    { key: 'quests', label: 'Quests', icon: '\u{1F33F}' },
+    { key: 'map',    label: 'Map',    icon: '\u{1F5FA}\uFE0F' },
+    { key: 'post',   label: 'Post',   icon: '+' },
+    { key: 'skills', label: 'Skills', icon: '\u{1F331}' },
+    { key: 'trust',  label: 'Trust',  icon: '\u{1F91D}' },
   ]
 
   return (
-    <div className="shrink-0 z-50" style={{ background: 'var(--color-bg)', borderTop: '0.5px solid var(--color-pill-bg)' }}>
-      <div className="flex justify-around items-center px-2 pt-3" style={{ paddingBottom: 'calc(6px + var(--sab, 0px))' }}>
-        {tabs.map(tab => {
-          if (tab.key === 'post') {
-            return (
-              <div key="post" className="flex flex-col items-center gap-1 cursor-pointer -mt-5" onClick={onPostQuest} role="button" aria-label="Post quest">
-                <div
-                  className="w-11 h-11 rounded-full flex items-center justify-center text-xl font-light"
-                  style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', boxShadow: '0 2px 12px var(--color-amber-border)' }}
-                >
-                  +
-                </div>
-                <span className="text-[8px]" style={{ color: 'var(--color-amber)', letterSpacing: '0.04em' }}>Add</span>
-              </div>
-            )
-          }
-          const isActive = activeTab === tab.key
+    <div className="flex items-center gap-1.5 px-4 py-2 overflow-x-auto pill-scroll">
+      {tabs.map(tab => {
+        if (tab.key === 'post') {
           return (
-            <div
-              key={tab.key}
-              className="flex flex-col items-center gap-1 cursor-pointer"
-              onClick={() => onTabChange(tab.key as TabKey)}
-              role="button"
-              aria-label={tab.label}
+            <button
+              key="post"
+              onClick={onPostQuest}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap shrink-0 active:scale-95 transition-transform"
+              style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)' }}
+              aria-label="Post quest"
             >
-              <span
-                className="text-[15px]"
-                style={{ color: isActive ? 'var(--color-amber)' : 'var(--color-text)', opacity: isActive ? 1 : 0.3 }}
-              >
-                {tab.icon}
-              </span>
-              <span
-                className="text-[8px]"
-                style={{ color: isActive ? 'var(--color-amber)' : 'var(--color-text-muted)', letterSpacing: '0.04em' }}
-              >
-                {tab.label}
-              </span>
-            </div>
+              <span className="text-[15px]">+</span> Post
+            </button>
           )
-        })}
-      </div>
+        }
+        const isActive = activeTab === tab.key
+        return (
+          <button
+            key={tab.key}
+            onClick={() => onTabChange(tab.key as TabKey)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium whitespace-nowrap shrink-0 transition-all"
+            style={{
+              background: isActive ? 'var(--color-amber-light)' : 'var(--color-pill-bg)',
+              color: isActive ? 'var(--color-amber)' : 'var(--color-text-secondary)',
+              border: isActive ? '0.5px solid var(--color-amber-border)' : '0.5px solid transparent',
+            }}
+            aria-label={tab.label}
+          >
+            <span className="text-[14px]">{tab.icon}</span> {tab.label}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -420,21 +411,8 @@ function QuestBoard({
     <div className="min-h-screen font-body flex justify-center" style={{ background: 'var(--color-bg)' }}>
       <div className="w-full relative flex flex-col" style={{ maxWidth: 390, minHeight: '100dvh' }}>
 
-        {/* Tab content area — fills available space above nav */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingBottom: 72 }}>
-          {activeTab === 'map' && (
-            <MapScreen quests={quests} userLocation={location} onSelectQuest={onSelectQuest} />
-          )}
-          {activeTab === 'skills' && (
-            <SkillsScreen userId={userId} quests={quests} onSelectQuest={onSelectQuest} />
-          )}
-          {activeTab === 'trust' && (
-            <TrustScreen userId={userId} profile={profile} />
-          )}
-          {activeTab === 'quests' && (<div>
-
-        {/* Hero */}
-        <div className="relative overflow-hidden rounded-b-[24px]" style={{ background: 'var(--color-bg)', padding: 'calc(36px + var(--sat, 0px)) 24px 28px' }}>
+        {/* Hero — always visible */}
+        <div className="relative overflow-hidden rounded-b-[24px] shrink-0" style={{ background: 'var(--color-bg)', padding: 'calc(36px + var(--sat, 0px)) 24px 20px' }}>
           <div className="absolute pointer-events-none" style={{ bottom: -60, left: '50%', transform: 'translateX(-50%)', width: 340, height: 340, background: 'radial-gradient(circle, var(--color-amber-light) 0%, transparent 70%)' }} />
           <div className="flex items-center justify-center gap-2.5 relative z-10">
             <SeedlingIcon size={34} />
@@ -446,6 +424,24 @@ function QuestBoard({
             Real quests · Real community · Real change
           </p>
         </div>
+
+        {/* Top navigation — always visible */}
+        <div className="shrink-0 sticky top-0 z-40" style={{ background: 'var(--color-bg)' }}>
+          <TopNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
+        </div>
+
+        {/* Tab content area */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          {activeTab === 'map' && (
+            <MapScreen quests={quests} userLocation={location} onSelectQuest={onSelectQuest} />
+          )}
+          {activeTab === 'skills' && (
+            <SkillsScreen userId={userId} quests={quests} onSelectQuest={onSelectQuest} />
+          )}
+          {activeTab === 'trust' && (
+            <TrustScreen userId={userId} profile={profile} />
+          )}
+          {activeTab === 'quests' && (<div>
 
         {/* Header row */}
         <div className="flex items-center justify-between px-4 pt-5 pb-1">
@@ -860,10 +856,8 @@ function QuestBoard({
         <FooterDisclaimer />
 
           </div>)}
-        </div>
 
-        {/* Persistent bottom nav — always visible, inside the 390px container */}
-        <BottomNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
+        </div> {/* end tab content */}
 
       </div>
       <OnboardingSplash />
