@@ -115,7 +115,7 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
             zoomControl={false}
             attributionControl={false}
           >
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+            <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
             {userLocation && <MapUpdater center={[userLocation.lat, userLocation.lng]} />}
 
             {/* User location — pulsing amber dot */}

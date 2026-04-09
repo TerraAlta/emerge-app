@@ -28,3 +28,10 @@ export function toggleTheme(): Theme {
 export function initTheme() {
   setTheme(getTheme())
 }
+
+/** Map tile URL for current theme */
+export function getMapTileUrl(): string {
+  return getTheme() === 'dark'
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+}

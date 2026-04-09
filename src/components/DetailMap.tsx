@@ -24,7 +24,7 @@ export default function DetailMap({ lat, lng, title, joined }: Props) {
       doubleClickZoom={false}
       touchZoom={false}
     >
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
 
       {joined ? (
         /* Exact pin — shown after joining */
