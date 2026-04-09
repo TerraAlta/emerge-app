@@ -10,6 +10,10 @@ export async function GET(request: NextRequest) {
   const origin = requestUrl.origin
 
   if (token_hash && type) {
+    if (type === 'recovery') {
+      // Recovery flow: pass token to client-side reset page for session exchange
+      return NextResponse.redirect(`${origin}/reset-password?token_hash=${token_hash}&type=recovery`)
+    }
     // Email confirmation via token hash (PKCE flow)
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,14 +21,10 @@ export async function GET(request: NextRequest) {
     )
     const { error } = await supabase.auth.verifyOtp({
       token_hash,
-      type: type as 'signup' | 'recovery' | 'invite' | 'email',
+      type: type as 'signup' | 'invite' | 'email',
     })
     if (error) {
       return NextResponse.redirect(`${origin}?error=auth_callback_error`)
-    }
-    // Recovery flow: redirect to password change page instead of home
-    if (type === 'recovery') {
-      return NextResponse.redirect(`${origin}/reset-password`)
     }
     return NextResponse.redirect(`${origin}?confirmed=true`)
   }
