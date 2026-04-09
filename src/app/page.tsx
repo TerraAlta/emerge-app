@@ -245,9 +245,36 @@ function TopNav({
   )
 }
 
-/* ── Footer Disclaimer (collapsible) ── */
+/* ── Footer Disclaimer + Coverage (collapsible) ── */
 function FooterDisclaimer() {
-  const [open, setOpen] = useState(false)
+  const [openDisclaimer, setOpenDisclaimer] = useState(false)
+  const [openCoverage, setOpenCoverage] = useState(false)
+
+  const coverage = [
+    { flag: '\u{1F1EC}\u{1F1E7}', name: 'United Kingdom', cities: 'London, Oxford, Bristol, Edinburgh, Brighton, Manchester, Glasgow, Cardiff, Belfast' },
+    { flag: '\u{1F1FA}\u{1F1F8}', name: 'United States', cities: 'New York, Portland, San Francisco, Austin, Boulder, Asheville, Detroit' },
+    { flag: '\u{1F1E8}\u{1F1E6}', name: 'Canada', cities: 'Vancouver, Toronto, Montreal, Victoria, Ottawa' },
+    { flag: '\u{1F1E9}\u{1F1EA}', name: 'Germany', cities: 'Berlin, Munich, Hamburg, Freiburg, Leipzig, Cologne' },
+    { flag: '\u{1F1F3}\u{1F1F1}', name: 'Netherlands', cities: 'Amsterdam, Rotterdam, Utrecht, The Hague' },
+    { flag: '\u{1F1EE}\u{1F1EA}', name: 'Ireland', cities: 'Dublin, Cork, Galway, Limerick' },
+    { flag: '\u{1F1EB}\u{1F1F7}', name: 'France', cities: 'Paris, Lyon, Marseille, Toulouse, Nantes' },
+    { flag: '\u{1F1F5}\u{1F1F9}', name: 'Portugal', cities: 'Lisbon, Porto, Sintra, Cascais, Algarve' },
+    { flag: '\u{1F1EE}\u{1F1F9}', name: 'Italy', cities: 'Rome, Milan, Florence, Bologna, Turin' },
+    { flag: '\u{1F1EA}\u{1F1F8}', name: 'Spain', cities: 'Barcelona, Madrid, Valencia, Seville' },
+    { flag: '\u{1F1E7}\u{1F1EA}', name: 'Belgium', cities: 'Brussels, Ghent, Antwerp' },
+    { flag: '\u{1F1E8}\u{1F1ED}', name: 'Switzerland', cities: 'Zurich, Basel, Geneva, Bern' },
+    { flag: '\u{1F1E6}\u{1F1F9}', name: 'Austria', cities: 'Vienna, Graz, Salzburg' },
+    { flag: '\u{1F1E9}\u{1F1F0}', name: 'Denmark', cities: 'Copenhagen, Aarhus' },
+    { flag: '\u{1F1EB}\u{1F1EE}', name: 'Finland', cities: 'Helsinki, Tampere' },
+    { flag: '\u{1F1F8}\u{1F1EA}', name: 'Sweden', cities: 'Stockholm, Gothenburg, Malm\u00F6' },
+    { flag: '\u{1F1EE}\u{1F1F8}', name: 'Iceland', cities: 'Reykjav\u00EDk' },
+    { flag: '\u{1F1F2}\u{1F1F9}', name: 'Malta', cities: 'Valletta' },
+    { flag: '\u{1F1F1}\u{1F1FA}', name: 'Luxembourg', cities: 'Luxembourg City' },
+    { flag: '\u{1F1F8}\u{1F1EE}', name: 'Slovenia', cities: 'Ljubljana' },
+    { flag: '\u{1F1F7}\u{1F1F8}', name: 'Serbia', cities: 'Belgrade, Novi Sad' },
+    { flag: '\u{1F1ED}\u{1F1FA}', name: 'Hungary', cities: 'Budapest' },
+  ]
+
   return (
     <div className="px-4 pt-5 pb-4">
       <div className="text-center">
@@ -255,15 +282,52 @@ function FooterDisclaimer() {
           Created by Pedro Valdjiu · <a href="https://terralta.org" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-amber-border)', textDecoration: 'underline' }}>terralta.org</a>
           {' '}&copy; {new Date().getFullYear()}
         </p>
-        <button
-          onClick={() => setOpen(!open)}
-          className="text-[8px] mt-1"
-          style={{ color: 'var(--color-text-faint)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-        >
-          {open ? 'Hide disclaimer' : 'Disclaimer & privacy'}
-        </button>
+        <div className="flex items-center justify-center gap-3 mt-1.5">
+          <button
+            onClick={() => { setOpenCoverage(!openCoverage); setOpenDisclaimer(false) }}
+            className="text-[8px]"
+            style={{ color: 'var(--color-text-faint)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            {openCoverage ? 'Hide coverage' : 'Where we\u2019re active'}
+          </button>
+          <span className="text-[8px]" style={{ color: 'var(--color-text-faint)' }}>&middot;</span>
+          <button
+            onClick={() => { setOpenDisclaimer(!openDisclaimer); setOpenCoverage(false) }}
+            className="text-[8px]"
+            style={{ color: 'var(--color-text-faint)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            {openDisclaimer ? 'Hide disclaimer' : 'Disclaimer & privacy'}
+          </button>
+        </div>
       </div>
-      {open && (
+
+      {openCoverage && (
+        <div className="mt-3 rounded-[10px] px-3 py-3" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-pill-bg)' }}>
+          <p className="text-[11px] font-medium mb-1" style={{ color: 'var(--color-amber)' }}>
+            Active in 23 countries &middot; 220+ cities
+          </p>
+          <p className="text-[10px] mb-3 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+            We source regenerative community events from local networks, Eventbrite, and partner organisations. Coverage is growing every week.
+          </p>
+          <div className="space-y-2">
+            {coverage.map(c => (
+              <div key={c.name}>
+                <p className="text-[11px] font-medium" style={{ color: 'var(--color-text)' }}>
+                  {c.flag} {c.name}
+                </p>
+                <p className="text-[9px] ml-5" style={{ color: 'var(--color-text-muted)' }}>
+                  {c.cities}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="text-[9px] mt-3 italic" style={{ color: 'var(--color-text-muted)' }}>
+            Don&apos;t see your city? Post the first quest and help your community emerge.
+          </p>
+        </div>
+      )}
+
+      {openDisclaimer && (
         <div className="mt-2 rounded-[10px] px-3 py-3" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-pill-bg)' }}>
           <p className="text-[8px] leading-[1.7]" style={{ color: 'var(--color-text-muted)' }}>
             Emerge is a community platform that aggregates publicly available event information from third-party sources.

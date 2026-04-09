@@ -175,6 +175,19 @@ export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
     }
 
     let results = (data ?? []) as NearbyQuest[]
+
+    // Fallback: if no quests found nearby, fetch nearest quests globally (up to 500km)
+    if (results.length === 0 && radiusKm !== 'national') {
+      const fallback = await supabase.rpc('nearby_quests', {
+        user_lat: location.lat,
+        user_lng: location.lng,
+        radius_km: 500,
+        search_keyword: null,
+      })
+      if (fallback.data && fallback.data.length > 0) {
+        results = (fallback.data as NearbyQuest[]).slice(0, 20)
+      }
+    }
     if (category) {
       results = results.filter((q) => q.category === category)
     }
