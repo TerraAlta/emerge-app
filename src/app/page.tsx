@@ -478,7 +478,7 @@ function QuestBoard({
         <div className="relative overflow-hidden rounded-b-[24px] shrink-0" style={{ background: 'var(--color-bg)', padding: 'calc(36px + var(--sat, 0px)) 24px 20px' }}>
           <div className="absolute pointer-events-none" style={{ bottom: -60, left: '50%', transform: 'translateX(-50%)', width: 340, height: 340, background: 'radial-gradient(circle, var(--color-amber-light) 0%, transparent 70%)' }} />
           <div className="flex items-center justify-center gap-2.5 relative z-10">
-            <SeedlingIcon size={34} />
+            <SeedlingIcon size={44} />
             <span className="font-heading text-[38px] font-light tracking-tight leading-none" style={{ color: 'var(--color-text)', letterSpacing: '-0.01em' }}>
               em<span style={{ color: 'var(--color-amber)' }}>e</span>rge
             </span>
