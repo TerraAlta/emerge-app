@@ -13,7 +13,7 @@ import QuestDetail from '@/components/QuestDetail'
 import PostQuest from '@/components/PostQuest'
 import SkillsScreen from '@/components/SkillsScreen'
 import DigestSettings from '@/components/DigestSettings'
-import TrustScreen from '@/components/TrustScreen'
+// import TrustScreen from '@/components/TrustScreen' // Removed — revisit when user base grows
 import OnboardingSplash from '@/components/OnboardingSplash'
 import SubmitEvent from '@/components/SubmitEvent'
 import ConnectLuma from '@/components/ConnectLuma'
@@ -106,7 +106,7 @@ function displaySourceName(sourceName: string, sourceUrl?: string | null): strin
   return sourceName.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-type TabKey = 'quests' | 'map' | 'skills' | 'trust'
+type TabKey = 'quests' | 'map' | 'skills'
 
 export default function Home() {
   const { user, profile, loading: authLoading, signIn, signUp, signOut } = useAuth()
@@ -205,7 +205,6 @@ function TopNav({
     { key: 'map',    label: 'Map',    icon: '\u{1F5FA}\uFE0F' },
     { key: 'post',   label: 'Post',   icon: '+' },
     { key: 'skills', label: 'Skills', icon: '\u{1F331}' },
-    { key: 'trust',  label: 'Trust',  icon: '\u{1F91D}' },
   ]
 
   return (
@@ -501,9 +500,6 @@ function QuestBoard({
           )}
           {activeTab === 'skills' && (
             <SkillsScreen userId={userId} quests={quests} onSelectQuest={onSelectQuest} />
-          )}
-          {activeTab === 'trust' && (
-            <TrustScreen userId={userId} profile={profile} />
           )}
           {activeTab === 'quests' && (<div>
 
