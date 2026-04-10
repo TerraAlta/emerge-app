@@ -122,7 +122,7 @@ export default function AuthScreen({ onSignIn, onSignUp }: Props) {
               textTransform: 'uppercase',
             }}
           >
-            Real quests · Real community · Real change
+            Real quests · Real community ·&nbsp;Real&nbsp;change
           </p>
         </div>
 

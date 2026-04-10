@@ -485,7 +485,7 @@ function QuestBoard({
             </span>
           </div>
           <p className="text-center mt-3 relative z-10" style={{ fontSize: 13, color: 'var(--color-text-secondary)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            Real quests · Real community · Real change
+            Real quests · Real community ·&nbsp;Real&nbsp;change
           </p>
         </div>
 
