@@ -260,6 +260,12 @@ import { eventbriteApi } from './sources/eventbrite-api'
 // Diaspora cultural feast sources
 import { eventbriteCultural } from './sources/eventbrite-cultural'
 import { alleventsCultural } from './sources/allevents-cultural'
+// Ticketing platform scrapers
+import { ticketTailor } from './sources/ticket-tailor'
+import { humanitix } from './sources/humanitix'
+import { billetto } from './sources/billetto'
+import { outsavvy } from './sources/outsavvy'
+import { dice } from './sources/dice'
 import { scoreQuest } from './score-quest'
 
 // All registered source fetchers
@@ -514,6 +520,12 @@ const SOURCES: SourceFetcher[] = [
   // Diaspora cultural feast sources
   eventbriteCultural,
   alleventsCultural,
+  // Ticketing platforms
+  ticketTailor,
+  humanitix,
+  billetto,
+  outsavvy,
+  dice,
 ]
 
 export interface OrchestratorResult {
