@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emerge — Regenerative Community Quests</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #F5F2EC;
+  --card: #FFFFFF;
+  --text: #1A2E1A;
+  --text-secondary: rgba(26,46,26,0.6);
+  --text-muted: rgba(26,46,26,0.35);
+  --amber: #B07D2E;
+  --amber-light: rgba(176,125,46,0.08);
+  --amber-border: rgba(176,125,46,0.2);
+  --green: #3D7A2E;
+  --green-light: rgba(61,122,46,0.08);
+}
+
+body {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: 'Fraunces', serif; font-weight: 300; }
+
+.container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+/* ── Hero ── */
+.hero {
+  padding: 80px 0 56px;
+  text-align: center;
+  background: linear-gradient(180deg, var(--bg) 0%, #EDE8DF 100%);
+}
+.hero-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.hero-logo svg { flex-shrink: 0; }
+.hero-logo span {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(42px, 6vw, 56px);
+  font-weight: 300;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.hero-logo .e { color: var(--amber); }
+.hero-tagline {
+  font-size: 13px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+.hero h1 {
+  font-size: clamp(28px, 4vw, 40px);
+  color: var(--text);
+  line-height: 1.25;
+  margin-bottom: 18px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.hero h1 em { color: var(--amber); font-style: italic; }
+.hero p {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 480px;
+  margin: 0 auto 36px;
+}
+.cta-btn {
+  display: inline-block;
+  background: var(--amber);
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 14px 40px;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 20px rgba(176,125,46,0.25);
+}
+.cta-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(176,125,46,0.35); }
+.cta-secondary {
+  display: inline-block;
+  color: var(--amber);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 20px;
+  border-bottom: 1px solid var(--amber-border);
+  padding-bottom: 2px;
+}
+
+/* ── Stats bar ── */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  padding: 36px 0;
+  border-bottom: 1px solid var(--amber-border);
+}
+.stat { text-align: center; }
+.stat-num {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 400;
+  color: var(--amber);
+}
+.stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Section ── */
+.section {
+  padding: 64px 0;
+}
+.section h2 {
+  font-size: clamp(24px, 3.5vw, 34px);
+  text-align: center;
+  margin-bottom: 12px;
+}
+.section h2 em { color: var(--amber); font-style: italic; }
+.section-sub {
+  text-align: center;
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto 40px;
+}
+
+/* ── Feature grid ── */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+.feature {
+  background: var(--card);
+  border: 1px solid var(--amber-border);
+  border-radius: 16px;
+  padding: 28px 24px;
+}
+.feature-icon {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+.feature h3 {
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.feature p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Categories ── */
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 32px;
+}
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 50px;
+  background: var(--card);
+  border: 1px solid var(--amber-border);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.cat-pill span { font-size: 18px; }
+
+/* ── How it works ── */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  counter-reset: step;
+}
+.step {
+  text-align: center;
+  padding: 24px 16px;
+}
+.step::before {
+  counter-increment: step;
+  content: counter(step);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: #fff;
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+.step h3 {
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+.step p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ── Soul section ── */
+.soul {
+  background: linear-gradient(180deg, #EDE8DF 0%, var(--bg) 100%);
+  padding: 64px 0;
+  text-align: center;
+}
+.soul blockquote {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(18px, 2.5vw, 24px);
+  font-style: italic;
+  font-weight: 300;
+  color: var(--text);
+  max-width: 600px;
+  margin: 0 auto 20px;
+  line-height: 1.5;
+}
+.soul cite {
+  font-style: normal;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ── Coverage ── */
+.coverage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px 16px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.coverage-item {
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+.coverage-item .flag { margin-right: 6px; }
+
+/* ── CTA bottom ── */
+.cta-section {
+  text-align: center;
+  padding: 64px 0 80px;
+}
+.cta-section h2 { margin-bottom: 16px; }
+.cta-section p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 440px;
+  margin: 0 auto 32px;
+}
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 32px 0;
+  border-top: 1px solid var(--amber-border);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+footer a { color: var(--amber); text-decoration: none; }
+
+@media (max-width: 600px) {
+  .stats { gap: 24px; flex-wrap: wrap; }
+  .cta-secondary { display: block; margin: 16px auto 0; }
+  .features { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════ Hero ════ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-logo">
+      <svg width="48" height="48" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="22" r="10" fill="rgba(176,125,46,0.1)" stroke="rgba(176,125,46,0.2)" stroke-width="0.8"/>
+        <path d="M18 22 Q14 16 13 10 Q16 14 18 12 Q20 14 23 10 Q22 16 18 22Z" fill="#B07D2E" opacity="0.9"/>
+        <path d="M18 22 L18 30" stroke="rgba(176,125,46,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+        <circle cx="18" cy="22" r="2" fill="#B07D2E"/>
+      </svg>
+      <span>em<span class="e">e</span>rge</span>
+    </div>
+    <p class="hero-tagline">Real quests · Real community · Real change</p>
+    <h1>Find <em>regenerative</em> quests near you</h1>
+    <p>Discover hands-on community events — foraging, repair cafés, communal feasts, permaculture workshops, folk sessions, and more.</p>
+    <a href="https://emerge.terralta.org" target="_blank" class="cta-btn">Open Emerge</a>
+    <a href="#how" class="cta-secondary">How it works ↓</a>
+  </div>
+</section>
+
+<!-- ════ Stats ════ -->
+<div class="container">
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">4,300+</div>
+      <div class="stat-label">Quests</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">23</div>
+      <div class="stat-label">Countries</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">220+</div>
+      <div class="stat-label">Cities</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">9</div>
+      <div class="stat-label">Quest types</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Categories ════ -->
+<section class="section">
+  <div class="container">
+    <h2>Nine ways to <em>reconnect</em></h2>
+    <p class="section-sub">Every quest is AI-curated for genuine regenerative community value.</p>
+    <div class="categories">
+      <div class="cat-pill"><span>🌿</span> Forage</div>
+      <div class="cat-pill"><span>🍽️</span> Harvest</div>
+      <div class="cat-pill"><span>🪵</span> Build</div>
+      <div class="cat-pill"><span>🤝</span> Gather</div>
+      <div class="cat-pill"><span>🧘</span> Wellness</div>
+      <div class="cat-pill"><span>📖</span> Learn</div>
+      <div class="cat-pill"><span>🍲</span> Feast</div>
+      <div class="cat-pill"><span>🎶</span> Play</div>
+      <div class="cat-pill"><span>🎨</span> Make</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ How it works ════ -->
+<section class="section" id="how" style="background: linear-gradient(180deg, var(--bg) 0%, #EDE8DF 100%);">
+  <div class="container">
+    <h2>How it <em>works</em></h2>
+    <p class="section-sub">From download to your first quest in under a minute.</p>
+    <div class="steps">
+      <div class="step">
+        <h3>Open the app</h3>
+        <p>No download needed. Emerge is a web app — open it in your browser and add to homescreen.</p>
+      </div>
+      <div class="step">
+        <h3>Allow location</h3>
+        <p>Or search for your city. Emerge finds quests near you from 220+ sources across Europe and North America.</p>
+      </div>
+      <div class="step">
+        <h3>Join a quest</h3>
+        <p>Tap to see details, who's going, and the meeting area. Exact location reveals after you join.</p>
+      </div>
+      <div class="step">
+        <h3>Show up</h3>
+        <p>That's it. No tickets, no algorithms, no feeds. Just people doing real things together.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ Features ════ -->
+<section class="section">
+  <div class="container">
+    <h2>Built for <em>community</em></h2>
+    <p class="section-sub">Every feature serves one purpose: connecting people to regenerative action.</p>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🤖</div>
+        <h3>AI-curated events</h3>
+        <p>Every quest is scored by AI trained on regenerative principles. No corporate wellness, no passive talks — only hands-on community.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📍</div>
+        <h3>Safety-first location</h3>
+        <p>See the approximate area before joining. Exact address reveals only after you commit. Your location is never shared.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🌍</div>
+        <h3>220+ sources</h3>
+        <p>We aggregate from Eventbrite, local networks, Transition Towns, repair cafés, permaculture hubs, folk sessions, and more.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🍲</div>
+        <h3>Communal table</h3>
+        <p>Diaspora feasts, disco soups, community iftars — events where food is made and shared together score highest.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🎵</div>
+        <h3>Participatory culture</h3>
+        <p>Folk sessions, singing circles, community murals. If anyone can join in, it belongs here.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">💚</div>
+        <h3>Free to use</h3>
+        <p>Emerge is free. No premium tiers, no ads, no data harvesting. Built by a permaculture community for everyone.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ Soul ════ -->
+<section class="soul">
+  <div class="container">
+    <h2 style="margin-bottom: 28px;">The <em>soul</em> behind Emerge</h2>
+    <blockquote>"The real seeds of change are not technologies or policies — they are living relationships between people and the land they inhabit."</blockquote>
+    <cite>— Inspired by the regenerative movement</cite>
+    <p style="max-width: 540px; margin: 28px auto 0; font-size: 15px; color: var(--text-secondary);">
+      Emerge filters for events where people grow, build, repair, cook, sing, and create together.
+      We reject passive consumption, corporate greenwashing, and spiritual marketplaces.
+      What remains is the real work of community regeneration.
+    </p>
+  </div>
+</section>
+
+<!-- ════ Coverage ════ -->
+<section class="section">
+  <div class="container">
+    <h2>Where we're <em>active</em></h2>
+    <p class="section-sub">Growing every week. Don't see your city? Post the first quest.</p>
+    <div class="coverage-grid">
+      <div class="coverage-item"><span class="flag">🇬🇧</span> United Kingdom</div>
+      <div class="coverage-item"><span class="flag">🇺🇸</span> United States</div>
+      <div class="coverage-item"><span class="flag">🇨🇦</span> Canada</div>
+      <div class="coverage-item"><span class="flag">🇩🇪</span> Germany</div>
+      <div class="coverage-item"><span class="flag">🇳🇱</span> Netherlands</div>
+      <div class="coverage-item"><span class="flag">🇮🇪</span> Ireland</div>
+      <div class="coverage-item"><span class="flag">🇫🇷</span> France</div>
+      <div class="coverage-item"><span class="flag">🇵🇹</span> Portugal</div>
+      <div class="coverage-item"><span class="flag">🇮🇹</span> Italy</div>
+      <div class="coverage-item"><span class="flag">🇪🇸</span> Spain</div>
+      <div class="coverage-item"><span class="flag">🇧🇪</span> Belgium</div>
+      <div class="coverage-item"><span class="flag">🇨🇭</span> Switzerland</div>
+      <div class="coverage-item"><span class="flag">🇦🇹</span> Austria</div>
+      <div class="coverage-item"><span class="flag">🇩🇰</span> Denmark</div>
+      <div class="coverage-item"><span class="flag">🇫🇮</span> Finland</div>
+      <div class="coverage-item"><span class="flag">🇸🇪</span> Sweden</div>
+      <div class="coverage-item"><span class="flag">🇮🇸</span> Iceland</div>
+      <div class="coverage-item"><span class="flag">🇲🇹</span> Malta</div>
+      <div class="coverage-item"><span class="flag">🇱🇺</span> Luxembourg</div>
+      <div class="coverage-item"><span class="flag">🇸🇮</span> Slovenia</div>
+      <div class="coverage-item"><span class="flag">🇷🇸</span> Serbia</div>
+      <div class="coverage-item"><span class="flag">🇭🇺</span> Hungary</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ CTA bottom ════ -->
+<section class="cta-section">
+  <div class="container">
+    <h2>Ready to <em>emerge</em>?</h2>
+    <p>Join the community. Find your first quest. Show up.</p>
+    <a href="https://emerge.terralta.org" target="_blank" class="cta-btn">Open Emerge</a>
+  </div>
+</section>
+
+<!-- ════ Footer ════ -->
+<footer>
+  <div class="container">
+    <p>Created by Pedro Valdjiu · <a href="https://terralta.org" target="_blank">terralta.org</a> · © 2026</p>
+    <p style="margin-top: 6px;">Emerge is free and open to all. Events are sourced from public listings and not endorsed by Emerge.</p>
+  </div>
+</footer>
+
+</body>
+</html>
