@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #E8E2D8; padding: 40px; display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; font-family: 'Outfit', sans-serif; }
+h3.label { width: 100%; text-align: center; font-size: 14px; color: #999; margin-bottom: -20px; letter-spacing: 2px; text-transform: uppercase; }
+
+.card {
+  width: 1080px;
+  height: 1080px;
+  background: #F5F2EC;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(176,125,46,0.06) 0%, transparent 70%);
+}
+
+/* ── Slide 1: Hero ── */
+.slide1 .logo-row { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; position: relative; z-index: 1; }
+.slide1 .wordmark { font-family: 'Fraunces', serif; font-size: 96px; font-weight: 300; color: #1A2E1A; }
+.slide1 .wordmark .e { color: #B07D2E; }
+.slide1 .tagline { font-size: 18px; letter-spacing: 4px; text-transform: uppercase; color: rgba(26,46,26,0.35); margin-bottom: 48px; position: relative; z-index: 1; }
+.slide1 .headline { font-family: 'Fraunces', serif; font-size: 52px; font-weight: 300; color: #1A2E1A; text-align: center; line-height: 1.25; max-width: 700px; position: relative; z-index: 1; }
+.slide1 .headline em { color: #B07D2E; font-style: italic; }
+.slide1 .sub { font-size: 22px; color: rgba(26,46,26,0.5); margin-top: 28px; text-align: center; max-width: 600px; position: relative; z-index: 1; }
+
+/* ── Slide 2: Categories ── */
+.slide2 .title { font-family: 'Fraunces', serif; font-size: 48px; font-weight: 300; color: #1A2E1A; text-align: center; margin-bottom: 48px; position: relative; z-index: 1; }
+.slide2 .title em { color: #B07D2E; font-style: italic; }
+.slide2 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 700px; position: relative; z-index: 1; }
+.slide2 .cat {
+  background: #FFFFFF;
+  border: 1px solid rgba(176,125,46,0.2);
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+}
+.slide2 .cat .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-bottom: 10px; }
+.slide2 .cat .name { font-size: 20px; font-weight: 500; color: #1A2E1A; }
+
+/* ── Slide 3: How it works ── */
+.slide3 .title { font-family: 'Fraunces', serif; font-size: 48px; font-weight: 300; color: #1A2E1A; text-align: center; margin-bottom: 56px; position: relative; z-index: 1; }
+.slide3 .title em { color: #B07D2E; font-style: italic; }
+.slide3 .steps { display: flex; flex-direction: column; gap: 32px; max-width: 600px; position: relative; z-index: 1; }
+.slide3 .step { display: flex; gap: 20px; align-items: flex-start; }
+.slide3 .num {
+  width: 44px; height: 44px; border-radius: 50%; background: #B07D2E;
+  color: #fff; font-family: 'Fraunces', serif; font-size: 22px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.slide3 .step h4 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 400; color: #1A2E1A; margin-bottom: 4px; }
+.slide3 .step p { font-size: 18px; color: rgba(26,46,26,0.5); line-height: 1.5; }
+
+/* ── Slide 4: CTA ── */
+.slide4 .title { font-family: 'Fraunces', serif; font-size: 56px; font-weight: 300; color: #1A2E1A; text-align: center; line-height: 1.2; margin-bottom: 20px; position: relative; z-index: 1; }
+.slide4 .title em { color: #B07D2E; font-style: italic; }
+.slide4 .sub { font-size: 22px; color: rgba(26,46,26,0.5); text-align: center; margin-bottom: 48px; position: relative; z-index: 1; }
+.slide4 .stats { display: flex; gap: 48px; margin-bottom: 48px; position: relative; z-index: 1; }
+.slide4 .stat-num { font-family: 'Fraunces', serif; font-size: 40px; color: #B07D2E; text-align: center; }
+.slide4 .stat-label { font-size: 14px; color: rgba(26,46,26,0.3); text-align: center; margin-top: 4px; }
+.slide4 .cta {
+  background: #B07D2E; color: #fff; font-size: 22px; font-weight: 600;
+  padding: 18px 56px; border-radius: 50px; border: none; font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.5px; position: relative; z-index: 1;
+}
+.slide4 .url { font-size: 16px; color: rgba(26,46,26,0.3); margin-top: 24px; position: relative; z-index: 1; }
+
+/* ── Feed (4:5) ── */
+.feed {
+  width: 1080px;
+  height: 1350px;
+  background: #F5F2EC;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.feed::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 900px;
+  background: radial-gradient(circle, rgba(176,125,46,0.06) 0%, transparent 70%);
+}
+.feed .logo-row { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; position: relative; z-index: 1; }
+.feed .wordmark { font-family: 'Fraunces', serif; font-size: 80px; font-weight: 300; color: #1A2E1A; }
+.feed .wordmark .e { color: #B07D2E; }
+.feed .tagline { font-size: 16px; letter-spacing: 3.5px; text-transform: uppercase; color: rgba(26,46,26,0.35); margin-bottom: 48px; position: relative; z-index: 1; }
+.feed .headline { font-family: 'Fraunces', serif; font-size: 48px; font-weight: 300; color: #1A2E1A; text-align: center; line-height: 1.25; max-width: 680px; margin-bottom: 24px; position: relative; z-index: 1; }
+.feed .headline em { color: #B07D2E; font-style: italic; }
+.feed .sub { font-size: 20px; color: rgba(26,46,26,0.5); text-align: center; max-width: 580px; margin-bottom: 56px; position: relative; z-index: 1; line-height: 1.6; }
+.feed .stats { display: flex; gap: 40px; margin-bottom: 56px; position: relative; z-index: 1; }
+.feed .stat-num { font-family: 'Fraunces', serif; font-size: 36px; color: #B07D2E; text-align: center; }
+.feed .stat-label { font-size: 13px; color: rgba(26,46,26,0.3); text-align: center; margin-top: 4px; }
+.feed .cta {
+  background: #B07D2E; color: #fff; font-size: 20px; font-weight: 600;
+  padding: 16px 48px; border-radius: 50px; border: none; font-family: 'Outfit', sans-serif;
+  position: relative; z-index: 1;
+}
+.feed .url { font-size: 15px; color: rgba(26,46,26,0.25); margin-top: 20px; position: relative; z-index: 1; }
+.feed .phone-note { font-size: 14px; color: rgba(26,46,26,0.3); margin-top: 12px; position: relative; z-index: 1; }
+
+/* ── Story (9:16) ── */
+.story {
+  width: 1080px;
+  height: 1920px;
+  background: #F5F2EC;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.story::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
+  height: 1000px;
+  background: radial-gradient(circle, rgba(176,125,46,0.06) 0%, transparent 70%);
+}
+.story .logo-row { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; position: relative; z-index: 1; }
+.story .wordmark { font-family: 'Fraunces', serif; font-size: 72px; font-weight: 300; color: #1A2E1A; }
+.story .wordmark .e { color: #B07D2E; }
+.story .tagline { font-size: 15px; letter-spacing: 3px; text-transform: uppercase; color: rgba(26,46,26,0.35); margin-bottom: 64px; position: relative; z-index: 1; }
+.story .headline { font-family: 'Fraunces', serif; font-size: 46px; font-weight: 300; color: #1A2E1A; text-align: center; line-height: 1.3; max-width: 640px; margin-bottom: 24px; position: relative; z-index: 1; }
+.story .headline em { color: #B07D2E; font-style: italic; }
+.story .sub { font-size: 19px; color: rgba(26,46,26,0.5); text-align: center; max-width: 560px; margin-bottom: 64px; position: relative; z-index: 1; line-height: 1.6; }
+.story .cats { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 620px; margin-bottom: 64px; position: relative; z-index: 1; }
+.story .cat-pill {
+  padding: 12px 22px; border-radius: 50px; background: #fff;
+  border: 1px solid rgba(176,125,46,0.2); font-size: 18px; font-weight: 500; color: #1A2E1A;
+  display: flex; align-items: center; gap: 8px;
+}
+.story .cat-pill .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.story .stats { display: flex; gap: 36px; margin-bottom: 56px; position: relative; z-index: 1; }
+.story .stat-num { font-family: 'Fraunces', serif; font-size: 34px; color: #B07D2E; text-align: center; }
+.story .stat-label { font-size: 12px; color: rgba(26,46,26,0.3); text-align: center; margin-top: 4px; }
+.story .cta {
+  background: #B07D2E; color: #fff; font-size: 20px; font-weight: 600;
+  padding: 16px 48px; border-radius: 50px; border: none; font-family: 'Outfit', sans-serif;
+  position: relative; z-index: 1;
+}
+.story .url { font-size: 14px; color: rgba(26,46,26,0.25); margin-top: 20px; position: relative; z-index: 1; }
+
+.seedling-svg { position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+
+<!-- ════════ CAROUSEL SLIDE 1 ════════ -->
+<h3 class="label">Carousel Slide 1 &mdash; Hero (1080&times;1080)</h3>
+<div class="card slide1">
+  <div class="logo-row">
+    <svg class="seedling-svg" width="72" height="72" viewBox="0 0 36 36" fill="none">
+      <circle cx="18" cy="22" r="10" fill="rgba(176,125,46,0.1)" stroke="rgba(176,125,46,0.2)" stroke-width="0.8"/>
+      <path d="M18 22 Q14 16 13 10 Q16 14 18 12 Q20 14 23 10 Q22 16 18 22Z" fill="#B07D2E" opacity="0.9"/>
+      <path d="M18 22 L18 30" stroke="rgba(176,125,46,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+      <circle cx="18" cy="22" r="2" fill="#B07D2E"/>
+    </svg>
+    <span class="wordmark">em<span class="e">e</span>rge</span>
+  </div>
+  <p class="tagline">Real quests &middot; Real community &middot; Real change</p>
+  <h1 class="headline">Find <em>regenerative</em> quests near you</h1>
+  <p class="sub">Foraging, repair caf&eacute;s, communal feasts, permaculture workshops, folk sessions, and more.</p>
+</div>
+
+<!-- ════════ CAROUSEL SLIDE 2 ════════ -->
+<h3 class="label">Carousel Slide 2 &mdash; Categories (1080&times;1080)</h3>
+<div class="card slide2">
+  <h2 class="title">Nine ways to <em>reconnect</em></h2>
+  <div class="grid">
+    <div class="cat"><div class="dot" style="background:#4A7C59"></div><div class="name">Forage</div></div>
+    <div class="cat"><div class="dot" style="background:#B07D2E"></div><div class="name">Harvest</div></div>
+    <div class="cat"><div class="dot" style="background:#8B6B3D"></div><div class="name">Build</div></div>
+    <div class="cat"><div class="dot" style="background:#5B8FA8"></div><div class="name">Gather</div></div>
+    <div class="cat"><div class="dot" style="background:#9B72AA"></div><div class="name">Wellness</div></div>
+    <div class="cat"><div class="dot" style="background:#6B7DB3"></div><div class="name">Learn</div></div>
+    <div class="cat"><div class="dot" style="background:#C8913A"></div><div class="name">Feast</div></div>
+    <div class="cat"><div class="dot" style="background:#BF5B3C"></div><div class="name">Play</div></div>
+    <div class="cat"><div class="dot" style="background:#6D4C2A"></div><div class="name">Make</div></div>
+  </div>
+</div>
+
+<!-- ════════ CAROUSEL SLIDE 3 ════════ -->
+<h3 class="label">Carousel Slide 3 &mdash; How it works (1080&times;1080)</h3>
+<div class="card slide3">
+  <h2 class="title">How it <em>works</em></h2>
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <div><h4>Open the app</h4><p>No download needed. Open in your browser and add to homescreen.</p></div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div><h4>Allow location</h4><p>Or search your city. We find quests from 220+ sources across 23 countries.</p></div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div><h4>Join a quest</h4><p>See details, who's going, and the meeting area. Exact location after you join.</p></div>
+    </div>
+    <div class="step">
+      <div class="num">4</div>
+      <div><h4>Show up</h4><p>No tickets, no algorithms. Just people doing real things together.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ CAROUSEL SLIDE 4 ════════ -->
+<h3 class="label">Carousel Slide 4 &mdash; CTA (1080&times;1080)</h3>
+<div class="card slide4">
+  <h2 class="title">Ready to<br><em>emerge</em>?</h2>
+  <p class="sub">Join the community. Find your first quest.</p>
+  <div class="stats">
+    <div><div class="stat-num">4,300+</div><div class="stat-label">quests</div></div>
+    <div><div class="stat-num">23</div><div class="stat-label">countries</div></div>
+    <div><div class="stat-num">220+</div><div class="stat-label">cities</div></div>
+    <div><div class="stat-num">Free</div><div class="stat-label">always</div></div>
+  </div>
+  <button class="cta">Open Emerge</button>
+  <p class="url">emerge.terralta.org</p>
+</div>
+
+<!-- ════════ FEED POST (4:5) ════════ -->
+<h3 class="label">Feed Post (1080&times;1350)</h3>
+<div class="feed">
+  <div class="logo-row">
+    <svg class="seedling-svg" width="60" height="60" viewBox="0 0 36 36" fill="none">
+      <circle cx="18" cy="22" r="10" fill="rgba(176,125,46,0.1)" stroke="rgba(176,125,46,0.2)" stroke-width="0.8"/>
+      <path d="M18 22 Q14 16 13 10 Q16 14 18 12 Q20 14 23 10 Q22 16 18 22Z" fill="#B07D2E" opacity="0.9"/>
+      <path d="M18 22 L18 30" stroke="rgba(176,125,46,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+      <circle cx="18" cy="22" r="2" fill="#B07D2E"/>
+    </svg>
+    <span class="wordmark">em<span class="e">e</span>rge</span>
+  </div>
+  <p class="tagline">Real quests &middot; Real community &middot; Real change</p>
+  <h1 class="headline">Find <em>regenerative</em> community events near you</h1>
+  <p class="sub">Foraging, repair caf&eacute;s, communal feasts, permaculture workshops, folk sessions, and more &mdash; across 23 countries.</p>
+  <div class="stats">
+    <div><div class="stat-num">4,300+</div><div class="stat-label">quests</div></div>
+    <div><div class="stat-num">23</div><div class="stat-label">countries</div></div>
+    <div><div class="stat-num">220+</div><div class="stat-label">cities</div></div>
+  </div>
+  <button class="cta">Open Emerge</button>
+  <p class="url">emerge.terralta.org</p>
+  <p class="phone-note">Works on any phone &mdash; no download needed</p>
+</div>
+
+<!-- ════════ STORY (9:16) ════════ -->
+<h3 class="label">Story (1080&times;1920)</h3>
+<div class="story">
+  <div class="logo-row">
+    <svg class="seedling-svg" width="56" height="56" viewBox="0 0 36 36" fill="none">
+      <circle cx="18" cy="22" r="10" fill="rgba(176,125,46,0.1)" stroke="rgba(176,125,46,0.2)" stroke-width="0.8"/>
+      <path d="M18 22 Q14 16 13 10 Q16 14 18 12 Q20 14 23 10 Q22 16 18 22Z" fill="#B07D2E" opacity="0.9"/>
+      <path d="M18 22 L18 30" stroke="rgba(176,125,46,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+      <circle cx="18" cy="22" r="2" fill="#B07D2E"/>
+    </svg>
+    <span class="wordmark">em<span class="e">e</span>rge</span>
+  </div>
+  <p class="tagline">Real quests &middot; Real community &middot; Real change</p>
+  <h1 class="headline">Find <em>regenerative</em> quests near you</h1>
+  <p class="sub">Foraging, repair caf&eacute;s, communal feasts, permaculture, folk sessions, and more.</p>
+  <div class="cats">
+    <div class="cat-pill"><span class="dot" style="background:#4A7C59"></span> Forage</div>
+    <div class="cat-pill"><span class="dot" style="background:#B07D2E"></span> Harvest</div>
+    <div class="cat-pill"><span class="dot" style="background:#8B6B3D"></span> Build</div>
+    <div class="cat-pill"><span class="dot" style="background:#5B8FA8"></span> Gather</div>
+    <div class="cat-pill"><span class="dot" style="background:#9B72AA"></span> Wellness</div>
+    <div class="cat-pill"><span class="dot" style="background:#6B7DB3"></span> Learn</div>
+    <div class="cat-pill"><span class="dot" style="background:#C8913A"></span> Feast</div>
+    <div class="cat-pill"><span class="dot" style="background:#BF5B3C"></span> Play</div>
+    <div class="cat-pill"><span class="dot" style="background:#6D4C2A"></span> Make</div>
+  </div>
+  <div class="stats">
+    <div><div class="stat-num">4,300+</div><div class="stat-label">quests</div></div>
+    <div><div class="stat-num">23</div><div class="stat-label">countries</div></div>
+    <div><div class="stat-num">220+</div><div class="stat-label">cities</div></div>
+    <div><div class="stat-num">Free</div><div class="stat-label">always</div></div>
+  </div>
+  <button class="cta">Open Emerge</button>
+  <p class="url">emerge.terralta.org</p>
+</div>
+
+</body>
+</html>
