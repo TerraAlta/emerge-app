@@ -114,21 +114,35 @@ export default function GuildPage() {
             listing, always. No bidding, no commission.
           </p>
 
-          {/* CTA */}
-          {hasOwnProfile === false && (
+          {/* CTAs */}
+          <div className="flex flex-wrap gap-2 justify-center mt-5 relative z-10">
+            {hasOwnProfile === false && (
+              <button
+                onClick={() => router.push('/guild/join')}
+                className="rounded-full px-6 py-3 text-[13px] font-semibold"
+                style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
+              >
+                Join the Guild
+              </button>
+            )}
+            {hasOwnProfile === true && (
+              <span className="text-[12px] self-center" style={{ color: 'var(--color-amber)' }}>
+                ✓ Your profile is submitted
+              </span>
+            )}
             <button
-              onClick={() => router.push('/guild/join')}
-              className="mt-5 rounded-full px-7 py-3 text-[14px] font-semibold relative z-10"
-              style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
+              onClick={() => router.push('/guild/project/new')}
+              className="rounded-full px-6 py-3 text-[13px] font-semibold"
+              style={{
+                background: 'transparent',
+                color: 'var(--color-amber)',
+                border: '0.5px solid var(--color-amber)',
+                cursor: 'pointer',
+              }}
             >
-              Join the Guild
+              Commission a scoping
             </button>
-          )}
-          {hasOwnProfile === true && (
-            <p className="text-[12px] mt-5 relative z-10" style={{ color: 'var(--color-amber)' }}>
-              ✓ Your profile is submitted
-            </p>
-          )}
+          </div>
         </div>
 
         {/* Directory header */}

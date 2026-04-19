@@ -574,7 +574,14 @@ export default function AdminPage() {
       </div>
 
       {/* Footer */}
-      <div className="px-6 pb-8 text-center">
+      <div className="px-6 pb-8 text-center space-x-4">
+        <a
+          href="/admin/guild"
+          className="text-[10px] inline-block"
+          style={{ color: 'var(--color-amber)', textDecoration: 'underline' }}
+        >
+          Guild review →
+        </a>
         <a
           href="/"
           className="text-[10px] inline-block"
