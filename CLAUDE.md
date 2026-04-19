@@ -92,18 +92,39 @@ src/
 - Weekly email digest via Resend
 - 220+ source scrapers + 5 ticketing platforms (Eventbrite, Humanitix, Billetto, Outsavvy, DICE)
 
-## The Guild (Phase 1 — live)
+## The Guild (Phase 1 + Phase 2 — live)
 Regenerative practitioner network. Free listing, no bidding, no commission.
 - DB: `guild_practitioners`, `guild_practitioner_interviews`, `guild_projects`, `guild_scoping_docs`, `guild_api_usage`
+
+### Phase 1 (practitioners)
 - Routes: `/guild` (directory), `/guild/join` (onboarding)
 - AI: `/api/guild/interview` (15K token cap) + `/api/guild/extract` (5K cap)
 - **Manual verification**: Pedro flips `verified = true` in Supabase after review
 - **Cost**: ~€0.02 per practitioner onboarding, €2/day global cap
 
+### Phase 2 (clients — scoping doc, €40)
+- Routes: `/guild/project/new` (intake), `/guild/project/[id]` (status-aware view), `/admin/guild` (review queue)
+- AI: `/api/guild/intake` → `/api/guild/extract-brief` → `/api/guild/generate-scoping`
+- Payment: Stripe Checkout (€40). Webhook `/api/stripe/webhook` triggers scoping generation
+- **Human-in-the-loop**: AI drafts → `status='matched'` (invisible to client via RLS) → Pedro reviews at `/admin/guild` → approve (email + delivered) or reject (auto-refund via Stripe)
+- State machine: `intake → scoping → matched → delivered → closed`
+- Matching: top 30 verified practitioners ranked by petal overlap + country + language; AI picks 2-6 with reasoning
+
+### Guild env vars (Vercel)
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `INTERNAL_TRIGGER_KEY`, `NEXT_PUBLIC_APP_URL=https://emerge.terralta.org`
+- Optional: `GUILD_ADMIN_EMAIL` (defaults to terraalta.sintra@gmail.com)
+
+### Stripe webhook
+- Endpoint: `https://emerge.terralta.org/api/stripe/webhook`
+- Event: `checkout.session.completed` only
+- Test with card `4242 4242 4242 4242` in Sandbox mode
+
+### DB grants gotcha
+Guild tables were created without CRUD grants for `authenticated`/`service_role` — fixed via migration `guild_tables_grants_fix`. If you add new guild tables, remember to `GRANT SELECT, INSERT, UPDATE, DELETE ... TO authenticated; GRANT ALL ... TO service_role;` or RLS policies won't get a chance to run.
+
 ## Next features (planned, not built)
-1. **The Guild Phase 2**: client project intake + scoping doc generation
-2. **The Guild Phase 3**: matching algorithm + €40 Stripe payment
-3. **Regenerative News Feed**: scrape international positive news, AI-score with soul doc, new tab
+1. **The Guild Phase 3**: messaging between client and practitioners, ratings, multilingual UI
+2. **Regenerative News Feed**: scrape international positive news, AI-score with soul doc, new tab
 
 ## Collaboration notes for Claude
 - Pedro is non-technical — explain in plain language (permaculture analogies help)
