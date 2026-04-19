@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/hooks/useAuth'
@@ -200,11 +201,13 @@ function TopNav({
   onTabChange: (tab: TabKey) => void
   onPostQuest: () => void
 }) {
-  const tabs: { key: TabKey | 'post'; label: string; icon: string }[] = [
+  const router = useRouter()
+  const tabs: { key: TabKey | 'post' | 'guild'; label: string; icon: string }[] = [
     { key: 'quests', label: 'Quests', icon: '\u{1F33F}' },
     { key: 'map',    label: 'Map',    icon: '\u{1F5FA}\uFE0F' },
     { key: 'post',   label: 'Post',   icon: '+' },
     { key: 'skills', label: 'Skills', icon: '\u{1F331}' },
+    { key: 'guild',  label: 'Guild',  icon: '\u{1F33C}' },
   ]
 
   return (
@@ -220,6 +223,23 @@ function TopNav({
               aria-label="Post quest"
             >
               <span className="text-[15px]">+</span> Post
+            </button>
+          )
+        }
+        if (tab.key === 'guild') {
+          return (
+            <button
+              key="guild"
+              onClick={() => router.push('/guild')}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium whitespace-nowrap shrink-0 transition-all"
+              style={{
+                background: 'var(--color-pill-bg)',
+                color: 'var(--color-text-secondary)',
+                border: '0.5px solid transparent',
+              }}
+              aria-label="Guild"
+            >
+              <span className="text-[14px]">{tab.icon}</span> {tab.label}
             </button>
           )
         }
