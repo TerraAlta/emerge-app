@@ -14,7 +14,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
+import { sendEmail, isEmailConfigured } from '@/lib/email'
+import { getAppUrl } from '@/lib/app-url'
 import { GUILD_MODEL, calculateCost, isDailyLimitReached, logApiUsage } from '@/lib/guild-costs'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
 
@@ -220,7 +221,7 @@ Please generate the scoping document as JSON following the schema you were given
 
     const result = await getAI().messages.create({
       model: GUILD_MODEL,
-      max_tokens: 4000,
+      max_tokens: 8000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     })
@@ -232,9 +233,9 @@ Please generate the scoping document as JSON following the schema you were given
     try {
       docContent = JSON.parse(cleaned)
     } catch {
-      console.error('[guild-scoping] parse fail:', cleaned.slice(0, 500))
+      console.error('[guild-scoping] parse fail. stop_reason=', result.stop_reason, 'len=', cleaned.length, 'tail:', cleaned.slice(-400))
       // Leave project in 'scoping' — Pedro can re-trigger manually
-      return NextResponse.json({ error: 'Scoping generation parse failed' }, { status: 500 })
+      return NextResponse.json({ error: 'Scoping generation parse failed', stop_reason: result.stop_reason }, { status: 500 })
     }
 
     // Validate practitioner_ids are real
@@ -287,13 +288,9 @@ Please generate the scoping document as JSON following the schema you were given
 
     // Notify admin a new doc is pending review
     try {
-      const resendKey = process.env.RESEND_API_KEY
-      if (resendKey) {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://emerge.terralta.org'
-        const resend = new Resend(resendKey)
-        const from = process.env.RESEND_FROM || 'Emerge Guild <onboarding@resend.dev>'
-        await resend.emails.send({
-          from,
+      if (isEmailConfigured()) {
+        const appUrl = getAppUrl()
+        await sendEmail({
           to: ADMIN_NOTIFY_EMAIL,
           subject: `[Guild] New scoping doc pending review — ${project.project_name || 'project'}`,
           html: `

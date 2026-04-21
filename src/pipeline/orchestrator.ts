@@ -260,12 +260,21 @@ import { eventbriteApi } from './sources/eventbrite-api'
 // Diaspora cultural feast sources
 import { eventbriteCultural } from './sources/eventbrite-cultural'
 import { alleventsCultural } from './sources/allevents-cultural'
-// Ticketing platform scrapers
-import { ticketTailor } from './sources/ticket-tailor'
-import { humanitix } from './sources/humanitix'
-import { billetto } from './sources/billetto'
-import { outsavvy } from './sources/outsavvy'
-import { dice } from './sources/dice'
+// Ticketing platform scrapers — ALL DISABLED 2026-04-22
+// After deep investigation, none of these 5 can be scraped from static HTML:
+//   - dice:         Cloudflare 403 (bot-blocked at TLS level)
+//   - ticketTailor: Cloudflare 403 (bot-blocked at TLS level)
+//   - outsavvy:     returns 600 junk items titled "FREE" regardless of query
+//   - humanitix:    site is a Next.js SPA; events load via private API, not in HTML
+//   - billetto:     same as humanitix — SPA with client-side event loading
+// Fixing any of these requires either (a) Playwright/headless browser (200MB+
+// dependency, slow, brittle), or (b) a paid scraping service (€20+/mo).
+// Files remain in src/pipeline/sources/ in case we revisit. See CLAUDE.md.
+// import { ticketTailor } from './sources/ticket-tailor'
+// import { humanitix } from './sources/humanitix'
+// import { billetto } from './sources/billetto'
+// import { outsavvy } from './sources/outsavvy'
+// import { dice } from './sources/dice'
 import { scoreQuest } from './score-quest'
 
 // All registered source fetchers
@@ -520,12 +529,7 @@ const SOURCES: SourceFetcher[] = [
   // Diaspora cultural feast sources
   eventbriteCultural,
   alleventsCultural,
-  // Ticketing platforms
-  ticketTailor,
-  humanitix,
-  billetto,
-  outsavvy,
-  dice,
+  // Ticketing platforms: all disabled (see import block above)
 ]
 
 export interface OrchestratorResult {

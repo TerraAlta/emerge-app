@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { isAdminEmail } from '@/lib/admin-emails'
 
 /* ── Types ── */
 type TabKey = 'analytics' | 'pipeline'
@@ -487,16 +488,13 @@ function PipelineTab() {
 /* ══════════════════════════════════════════════════════════════════
    Admin Page
    ══════════════════════════════════════════════════════════════════ */
-// Admin email checked server-side via Supabase auth — not exposed in client bundle
-const ADMIN_EMAILS = ['terraalta.sintra@gmail.com', 'valdjiu@protonmail.com']
-
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('analytics')
   const [authed, setAuthed] = useState<boolean | null>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      setAuthed(ADMIN_EMAILS.includes(data.user?.email ?? ''))
+      setAuthed(isAdminEmail(data.user?.email))
     })
   }, [])
 

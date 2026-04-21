@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getStripe, GUILD_SCOPING_PRICE_CENTS } from '@/lib/stripe'
+import { getAppUrl } from '@/lib/app-url'
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Project already paid' }, { status: 400 })
     }
 
-    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://emerge.terralta.org'
+    const origin = request.headers.get('origin') || getAppUrl()
 
     const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({

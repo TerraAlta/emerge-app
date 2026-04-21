@@ -4,6 +4,28 @@
 
 Running from another project's dir will mix memory — see `~/.claude/projects/` structure.
 
+## 🔔 Open TODOs (remind Pedro every session)
+
+On every session start, before doing other work, glance at this list and remind Pedro of anything still open. Be brief (one sentence per item). Don't nag more than once per session.
+
+- [ ] **Recruit 3-5 real verified Guild practitioners.** Right now only Pedro is verified in `guild_practitioners`, so every scoping doc will recommend only him — matching looks broken from a client's perspective. Priority before sharing the Guild publicly. Pedro is finding people manually. Ask how it's going.
+- [ ] **5 ticketing scrapers are disabled** (see below). If you want to recover them, the only paths are Playwright (200MB dep, brittle) or a paid scraping service (€20+/mo which Pedro said is out of budget). Not urgent — Eventbrite + 220 permaculture-network scrapers already cover most real events.
+- [ ] (add more here as they come)
+
+## ⚠ Disabled scrapers (2026-04-22)
+
+Five ticketing-platform scrapers were disabled after all returning 0 usable events. Imports and SOURCES entries in `src/pipeline/orchestrator.ts` are commented out; the source files remain in `src/pipeline/sources/` for reference.
+
+| Scraper | Root cause | Fix requires |
+|---|---|---|
+| `dice` | Cloudflare 403 (TLS-level bot block) | Paid scraping service |
+| `ticket-tailor` | Cloudflare 403 | Paid scraping service |
+| `outsavvy` | Site search is broken — returns 600 junk items titled "FREE" regardless of query | Wait for them to fix it, or use their API (if any) |
+| `humanitix` | Site is a Next.js SPA; event data loads via private API after page render. `/search?q=X` used to work but now redirects to 404. New URLs are `/gb/search/{location}?q=X` but initial HTML has no event data. | Playwright/headless browser, OR find their private API token |
+| `billetto` | Same as humanitix — SPA, events loaded client-side | Playwright, OR reverse-engineer their API |
+
+The failing launchd path was fixed the same day (`com.emerge.weekly-pipeline.plist` pointed to `~/emerge-app` but the real path is `~/Documents/Terra_apps/emerge-app`). Next Sunday run should execute correctly.
+
 ## What Emerge is
 Regenerative community quest app — discover permaculture/regenerative events by location across 23 countries, 220+ cities. AI-curated events from 220+ sources, aligned with the soul doc. Free, no ads, no algorithms.
 

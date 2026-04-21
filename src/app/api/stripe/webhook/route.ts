@@ -14,25 +14,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getStripe } from '@/lib/stripe'
+import { waitUntil } from '@vercel/functions'
+import { getAppUrl } from '@/lib/app-url'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
-async function triggerScoping(projectId: string, origin: string) {
-  try {
-    const url = `${origin}/api/guild/generate-scoping`
-    // Fire and forget — don't await the long generation
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-internal-key': process.env.INTERNAL_TRIGGER_KEY || '',
-      },
-      body: JSON.stringify({ projectId }),
-    }).catch(e => console.error('[stripe-webhook] scoping trigger failed:', e))
-  } catch (e) {
-    console.error('[stripe-webhook] scoping trigger error:', e)
-  }
+/**
+ * Kicks /api/guild/generate-scoping so the doc drafts in the background.
+ * Uses Vercel's waitUntil so the serverless instance stays alive past the
+ * 200 response — without it, Vercel kills the fetch the moment we return.
+ */
+function triggerScoping(projectId: string, origin: string) {
+  const url = `${origin}/api/guild/generate-scoping`
+  const p = fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-internal-key': process.env.INTERNAL_TRIGGER_KEY || '',
+    },
+    body: JSON.stringify({ projectId }),
+  })
+    .then(async res => {
+      if (!res.ok) {
+        const body = await res.text().catch(() => '')
+        console.error('[stripe-webhook] scoping trigger non-2xx:', res.status, body.slice(0, 300))
+      }
+    })
+    .catch(e => console.error('[stripe-webhook] scoping trigger failed:', e?.message || e))
+  waitUntil(p)
 }
 
 export async function POST(request: NextRequest) {
@@ -81,10 +92,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Update failed' }, { status: 500 })
     }
 
-    const origin = request.headers.get('origin')
-      || process.env.NEXT_PUBLIC_APP_URL
-      || 'https://emerge.terralta.org'
-    await triggerScoping(projectId, origin)
+    const origin = request.headers.get('origin') || getAppUrl()
+    triggerScoping(projectId, origin)
   }
 
   return NextResponse.json({ received: true })

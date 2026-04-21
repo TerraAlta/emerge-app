@@ -8,7 +8,8 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
+import { sendEmail, isEmailConfigured } from '@/lib/email'
+import { getAppUrl } from '@/lib/app-url'
 import { requireAdmin } from '@/lib/admin-auth'
 
 function getServiceClient() {
@@ -56,14 +57,10 @@ export async function POST(request: NextRequest) {
   try {
     const { data: clientUser } = await supabase.auth.admin.getUserById(project.client_user_id)
     const email = clientUser?.user?.email
-    const resendKey = process.env.RESEND_API_KEY
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://emerge.terralta.org'
+    const appUrl = getAppUrl()
 
-    if (email && resendKey) {
-      const resend = new Resend(resendKey)
-      const from = process.env.RESEND_FROM || 'Emerge Guild <onboarding@resend.dev>'
-      await resend.emails.send({
-        from,
+    if (email && isEmailConfigured()) {
+      await sendEmail({
         to: email,
         subject: `Your Guild scoping doc is ready — ${project.project_name || 'your project'}`,
         html: `

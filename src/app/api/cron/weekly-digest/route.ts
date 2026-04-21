@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
+import { sendEmail, isEmailConfigured } from '@/lib/email'
 import { buildDigestHtml } from '@/lib/emails/weekly-digest'
 import { generateUnsubscribeToken } from '@/lib/unsubscribe-token'
 
@@ -11,18 +11,16 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 )
 
-function getResend(): Resend {
-  if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY not set')
-  return new Resend(process.env.RESEND_API_KEY)
-}
-
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const resend = getResend()
+  if (!isEmailConfigured()) {
+    return NextResponse.json({ error: 'Email not configured (GMAIL_USER / GMAIL_APP_PASSWORD missing)' }, { status: 500 })
+  }
+
   const results = { sent: 0, skipped: 0, failed: 0, errors: [] as string[] }
 
   // 1. Get all opted-in users with saved locations
@@ -100,9 +98,8 @@ export async function GET(request: NextRequest) {
         unsubscribeUrl,
       })
 
-      // 7. Send via Resend
-      const { error: sendError } = await resend.emails.send({
-        from: 'Emerge <onboarding@resend.dev>',
+      // 7. Send via Gmail SMTP
+      const sendResult = await sendEmail({
         to: email,
         subject: `${weekQuests.length} quest${weekQuests.length > 1 ? 's' : ''} near ${user.saved_city || 'you'} this week`,
         html,
@@ -112,11 +109,11 @@ export async function GET(request: NextRequest) {
         },
       })
 
-      if (sendError) {
+      if (!sendResult.ok) {
         results.failed++
-        results.errors.push(`${email}: ${sendError.message}`)
+        results.errors.push(`${email}: ${sendResult.error}`)
         await supabase.from('email_digest_log').insert({
-          user_id: user.id, quest_count: weekQuests.length, status: `error: ${sendError.message}`,
+          user_id: user.id, quest_count: weekQuests.length, status: `error: ${sendResult.error}`,
         })
         continue
       }

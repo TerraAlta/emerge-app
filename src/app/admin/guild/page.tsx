@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
-
-const ADMIN_EMAILS = ['terraalta.sintra@gmail.com', 'valdjiu@protonmail.com']
+import { isAdminEmail } from '@/lib/admin-emails'
 
 interface PendingProject {
   id: string
@@ -39,7 +38,7 @@ export default function AdminGuildPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      const ok = ADMIN_EMAILS.includes(data.user?.email ?? '')
+      const ok = isAdminEmail(data.user?.email)
       setAuthed(ok)
       if (ok) void load()
     })

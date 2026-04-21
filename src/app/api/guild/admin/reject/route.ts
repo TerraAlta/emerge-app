@@ -8,7 +8,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
+import { sendEmail, isEmailConfigured } from '@/lib/email'
 import { requireAdmin } from '@/lib/admin-auth'
 import { getStripe } from '@/lib/stripe'
 
@@ -75,12 +75,8 @@ export async function POST(request: NextRequest) {
   try {
     const { data: clientUser } = await supabase.auth.admin.getUserById(project.client_user_id)
     const email = clientUser?.user?.email
-    const resendKey = process.env.RESEND_API_KEY
-    if (email && resendKey) {
-      const resend = new Resend(resendKey)
-      const from = process.env.RESEND_FROM || 'Emerge Guild <onboarding@resend.dev>'
-      await resend.emails.send({
-        from,
+    if (email && isEmailConfigured()) {
+      await sendEmail({
         to: email,
         subject: `Refund issued for your Guild scoping — ${project.project_name || 'your project'}`,
         html: `

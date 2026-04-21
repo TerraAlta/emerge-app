@@ -6,8 +6,7 @@
  */
 import { createClient } from '@supabase/supabase-js'
 import type { NextRequest } from 'next/server'
-
-const ADMIN_EMAILS = ['terraalta.sintra@gmail.com', 'valdjiu@protonmail.com']
+import { isAdminEmail } from './admin-emails'
 
 export async function requireAdmin(request: NextRequest): Promise<{ userId: string; email: string } | null> {
   const token =
@@ -24,7 +23,7 @@ export async function requireAdmin(request: NextRequest): Promise<{ userId: stri
   const { data, error } = await client.auth.getUser(token)
   if (error || !data?.user?.email) return null
 
-  if (!ADMIN_EMAILS.includes(data.user.email)) return null
+  if (!isAdminEmail(data.user.email)) return null
 
   return { userId: data.user.id, email: data.user.email }
 }
