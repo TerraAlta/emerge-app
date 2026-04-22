@@ -12,6 +12,16 @@ On every session start, before doing other work, glance at this list and remind 
 - [ ] **5 ticketing scrapers are disabled** (see below). Research-backed decision — free replacements (Mobilizon, OpenAgenda) deliver 1,500+ aligned events per weekly pipeline run, which is much more than the ticketing scrapers would have. Only re-fix if paid infra ever becomes feasible. See `RESEARCH-ticketing-scrapers.md`.
 - [ ] (add more here as they come)
 
+## ⏳ Waiting list — revisit when the app has traction
+
+These are intentionally deferred until Emerge has enough real users that the extra cost/effort is justified. Don't do them now.
+
+- [ ] **Add Mobilizon + OpenAgenda to the daily Vercel `network-pipeline` cron.** Currently they only run once a week via the Sunday launchd job. Daily would cut event freshness lag from ~7 days to ~24h. Cost goes from ~€5/week to ~€10-15/week in Haiku scoring. **Revisit when:** users complain events look stale OR you hit 500+ active users. Low effort (~30min).
+- [ ] **Gancio federated scraper.** Small volume (~3-5K events/yr) but extremely aligned with autogestione/anarcho-ecology/squat communities in IT/DE/CH/ES. Same pattern as `mobilizon.ts`. Effort ~3h.
+- [ ] **Lu.ma curated calendar scraper.** Climate-tech, regen-finance, bioregionalism salons. Effort ~4h.
+- [ ] **Paid scraping service (Bright Data ~€11/mo)** to recover DICE/Humanitix/Billetto events. Only worth it if (a) app has revenue or donations covering it AND (b) those platforms still host regen content worth recovering.
+- [ ] **Verify-practitioner admin UI + email on flip.** Currently Pedro flips `verified=true` manually in Supabase with no email sent to the practitioner. **Revisit when:** signups exceed 2-3/week so manual SQL gets old.
+
 ## ⚠ Disabled scrapers (2026-04-22)
 
 Five ticketing-platform scrapers were disabled after all returning 0 usable events. Imports and SOURCES entries in `src/pipeline/orchestrator.ts` are commented out; the source files remain in `src/pipeline/sources/` for reference.
