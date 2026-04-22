@@ -260,6 +260,8 @@ import { eventbriteApi } from './sources/eventbrite-api'
 // Diaspora cultural feast sources
 import { eventbriteCultural } from './sources/eventbrite-cultural'
 import { alleventsCultural } from './sources/allevents-cultural'
+// Federated event platforms (ActivityPub / GraphQL, free, no auth)
+import { mobilizon } from './sources/mobilizon'
 // Ticketing platform scrapers — ALL DISABLED 2026-04-22
 // After deep investigation, none of these 5 can be scraped from static HTML:
 //   - dice:         Cloudflare 403 (bot-blocked at TLS level)
@@ -529,6 +531,8 @@ const SOURCES: SourceFetcher[] = [
   // Diaspora cultural feast sources
   eventbriteCultural,
   alleventsCultural,
+  // Federated event platforms (Mobilizon/ActivityPub)
+  mobilizon,
   // Ticketing platforms: all disabled (see import block above)
 ]
 
