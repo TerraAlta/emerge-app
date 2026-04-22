@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import GuildIntakeChat from '@/components/GuildIntakeChat'
+import GuildChatScreen from '@/components/GuildChatScreen'
 
 type Step = 'intro' | 'basic' | 'intake' | 'extracting' | 'preview'
 
@@ -290,7 +290,11 @@ export default function GuildProjectNewPage() {
                 Take your time. There are no wrong answers. Tell us what you are imagining.
               </p>
             </div>
-            <GuildIntakeChat userId={userId} onComplete={handleIntakeComplete} />
+            <GuildChatScreen
+              endpoint="/api/guild/intake"
+              userId={userId}
+              onComplete={handleIntakeComplete}
+            />
           </div>
         )}
 

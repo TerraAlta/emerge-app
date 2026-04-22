@@ -53,7 +53,7 @@ export async function isDailyLimitReached(): Promise<boolean> {
 /** Log an AI call to the usage table */
 export async function logApiUsage(params: {
   userId: string
-  feature: 'interview' | 'extraction' | 'intake' | 'scoping'
+  feature: 'interview' | 'extraction' | 'intake' | 'scoping' | 'pitch_interview' | 'pitch_extraction' | 'pitch_matching'
   tokensInput: number
   tokensOutput: number
 }): Promise<void> {

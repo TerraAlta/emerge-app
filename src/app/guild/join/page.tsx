@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { FLOWER_PETALS, CLIMATE_ZONES, PROJECT_SCALES } from '@/lib/flower-petals'
-import GuildInterviewChat from '@/components/GuildInterviewChat'
+import GuildChatScreen from '@/components/GuildChatScreen'
 
 type Step = 'intro' | 'basic' | 'interview' | 'review' | 'done'
 
@@ -427,7 +427,12 @@ export default function GuildJoinPage() {
                 Take your time. There are no wrong answers. The AI will ask 10-15 adaptive questions.
               </p>
             </div>
-            <GuildInterviewChat userId={userId} petals={petals} onComplete={handleInterviewComplete} />
+            <GuildChatScreen
+              endpoint="/api/guild/interview"
+              userId={userId}
+              extraBody={{ petals }}
+              onComplete={handleInterviewComplete}
+            />
           </div>
         )}
 

@@ -2,19 +2,43 @@
 
 import { useState, useEffect, useRef } from 'react'
 
-interface Message {
+export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
 }
 
 interface Props {
+  /** API endpoint that accepts POST {userId, transcript, ...extraBody} and returns {reply, done} */
+  endpoint: string
   userId: string
-  petals: string[]
-  onComplete: (transcript: Message[]) => void
+  /** Extra fields merged into every request body (e.g. {petals: [...], prep_context_text: '...'}) */
+  extraBody?: Record<string, any>
+  /** Transcript to start from (used when resuming). If empty, chat auto-starts. */
+  initialTranscript?: ChatMessage[]
+  /** Called when the API responds with done=true */
+  onComplete: (transcript: ChatMessage[]) => void
+  /** Input placeholder text */
+  placeholder?: string
 }
 
-export default function GuildInterviewChat({ userId, petals, onComplete }: Props) {
-  const [messages, setMessages] = useState<Message[]>([])
+/**
+ * Shared chat UI for all Guild AI interviews:
+ * - /guild/join (practitioner onboarding)
+ * - /guild/project/new (client scoping intake)
+ * - /guild/pitch/new (pitch interview, coming in Phase 3)
+ *
+ * Each flow points at its own API endpoint and passes its own extraBody.
+ * Behavior and visuals are identical.
+ */
+export default function GuildChatScreen({
+  endpoint,
+  userId,
+  extraBody,
+  initialTranscript = [],
+  onComplete,
+  placeholder = 'Share your answer...',
+}: Props) {
+  const [messages, setMessages] = useState<ChatMessage[]>(initialTranscript)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -28,27 +52,32 @@ export default function GuildInterviewChat({ userId, petals, onComplete }: Props
     }
   }, [messages, loading])
 
-  // Start the interview on mount
+  // Start chat on mount (if transcript is empty)
   useEffect(() => {
     if (startedRef.current) return
     startedRef.current = true
-    startInterview()
+    if (messages.length === 0) void startChat()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function startInterview() {
+  async function post(transcript: ChatMessage[]) {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, transcript, ...(extraBody || {}) }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || 'Request failed')
+    }
+    return res.json() as Promise<{ reply: string; done?: boolean }>
+  }
+
+  async function startChat() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/guild/interview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, petals, transcript: [] }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Failed to start interview')
-      }
-      const { reply } = await res.json()
+      const { reply } = await post([])
       setMessages([{ role: 'assistant', content: reply }])
     } catch (err: any) {
       setError(err.message || 'Something went wrong')
@@ -61,28 +90,17 @@ export default function GuildInterviewChat({ userId, petals, onComplete }: Props
     const text = input.trim()
     if (!text || loading) return
 
-    const newTranscript: Message[] = [...messages, { role: 'user', content: text }]
+    const newTranscript: ChatMessage[] = [...messages, { role: 'user', content: text }]
     setMessages(newTranscript)
     setInput('')
     setLoading(true)
     setError('')
 
     try {
-      const res = await fetch('/api/guild/interview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, petals, transcript: newTranscript }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Failed to send message')
-      }
-      const { reply, done } = await res.json()
-      const updated: Message[] = [...newTranscript, { role: 'assistant', content: reply }]
+      const { reply, done } = await post(newTranscript)
+      const updated: ChatMessage[] = [...newTranscript, { role: 'assistant', content: reply }]
       setMessages(updated)
-
       if (done) {
-        // Give user a moment to read the closing message
         setTimeout(() => onComplete(updated), 1500)
       }
     } catch (err: any) {
@@ -101,16 +119,9 @@ export default function GuildInterviewChat({ userId, petals, onComplete }: Props
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 200px)', maxHeight: 700 }}>
-      {/* Messages */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto space-y-3 px-1 py-3"
-      >
+      <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 px-1 py-3">
         {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
               className="max-w-[85%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed"
               style={{
@@ -151,14 +162,13 @@ export default function GuildInterviewChat({ userId, petals, onComplete }: Props
         )}
       </div>
 
-      {/* Input */}
       <div className="shrink-0 pt-3" style={{ borderTop: '0.5px solid var(--color-border)' }}>
         <div className="flex gap-2 items-end">
           <textarea
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Share your answer..."
+            placeholder={placeholder}
             rows={2}
             disabled={loading}
             className="flex-1 rounded-xl px-3 py-2.5 text-[14px] resize-none outline-none"
