@@ -114,33 +114,68 @@ export default function GuildPage() {
             listing, always. No bidding, no commission.
           </p>
 
-          {/* CTAs */}
-          <div className="flex flex-wrap gap-2 justify-center mt-5 relative z-10">
-            {hasOwnProfile === false && (
-              <button
-                onClick={() => router.push('/guild/join')}
-                className="rounded-full px-6 py-3 text-[13px] font-semibold"
-                style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
-              >
-                Join the Guild
-              </button>
-            )}
-            {hasOwnProfile === true && (
-              <span className="text-[12px] self-center" style={{ color: 'var(--color-amber)' }}>
-                ✓ Your profile is submitted
-              </span>
-            )}
+          {/* CTAs — three doors */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6 mb-2 relative z-10 max-w-[720px] mx-auto">
+            {/* Door 1 — practitioner */}
+            <button
+              onClick={() => router.push(hasOwnProfile ? '/guild/pitch/mine' : '/guild/join')}
+              className="flex-1 rounded-2xl p-4 text-left transition-all active:scale-[0.99]"
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)', cursor: 'pointer', minHeight: 120 }}
+            >
+              <p className="text-[11px] uppercase mb-1" style={{ color: 'var(--color-amber)', letterSpacing: '0.1em' }}>
+                Free
+              </p>
+              <p className="font-heading text-[15px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>
+                I'm a <em style={{ color: 'var(--color-amber)' }}>practitioner</em>
+              </p>
+              <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
+                {hasOwnProfile ? '✓ Your profile is submitted' : 'Join the directory. Free listing, always.'}
+              </p>
+            </button>
+
+            {/* Door 2 — client / scoping */}
             <button
               onClick={() => router.push('/guild/project/new')}
-              className="rounded-full px-6 py-3 text-[13px] font-semibold"
-              style={{
-                background: 'transparent',
-                color: 'var(--color-amber)',
-                border: '0.5px solid var(--color-amber)',
-                cursor: 'pointer',
-              }}
+              className="flex-1 rounded-2xl p-4 text-left transition-all active:scale-[0.99]"
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', cursor: 'pointer', minHeight: 120 }}
             >
-              Commission a scoping
+              <p className="text-[11px] uppercase mb-1" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.1em' }}>
+                €40
+              </p>
+              <p className="font-heading text-[15px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>
+                I have <em style={{ color: 'var(--color-amber)' }}>land</em>, help me plan
+              </p>
+              <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
+                Receive a scoping doc with 2-6 matched practitioners.
+              </p>
+            </button>
+
+            {/* Door 3 — pitch */}
+            <button
+              onClick={() => router.push('/guild/pitch/new')}
+              className="flex-1 rounded-2xl p-4 text-left transition-all active:scale-[0.99]"
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', cursor: 'pointer', minHeight: 120 }}
+            >
+              <p className="text-[11px] uppercase mb-1" style={{ color: 'var(--color-amber)', letterSpacing: '0.1em' }}>
+                Free
+              </p>
+              <p className="font-heading text-[15px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>
+                I have a <em style={{ color: 'var(--color-amber)' }}>vision</em>, find my people
+              </p>
+              <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
+                Publish a pitch. Get matched to practitioners and other pitchers.
+              </p>
+            </button>
+          </div>
+
+          {/* Browse pitches link */}
+          <div className="flex justify-center mt-1 relative z-10">
+            <button
+              onClick={() => router.push('/guild/pitches')}
+              className="text-[12px] underline"
+              style={{ color: 'var(--color-text-secondary)', background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              Or browse pitches being born →
             </button>
           </div>
         </div>

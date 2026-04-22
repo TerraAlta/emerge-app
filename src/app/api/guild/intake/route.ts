@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { userId, transcript } = await request.json()
+    const { userId, transcript, prep_context_text } = await request.json()
+    const prepContext = typeof prep_context_text === 'string' ? prep_context_text.slice(0, 15000) : ''
 
     if (!userId || !Array.isArray(transcript)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -97,10 +98,14 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    const effectiveSystem = prepContext.length > 100
+      ? `${SYSTEM_PROMPT}\n\nCONTEXT THE USER SHARED BEFORE THE INTAKE (from URLs they pasted):\n\n---\n${prepContext}\n---\n\nUse this to SKIP questions already answered. Aim for a shorter conversation.`
+      : SYSTEM_PROMPT
+
     const result = await getAI().messages.create({
       model: GUILD_MODEL,
       max_tokens: 500,
-      system: SYSTEM_PROMPT,
+      system: effectiveSystem,
       messages,
     })
 

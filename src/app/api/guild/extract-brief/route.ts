@@ -61,7 +61,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { userId, projectId, transcript } = await request.json()
+    const { userId, projectId, transcript, prep_context_text } = await request.json()
+    const prepContext = typeof prep_context_text === 'string' ? prep_context_text.slice(0, 15000) : ''
 
     if (!userId || !projectId || !Array.isArray(transcript)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -71,11 +72,15 @@ export async function POST(request: NextRequest) {
       .map((m: any) => `${m.role === 'assistant' ? 'Interviewer' : 'Client'}: ${m.content}`)
       .join('\n\n')
 
+    const userContent = prepContext
+      ? `Prep context from URLs the client shared before the intake:\n\n${prepContext}\n\n---\n\nIntake transcript:\n\n${transcriptText}`
+      : `Here is the intake transcript:\n\n${transcriptText}`
+
     const result = await getAI().messages.create({
       model: GUILD_MODEL,
       max_tokens: 2000,
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: `Here is the intake transcript:\n\n${transcriptText}` }],
+      messages: [{ role: 'user', content: userContent }],
     })
 
     const text = result.content[0].type === 'text' ? result.content[0].text : '{}'

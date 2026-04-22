@@ -18,17 +18,30 @@ function getAI() {
 
 const MAX_TURNS = 15 // Hard cap on interview length
 
-function buildSystemPrompt(petals: string[]): string {
+function buildSystemPrompt(petals: string[], prepContext: string): string {
   const petalNames = petals
     .map(k => FLOWER_PETALS.find(p => p.key === k)?.label)
     .filter(Boolean)
     .join(', ')
 
+  const hasPrep = prepContext.length > 100
+  const prepBlock = hasPrep
+    ? `CONTEXT THE USER SHARED BEFORE THE INTERVIEW (from URLs they pasted):
+
+---
+${prepContext}
+---
+
+Use this to SKIP questions they've already answered. Aim for 5-7 turns, hard cap 15. Do not re-ask things the material above already tells you.
+
+`
+    : ''
+
   return `You are the Guild interviewer for Emerge, a regenerative practitioner network.
 
-Your role: conduct a warm, curious, 10-15 question interview to understand this practitioner's real experience. You are NOT evaluating or gatekeeping. You are drawing out their story so we can build a rich semantic profile.
+Your role: conduct a warm, curious, ${hasPrep ? '5-7' : '10-15'} question interview to understand this practitioner's real experience. You are NOT evaluating or gatekeeping. You are drawing out their story so we can build a rich semantic profile.
 
-This practitioner works in: ${petalNames}
+${prepBlock}This practitioner works in: ${petalNames}
 
 INTERVIEW GUIDELINES:
 - Start with their story: how did they come to this work?
@@ -61,7 +74,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { userId, petals, transcript } = await request.json()
+    const { userId, petals, transcript, prep_context_text } = await request.json()
+    const prepContext = typeof prep_context_text === 'string' ? prep_context_text.slice(0, 15000) : ''
 
     if (!userId || !petals?.length || !Array.isArray(transcript)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -107,7 +121,7 @@ export async function POST(request: NextRequest) {
     const result = await getAI().messages.create({
       model: GUILD_MODEL,
       max_tokens: 500,
-      system: buildSystemPrompt(petals),
+      system: buildSystemPrompt(petals, prepContext),
       messages,
     })
 

@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import GuildChatScreen from '@/components/GuildChatScreen'
+import UrlPrepStep from '@/components/UrlPrepStep'
+import ManualBriefForm from '@/components/ManualBriefForm'
 
-type Step = 'intro' | 'basic' | 'intake' | 'extracting' | 'preview'
+type Step = 'intro' | 'basic' | 'fork' | 'url_prep' | 'intake' | 'extracting' | 'manual_form' | 'preview'
 
 interface Message { role: 'user' | 'assistant'; content: string }
 
@@ -43,6 +45,7 @@ export default function GuildProjectNewPage() {
 
   const [projectId, setProjectId] = useState<string | null>(null)
   const [brief, setBrief] = useState<ExtractedBrief | null>(null)
+  const [prepContextText, setPrepContextText] = useState('')
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -80,7 +83,46 @@ export default function GuildProjectNewPage() {
       return
     }
     setProjectId(data.id)
+    setStep('fork')
+  }
+
+  function chooseAIPath() { setStep('url_prep') }
+
+  function chooseManualPath() {
+    setBrief({
+      project_name: projectName,
+      country: country,
+      languages: [language],
+    })
+    setStep('manual_form')
+  }
+
+  function handleUrlPrepDone(result: { combinedText: string }) {
+    setPrepContextText(result.combinedText)
     setStep('intake')
+  }
+
+  /** Manual form → build an extracted_brief JSONB identical to what the AI
+   *  would produce, persist it, and jump to preview. Stripe + generate-scoping
+   *  are untouched.  */
+  async function submitManualBrief(draft: ExtractedBrief) {
+    if (!projectId) return
+    setError('')
+    setBrief(draft)
+    await supabase
+      .from('guild_projects')
+      .update({
+        extracted_brief: draft,
+        project_name: draft.project_name || projectName,
+        country: draft.country || country,
+        region: draft.region || '',
+        land_size_ha: draft.land_size_ha ?? null,
+        project_type: draft.project_type || '',
+        description: draft.tagline || '',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', projectId)
+    setStep('preview')
   }
 
   async function handleIntakeComplete(transcript: Message[]) {
@@ -99,7 +141,7 @@ export default function GuildProjectNewPage() {
       const res = await fetch('/api/guild/extract-brief', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, projectId, transcript }),
+        body: JSON.stringify({ userId, projectId, transcript, prep_context_text: prepContextText }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -280,6 +322,59 @@ export default function GuildProjectNewPage() {
           </div>
         )}
 
+        {step === 'fork' && (
+          <div className="space-y-4">
+            <div>
+              <h2 className="font-heading text-[22px] font-light mb-2" style={{ color: 'var(--color-text)' }}>
+                How would you like to describe your project?
+              </h2>
+              <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
+                Both paths cost the same (€40) and produce the same scoping document with matched practitioners. The difference is only how you tell us about your land.
+              </p>
+            </div>
+            <button
+              onClick={chooseAIPath}
+              className="w-full rounded-2xl p-5 text-left transition-all active:scale-[0.99]"
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)', cursor: 'pointer' }}
+            >
+              <h3 className="font-heading text-[17px] font-light mb-1" style={{ color: 'var(--color-text)' }}>
+                Let the AI interview me
+              </h3>
+              <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
+                A warm conversation. You can share URLs first (site plans, past documents, your farm's website) so it asks fewer, sharper questions.
+              </p>
+            </button>
+            <button
+              onClick={chooseManualPath}
+              className="w-full rounded-2xl p-5 text-left transition-all active:scale-[0.99]"
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', cursor: 'pointer' }}
+            >
+              <h3 className="font-heading text-[17px] font-light mb-1" style={{ color: 'var(--color-text)' }}>
+                Fill a form myself
+              </h3>
+              <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
+                Skip the AI chat. Type directly into the brief form. Your scoping document is still AI-generated after payment.
+              </p>
+            </button>
+          </div>
+        )}
+
+        {step === 'url_prep' && (
+          <UrlPrepStep
+            onDone={handleUrlPrepDone}
+            title="Got a page about your land or project?"
+            subtitle="Paste up to 3 URLs — your farm's website, a design document, a past project writeup. I'll read them first so the intake interview is much shorter. Skip to chat directly."
+          />
+        )}
+
+        {step === 'manual_form' && brief && (
+          <ManualBriefForm
+            initial={brief}
+            onSubmit={submitManualBrief}
+            onBack={() => setStep('fork')}
+          />
+        )}
+
         {step === 'intake' && userId && (
           <div>
             <div className="mb-3">
@@ -293,6 +388,7 @@ export default function GuildProjectNewPage() {
             <GuildChatScreen
               endpoint="/api/guild/intake"
               userId={userId}
+              extraBody={{ prep_context_text: prepContextText }}
               onComplete={handleIntakeComplete}
             />
           </div>

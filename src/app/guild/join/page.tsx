@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { FLOWER_PETALS, CLIMATE_ZONES, PROJECT_SCALES } from '@/lib/flower-petals'
 import GuildChatScreen from '@/components/GuildChatScreen'
+import UrlPrepStep from '@/components/UrlPrepStep'
 
-type Step = 'intro' | 'basic' | 'interview' | 'review' | 'done'
+type Step = 'intro' | 'basic' | 'fork' | 'url_prep' | 'interview' | 'review' | 'done'
 
 interface ExtractedProfile {
   tagline?: string
@@ -49,6 +50,9 @@ export default function GuildJoinPage() {
   const [transcript, setTranscript] = useState<Message[]>([])
   const [extracting, setExtracting] = useState(false)
   const [profile, setProfile] = useState<ExtractedProfile | null>(null)
+
+  // URL pre-ingest context (passed to AI interview + extraction)
+  const [prepContextText, setPrepContextText] = useState('')
 
   // Check auth on mount
   useEffect(() => {
@@ -120,7 +124,7 @@ export default function GuildJoinPage() {
         await supabase.from('guild_practitioners')
           .update({ display_name: displayName.trim(), country: country.trim(), languages, flower_petals: petals })
           .eq('id', existing.id)
-        setStep('interview')
+        setStep('fork')
         return
       }
       setError(dbErr.message)
@@ -128,6 +132,27 @@ export default function GuildJoinPage() {
     }
 
     setPractitionerId(data.id)
+    setStep('fork')
+  }
+
+  function chooseAIPath() {
+    setStep('url_prep')
+  }
+
+  function chooseManualPath() {
+    // Skip AI entirely — go to review with empty extracted profile
+    setProfile({
+      tagline: '',
+      bio: '',
+      specialties: [],
+      climate_zones_worked: [],
+      project_scales: [],
+    })
+    setStep('review')
+  }
+
+  function handleUrlPrepDone(result: { combinedText: string }) {
+    setPrepContextText(result.combinedText)
     setStep('interview')
   }
 
@@ -150,7 +175,7 @@ export default function GuildJoinPage() {
       const res = await fetch('/api/guild/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, practitionerId, transcript: finalTranscript }),
+        body: JSON.stringify({ userId, practitionerId, transcript: finalTranscript, prep_context_text: prepContextText }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -416,6 +441,49 @@ export default function GuildJoinPage() {
           </div>
         )}
 
+        {/* STEP: FORK — AI or manual */}
+        {step === 'fork' && (
+          <div className="space-y-4">
+            <div>
+              <h2 className="font-heading text-[22px] font-light mb-2" style={{ color: 'var(--color-text)' }}>
+                How would you like to write your profile?
+              </h2>
+              <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
+                Both paths end in the same reviewable profile. Pick whichever feels easier.
+              </p>
+            </div>
+            <button
+              onClick={chooseAIPath}
+              className="w-full rounded-2xl p-5 text-left transition-all active:scale-[0.99]"
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)', cursor: 'pointer' }}
+            >
+              <h3 className="font-heading text-[17px] font-light mb-1" style={{ color: 'var(--color-text)' }}>Let the AI interview me</h3>
+              <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
+                A warm conversation, ~5–15 questions. Share URLs (CV, project page, portfolio) first for a much shorter interview.
+              </p>
+            </button>
+            <button
+              onClick={chooseManualPath}
+              className="w-full rounded-2xl p-5 text-left transition-all active:scale-[0.99]"
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', cursor: 'pointer' }}
+            >
+              <h3 className="font-heading text-[17px] font-light mb-1" style={{ color: 'var(--color-text)' }}>Fill the profile myself</h3>
+              <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
+                Skip the AI entirely. Type directly into the profile form.
+              </p>
+            </button>
+          </div>
+        )}
+
+        {/* STEP: URL PREP */}
+        {step === 'url_prep' && (
+          <UrlPrepStep
+            onDone={handleUrlPrepDone}
+            title="Share a page about your work (optional)"
+            subtitle="Paste up to 3 URLs — your personal site, a project page, a CV, a portfolio. I'll read them first so the interview is much shorter. Skip to just chat."
+          />
+        )}
+
         {/* STEP: INTERVIEW */}
         {step === 'interview' && userId && (
           <div>
@@ -430,7 +498,7 @@ export default function GuildJoinPage() {
             <GuildChatScreen
               endpoint="/api/guild/interview"
               userId={userId}
-              extraBody={{ petals }}
+              extraBody={{ petals, prep_context_text: prepContextText }}
               onComplete={handleInterviewComplete}
             />
           </div>
