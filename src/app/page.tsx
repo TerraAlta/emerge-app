@@ -13,6 +13,7 @@ import AuthScreen from '@/components/AuthScreen'
 import QuestDetail from '@/components/QuestDetail'
 import PostQuest from '@/components/PostQuest'
 import SkillsScreen from '@/components/SkillsScreen'
+import NewsScreen from '@/components/NewsScreen'
 import DigestSettings from '@/components/DigestSettings'
 // import TrustScreen from '@/components/TrustScreen' // Removed — revisit when user base grows
 import OnboardingSplash from '@/components/OnboardingSplash'
@@ -107,7 +108,7 @@ function displaySourceName(sourceName: string, sourceUrl?: string | null): strin
   return sourceName.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-type TabKey = 'quests' | 'map' | 'skills'
+type TabKey = 'quests' | 'map' | 'news' | 'skills'
 
 export default function Home() {
   const { user, profile, loading: authLoading, signIn, signUp, signOut } = useAuth()
@@ -206,6 +207,7 @@ function TopNav({
     { key: 'quests', label: 'Quests', icon: '\u{1F33F}' },
     { key: 'map',    label: 'Map',    icon: '\u{1F5FA}\uFE0F' },
     { key: 'post',   label: 'Post',   icon: '+' },
+    { key: 'news',   label: 'News',   icon: '\u{1F4F0}' },
     { key: 'skills', label: 'Skills', icon: '\u{1F331}' },
     { key: 'guild',  label: 'Guild',  icon: '\u{1F33C}' },
   ]
@@ -521,6 +523,7 @@ function QuestBoard({
           {activeTab === 'skills' && (
             <SkillsScreen userId={userId} quests={quests} onSelectQuest={onSelectQuest} />
           )}
+          {activeTab === 'news' && <NewsScreen />}
           {activeTab === 'quests' && (<div>
 
         {/* Header row */}

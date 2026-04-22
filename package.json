@@ -24,6 +24,7 @@
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
     "resend": "^6.9.4",
+    "rss-parser": "^3.13.0",
     "stripe": "^22.0.2"
   },
   "devDependencies": {

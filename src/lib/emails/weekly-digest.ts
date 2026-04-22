@@ -41,14 +41,37 @@ function questCard(q: DigestQuest): string {
     </td></tr>`
 }
 
+export interface DigestNews {
+  title: string
+  summary: string
+  source_name: string
+  source_url: string
+  petal: string
+}
+
+function newsCard(n: DigestNews): string {
+  const title = (n.title || '').length > 90 ? (n.title || '').slice(0, 90) + '…' : n.title
+  const summary = (n.summary || '').length > 150 ? (n.summary || '').slice(0, 150) + '…' : n.summary
+  return `
+    <tr><td style="padding:12px 0;border-bottom:1px solid #1E3A1A;">
+      <a href="${n.source_url}" style="text-decoration:none;">
+        <p style="margin:0 0 4px;font-size:14px;font-weight:500;color:#E8F2E0;line-height:1.3;">${title}</p>
+        <p style="margin:0 0 4px;font-size:11px;color:rgba(232,242,224,0.6);line-height:1.4;">${summary}</p>
+        <p style="margin:0;font-size:10px;color:#C8913A;">via ${n.source_name}</p>
+      </a>
+    </td></tr>`
+}
+
 export function buildDigestHtml(opts: {
   firstName: string
   city: string
   quests: DigestQuest[]
+  news?: DigestNews[]
   unsubscribeUrl: string
 }): string {
-  const { firstName, city, quests, unsubscribeUrl } = opts
+  const { firstName, city, quests, news, unsubscribeUrl } = opts
   const count = quests.length
+  const newsCount = (news || []).length
 
   const questRows = count > 0
     ? quests.map(questCard).join('\n')
@@ -92,6 +115,21 @@ export function buildDigestHtml(opts: {
     ${questRows}
   </table>
 </td></tr>
+
+<!-- Top regenerative news this week -->
+${newsCount > 0 ? `
+<tr><td style="padding:24px 24px 4px;">
+  <p style="margin:0 0 4px;font-size:10px;color:rgba(232,242,224,0.5);text-transform:uppercase;letter-spacing:0.12em;">
+    From the regenerative world
+  </p>
+  <p style="margin:0;font-size:15px;color:#E8F2E0;font-weight:500;">This week's reading &#x1F33F;</p>
+</td></tr>
+<tr><td style="padding:4px 24px 0;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+    ${(news || []).map(newsCard).join('\n')}
+  </table>
+</td></tr>
+` : ''}
 
 <!-- CTA -->
 <tr><td style="padding:24px 24px 0;text-align:center;">

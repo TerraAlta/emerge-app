@@ -23,6 +23,22 @@ export async function GET(request: NextRequest) {
 
   const results = { sent: 0, skipped: 0, failed: 0, errors: [] as string[] }
 
+  // Fetch top 3 news items of the last 7 days (shared across all digest sends).
+  // Score threshold 70 = only genuinely strong pieces land in the email.
+  const sinceIso = new Date(Date.now() - 7 * 86_400_000).toISOString()
+  const { data: topNews } = await supabase
+    .from('news_items')
+    .select('title, summary, source_name, source_url, petal')
+    .gte('ai_score', 70)
+    .gte('published_at', sinceIso)
+    .order('ai_score', { ascending: false })
+    .order('published_at', { ascending: false })
+    .limit(3)
+  const weeklyNews = (topNews ?? []).map((n: any) => ({
+    title: n.title, summary: n.summary, source_name: n.source_name,
+    source_url: n.source_url, petal: n.petal,
+  }))
+
   // 1. Get all opted-in users with saved locations
   const { data: users, error: usersError } = await supabase
     .from('profiles')
@@ -95,6 +111,7 @@ export async function GET(request: NextRequest) {
           source_name: q.source_name || 'Emerge',
           source_url: q.source_url,
         })),
+        news: weeklyNews,
         unsubscribeUrl,
       })
 
