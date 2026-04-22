@@ -83,7 +83,7 @@ export default function PitchesBrowsePage() {
 
   return (
     <div className="min-h-screen font-body flex justify-center" style={{ background: 'var(--color-bg)' }}>
-      <div className="w-full" style={{ maxWidth: 720, padding: '24px 20px 60px' }}>
+      <div className="w-full mx-auto max-w-[720px] xl:max-w-[1200px]" style={{ padding: '24px 20px 60px' }}>
 
         <div className="flex items-center gap-3 mb-6">
           <button
@@ -209,7 +209,7 @@ export default function PitchesBrowsePage() {
           </div>
         )}
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {filtered.map(p => (
             <button
               key={p.id}

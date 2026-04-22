@@ -74,7 +74,7 @@ export default function GuildPage() {
 
   return (
     <div className="min-h-screen font-body flex justify-center" style={{ background: 'var(--color-bg)' }}>
-      <div className="w-full relative flex flex-col" style={{ maxWidth: 640, minHeight: '100dvh' }}>
+      <div className="w-full relative flex flex-col mx-auto max-w-[640px] xl:max-w-[1200px]" style={{ minHeight: '100dvh' }}>
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-4 shrink-0">
@@ -321,7 +321,7 @@ export default function GuildPage() {
             </div>
           )}
 
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {filtered.map(p => (
               <PractitionerCard key={p.id} practitioner={p} />
             ))}

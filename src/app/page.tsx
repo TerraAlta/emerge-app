@@ -491,13 +491,13 @@ function QuestBoard({
   const initials = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() : '?'
   const displayName = profile?.first_name || 'Explorer'
 
-  // ── App Shell: all tabs inside 390px container with persistent bottom nav ──
+  // ── App Shell: mobile-first container, widens on desktop for list/grid views ──
   return (
     <div className="min-h-screen font-body flex justify-center" style={{ background: 'var(--color-bg)' }}>
-      <div className="w-full relative flex flex-col" style={{ maxWidth: 390, minHeight: '100dvh' }}>
+      <div className="w-full relative flex flex-col max-w-[390px] lg:max-w-[1120px]" style={{ minHeight: '100dvh' }}>
 
-        {/* Hero — always visible */}
-        <div className="relative overflow-hidden rounded-b-[24px] shrink-0" style={{ background: 'var(--color-bg)', padding: 'calc(36px + var(--sat, 0px)) 24px 20px' }}>
+        {/* Hero — always visible, stays narrow even on desktop */}
+        <div className="relative overflow-hidden rounded-b-[24px] shrink-0 mx-auto w-full max-w-[640px]" style={{ background: 'var(--color-bg)', padding: 'calc(36px + var(--sat, 0px)) 24px 20px' }}>
           <div className="absolute pointer-events-none" style={{ bottom: -60, left: '50%', transform: 'translateX(-50%)', width: 340, height: 340, background: 'radial-gradient(circle, var(--color-amber-light) 0%, transparent 70%)' }} />
           <div className="flex items-center justify-center gap-2.5 relative z-10">
             <SeedlingIcon size={44} />
@@ -510,9 +510,11 @@ function QuestBoard({
           </p>
         </div>
 
-        {/* Top navigation — always visible */}
+        {/* Top navigation — always visible, centered on desktop */}
         <div className="shrink-0 sticky top-0 z-40" style={{ background: 'var(--color-bg)' }}>
-          <TopNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
+          <div className="mx-auto w-full max-w-[640px]">
+            <TopNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
+          </div>
         </div>
 
         {/* Tab content area */}
@@ -861,7 +863,7 @@ function QuestBoard({
                     {group.label}
                   </div>
                 )}
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
                   {group.quests.map((quest, i) => {
                     const isFirst = gi === 0 && i === 0
                     const pill = proximityPill(quest.starts_at)

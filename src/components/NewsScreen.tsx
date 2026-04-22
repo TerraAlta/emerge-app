@@ -335,7 +335,7 @@ export default function NewsScreen() {
       )}
 
       {/* News cards */}
-      <div className="px-4 pb-8 space-y-3">
+      <div className="px-4 pb-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {filtered.map(item => {
           const petalMeta = PETAL_META[item.petal]
           const resonated = myResonates.has(item.id)
