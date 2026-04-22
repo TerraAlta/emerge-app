@@ -262,6 +262,8 @@ import { eventbriteCultural } from './sources/eventbrite-cultural'
 import { alleventsCultural } from './sources/allevents-cultural'
 // Federated event platforms (ActivityPub / GraphQL, free, no auth)
 import { mobilizon } from './sources/mobilizon'
+// Open event platforms with free keys
+import { openagenda } from './sources/openagenda'
 // Ticketing platform scrapers — ALL DISABLED 2026-04-22
 // After deep investigation, none of these 5 can be scraped from static HTML:
 //   - dice:         Cloudflare 403 (bot-blocked at TLS level)
@@ -533,6 +535,8 @@ const SOURCES: SourceFetcher[] = [
   alleventsCultural,
   // Federated event platforms (Mobilizon/ActivityPub)
   mobilizon,
+  // EU event platforms with free APIs
+  openagenda,
   // Ticketing platforms: all disabled (see import block above)
 ]
 

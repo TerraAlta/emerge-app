@@ -9,7 +9,7 @@ Running from another project's dir will mix memory — see `~/.claude/projects/`
 On every session start, before doing other work, glance at this list and remind Pedro of anything still open. Be brief (one sentence per item). Don't nag more than once per session.
 
 - [ ] **Recruit 3-5 real verified Guild practitioners.** Right now only Pedro is verified in `guild_practitioners`, so every scoping doc will recommend only him — matching looks broken from a client's perspective. Priority before sharing the Guild publicly. Pedro is finding people manually. Ask how it's going.
-- [ ] **5 ticketing scrapers are disabled** (see below). If you want to recover them, the only paths are Playwright (200MB dep, brittle) or a paid scraping service (€20+/mo which Pedro said is out of budget). Not urgent — Eventbrite + 220 permaculture-network scrapers already cover most real events.
+- [ ] **5 ticketing scrapers are disabled** (see below). Research-backed decision — free replacements (Mobilizon, OpenAgenda) deliver 1,500+ aligned events per weekly pipeline run, which is much more than the ticketing scrapers would have. Only re-fix if paid infra ever becomes feasible. See `RESEARCH-ticketing-scrapers.md`.
 - [ ] (add more here as they come)
 
 ## ⚠ Disabled scrapers (2026-04-22)
