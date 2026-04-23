@@ -117,6 +117,22 @@ export default function OnboardingSplash() {
             <div className="my-4" style={{ borderTop: '0.5px solid var(--color-border)' }} />
 
             <p className="text-[11px] uppercase tracking-widest mb-2" style={{ color: 'var(--color-amber)' }}>
+              Built on the permaculture flower
+            </p>
+            <p className="text-[11.5px] leading-relaxed mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+              Everything we curate — quests, news, practitioners — is sorted across the seven petals of{' '}
+              <a
+                href="https://holmgren.com.au/product/permaculture-flower-poster/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--color-amber)', textDecoration: 'underline' }}
+              >
+                David Holmgren's permaculture flower
+              </a>
+              : land · building · tools · wellbeing · education · economics · governance. One framework. Applied to everything you see here.
+            </p>
+
+            <p className="text-[11px] uppercase tracking-widest mb-2" style={{ color: 'var(--color-amber)' }}>
               Why this exists
             </p>
             <ul className="text-[11.5px] leading-relaxed mb-4 space-y-1 list-none pl-0" style={{ color: 'var(--color-text-secondary)' }}>
@@ -125,8 +141,8 @@ export default function OnboardingSplash() {
               <li>• Physical presence over scrolling. Real community over feeds.</li>
             </ul>
 
-            <p className="text-[11px] italic mb-5" style={{ color: 'var(--color-text-muted)' }}>
-              Our compass: Vandana Shiva, Helena Norberg-Hodge, Kate Raworth, Polly Higgins.
+            <p className="text-[11px] italic mb-5 leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+              Our compass: Vandana Shiva, Helena Norberg-Hodge, Kate Raworth, Polly Higgins, David Holmgren, Elaine Ingham, Charles Eisenstein, Satish Kumar, Joanna Macy, Fritjof Capra, E.F. Schumacher, Robin Wall Kimmerer.
             </p>
 
             <button

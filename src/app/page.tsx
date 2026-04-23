@@ -574,7 +574,7 @@ function QuestBoard({
             </span>
           </div>
           <p className="text-center mt-3 relative z-10 px-4" style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-            Regenerative events near you · News worth reading · People building real things
+            Events near you · News worth reading · People building real things
           </p>
         </div>
 
