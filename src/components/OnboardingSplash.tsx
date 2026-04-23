@@ -1,9 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 const STORAGE_KEY = 'emerge_onboarding_seen'
 const INSTALL_KEY = 'emerge_install_tip_seen'
+
+/** Global trigger — any component can dispatch this event to re-open the welcome card. */
+export const OPEN_WELCOME_EVENT = 'emerge:open-welcome'
+export function openWelcomeCard() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(OPEN_WELCOME_EVENT))
+  }
+}
 
 function isStandalone() {
   if (typeof window === 'undefined') return false
@@ -17,6 +26,7 @@ function isIOS() {
 }
 
 export default function OnboardingSplash() {
+  const router = useRouter()
   const [visible, setVisible] = useState(false)
   const [showInstallTip, setShowInstallTip] = useState(false)
 
@@ -24,16 +34,19 @@ export default function OnboardingSplash() {
     if (!localStorage.getItem(STORAGE_KEY)) {
       setVisible(true)
     } else if (!localStorage.getItem(INSTALL_KEY) && !isStandalone()) {
-      // Show install tip if onboarding done but not installed as PWA
       setShowInstallTip(true)
     }
+
+    // Listen for re-opens (from the ? button or anywhere else)
+    const handler = () => setVisible(true)
+    window.addEventListener(OPEN_WELCOME_EVENT, handler)
+    return () => window.removeEventListener(OPEN_WELCOME_EVENT, handler)
   }, [])
 
   function dismiss() {
     localStorage.setItem(STORAGE_KEY, '1')
     setVisible(false)
-    // Show install tip after onboarding if not already installed
-    if (!isStandalone()) {
+    if (!isStandalone() && !localStorage.getItem(INSTALL_KEY)) {
       setShowInstallTip(true)
     }
   }
@@ -45,46 +58,75 @@ export default function OnboardingSplash() {
 
   return (
     <>
-      {/* Onboarding modal */}
+      {/* Welcome / What-is-Emerge modal */}
       {visible && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
+          className="fixed inset-0 z-[9999] flex items-center justify-center px-4 overflow-y-auto"
           style={{ background: 'rgba(0,0,0,0.65)' }}
+          onClick={dismiss}
         >
-          <div className="rounded-2xl p-6 max-w-sm w-full" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
+          <div
+            className="rounded-2xl p-6 max-w-md w-full my-6 max-h-[92vh] overflow-y-auto"
+            style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
+            onClick={e => e.stopPropagation()}
+          >
             <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-amber)' }}>
-              Welcome to Emerge
+              What is Emerge
             </p>
 
-            <h2 className="font-heading text-3xl font-light italic leading-tight mb-5" style={{ color: 'var(--color-text)' }}>
-              Not every event.<br />
-              The right ones.
+            <h2 className="font-heading text-[26px] font-light leading-tight mb-3" style={{ color: 'var(--color-text)' }}>
+              A free app for people who want to <em style={{ color: 'var(--color-amber)' }}>do</em> regenerative work <br />— not just read about it.
             </h2>
 
-            <div className="space-y-3.5 mb-5">
+            <p className="text-[12px] leading-relaxed mb-5" style={{ color: 'var(--color-text-secondary)' }}>
+              Three doors into the same community:
+            </p>
+
+            <div className="space-y-3 mb-5">
               {[
-                '300+ networks, continuously scraped \u2014 repair caf\u00e9s, seed swaps, food forests, permaculture, Transition Towns, Forum Theatre, community orchards, solidarity CSAs, clothing swaps, composting workshops',
-                'AI filters each event \u2014 only passes what\u2019s hands-on, local and regenerative. No talks about sustainability. No corporate wellness.',
-                'You see real quests \u2014 walking distance, cycling distance, or as wide as your region. Sourced from the actual networks running them.',
-              ].map((text, i) => (
+                {
+                  icon: '🌿',
+                  title: 'Quests',
+                  body: 'Real regenerative events in your area — repair cafés, seed swaps, food forests, work parties. Curated from 220+ networks. Only things you can show up to.',
+                },
+                {
+                  icon: '📰',
+                  title: 'News',
+                  body: 'The regenerative story of the week. Curated across all 7 petals of the permaculture flower — from soil to governance, from Lisbon farmers to Mozambican cooperatives. No greenwashing, no doom.',
+                },
+                {
+                  icon: '🌼',
+                  title: 'Guild',
+                  body: 'A living network. Find verified practitioners, commission a paid scoping if you have land, publish a free pitch if you have a vision and need your seven people.',
+                },
+              ].map((d, i) => (
                 <div key={i} className="flex gap-3">
-                  <span
-                    className="flex-none w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white mt-0.5"
-                    style={{ background: 'var(--color-amber)' }}
-                  >
-                    {i + 1}
-                  </span>
-                  <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                    {text}
-                  </p>
+                  <span className="flex-none text-[18px] mt-0.5">{d.icon}</span>
+                  <div className="flex-1">
+                    <p className="text-[13px] font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>
+                      {d.title}
+                    </p>
+                    <p className="text-[11.5px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                      {d.body}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="mb-4" style={{ borderTop: '0.5px solid var(--color-border)' }} />
+            <div className="my-4" style={{ borderTop: '0.5px solid var(--color-border)' }} />
 
-            <p className="text-[11px] italic mb-5" style={{ color: 'var(--color-text-secondary)' }}>
-              No chat, no profiles. The best conversations happen face to face.
+            <p className="text-[11px] uppercase tracking-widest mb-2" style={{ color: 'var(--color-amber)' }}>
+              Why this exists
+            </p>
+            <ul className="text-[11.5px] leading-relaxed mb-4 space-y-1 list-none pl-0" style={{ color: 'var(--color-text-secondary)' }}>
+              <li>• No ads. No algorithms. No engagement loops.</li>
+              <li>• Curated by AI against a soul document, not a click counter.</li>
+              <li>• Physical presence over scrolling. Real community over feeds.</li>
+            </ul>
+
+            <p className="text-[11px] italic mb-5" style={{ color: 'var(--color-text-muted)' }}>
+              Our compass: Vandana Shiva, Helena Norberg-Hodge, Kate Raworth, Polly Higgins.
             </p>
 
             <button
@@ -92,7 +134,7 @@ export default function OnboardingSplash() {
               className="w-full py-3 rounded-full text-[13px] font-semibold text-white transition-opacity active:opacity-80"
               style={{ background: 'var(--color-amber)' }}
             >
-              Show me what&apos;s nearby &rarr;
+              Start exploring →
             </button>
           </div>
         </div>
@@ -115,8 +157,8 @@ export default function OnboardingSplash() {
                 </p>
                 <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                   {isIOS()
-                    ? 'Tap the share button \u2B06 in Safari, then "Add to Home Screen".'
-                    : 'Tap the menu \u22EE in your browser, then "Add to Home Screen" or "Install app".'}
+                    ? 'Tap the share button ⬆ in Safari, then "Add to Home Screen".'
+                    : 'Tap the menu ⋮ in your browser, then "Add to Home Screen" or "Install app".'}
                 </p>
               </div>
               <button

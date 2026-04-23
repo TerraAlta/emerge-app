@@ -16,7 +16,8 @@ import SkillsScreen from '@/components/SkillsScreen'
 import NewsScreen from '@/components/NewsScreen'
 import DigestSettings from '@/components/DigestSettings'
 // import TrustScreen from '@/components/TrustScreen' // Removed — revisit when user base grows
-import OnboardingSplash from '@/components/OnboardingSplash'
+import OnboardingSplash, { openWelcomeCard } from '@/components/OnboardingSplash'
+import WhatsNewRibbon from '@/components/WhatsNewRibbon'
 import SubmitEvent from '@/components/SubmitEvent'
 import ConnectLuma from '@/components/ConnectLuma'
 
@@ -139,8 +140,8 @@ export default function Home() {
     )
   }
 
-  // Auth prompted from quest detail "Join" button
-  if (showAuthFromDetail || !user) {
+  // Explicit auth request — triggered by actions that need a user
+  if (showAuthFromDetail) {
     return (
       <AuthScreen
         onSignIn={async (email, pw) => {
@@ -157,28 +158,39 @@ export default function Home() {
     )
   }
 
-  // Connect Luma screen
+  // Anon users can BROWSE. They only hit the auth wall when they try to
+  // do something that requires an account (post, join, connect, etc.).
+  const isAnon = !user
+
+  // Connect Luma screen — signed-in only
   if (showConnectLuma) {
-    return <ConnectLuma userId={user.id} onBack={() => setShowConnectLuma(false)} />
+    if (isAnon) { setShowAuthFromDetail(true); setShowConnectLuma(false); return null }
+    return <ConnectLuma userId={user!.id} onBack={() => setShowConnectLuma(false)} />
   }
 
-  // Post quest screen (merged — includes URL paste mode)
+  // Post quest screen — signed-in only
   if (showPostQuest || showSubmitEvent) {
+    if (isAnon) {
+      setShowAuthFromDetail(true)
+      setShowPostQuest(false)
+      setShowSubmitEvent(false)
+      return null
+    }
     return (
       <PostQuest
-        userId={user.id}
+        userId={user!.id}
         onBack={() => { setShowPostQuest(false); setShowSubmitEvent(false) }}
         onSuccess={() => { setShowPostQuest(false); setShowSubmitEvent(false) }}
       />
     )
   }
 
-  // Quest detail screen
+  // Quest detail — viewable by anyone; Join button triggers onNeedAuth
   if (selectedQuest) {
     return (
       <QuestDetail
         quest={selectedQuest}
-        userId={user.id}
+        userId={user?.id ?? ''}
         onBack={() => setSelectedQuest(null)}
         onNeedAuth={() => setShowAuthFromDetail(true)}
       />
@@ -188,15 +200,23 @@ export default function Home() {
   return (
     <QuestBoard
       profile={profile}
-      userId={user.id}
+      userId={user?.id ?? ''}
+      isAnon={isAnon}
       activeTab={activeTab}
       onTabChange={setActiveTab}
       questView={questView}
       setQuestView={setQuestView}
       onSignOut={signOut}
+      onSignIn={() => setShowAuthFromDetail(true)}
       onSelectQuest={setSelectedQuest}
-      onPostQuest={() => setShowPostQuest(true)}
-      onConnectLuma={() => setShowConnectLuma(true)}
+      onPostQuest={() => {
+        if (isAnon) { setShowAuthFromDetail(true); return }
+        setShowPostQuest(true)
+      }}
+      onConnectLuma={() => {
+        if (isAnon) { setShowAuthFromDetail(true); return }
+        setShowConnectLuma(true)
+      }}
     />
   )
 }
@@ -418,22 +438,26 @@ const COUNTRY_NAMES: Record<string, string> = {
 function QuestBoard({
   profile,
   userId,
+  isAnon,
   activeTab,
   onTabChange,
   questView,
   setQuestView,
   onSignOut,
+  onSignIn,
   onSelectQuest,
   onPostQuest,
   onConnectLuma,
 }: {
   profile: { first_name: string; last_name: string } | null
   userId: string
+  isAnon: boolean
   activeTab: TabKey
   onTabChange: (tab: TabKey) => void
   questView: QuestView
   setQuestView: (v: QuestView) => void
   onSignOut: () => void
+  onSignIn: () => void
   onSelectQuest: (quest: any) => void
   onPostQuest: () => void
   onConnectLuma: () => void
@@ -549,10 +573,13 @@ function QuestBoard({
               em<span style={{ color: 'var(--color-amber)' }}>e</span>rge
             </span>
           </div>
-          <p className="text-center mt-3 relative z-10" style={{ fontSize: 13, color: 'var(--color-text-secondary)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            Real quests · Real community ·&nbsp;Real&nbsp;change
+          <p className="text-center mt-3 relative z-10 px-4" style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+            Regenerative events near you · News worth reading · People building real things
           </p>
         </div>
+
+        {/* What's new ribbon — only shows after onboarding is complete and an announcement is pending */}
+        <WhatsNewRibbon />
 
         {/* Top navigation — 3 primary doors, always visible, centered on desktop */}
         <div className="shrink-0 sticky top-0 z-40" style={{ background: 'var(--color-bg)' }}>
@@ -590,8 +617,17 @@ function QuestBoard({
             </h1>
           </div>
 
-          {/* Theme toggle + Avatar */}
+          {/* What is Emerge? + Theme toggle + Avatar */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => openWelcomeCard()}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-semibold shrink-0 active:scale-90 transition-transform"
+              style={{ background: 'var(--color-amber-bg)', border: '0.5px solid var(--color-amber-border)', color: 'var(--color-amber)' }}
+              aria-label="What is Emerge?"
+              title="What is Emerge?"
+            >
+              ?
+            </button>
             <button
               onClick={() => setThemeState(toggleTheme())}
               className="w-8 h-8 rounded-full flex items-center justify-center text-[14px] shrink-0 active:scale-90 transition-transform"
@@ -600,37 +636,47 @@ function QuestBoard({
             >
               {theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'}
             </button>
-          <div className="relative">
+          {isAnon ? (
             <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-semibold shrink-0"
-              style={{ background: 'var(--color-avatar-bg)', border: '1.5px solid var(--color-amber)', color: 'var(--color-amber)' }}
+              onClick={onSignIn}
+              className="rounded-full px-3.5 py-1.5 text-[12px] font-semibold shrink-0"
+              style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
             >
-              {initials}
+              Sign in
             </button>
-            {showMenu && (
-              <div className="absolute right-0 top-10 rounded-[10px] py-2 px-1 z-50 min-w-[140px]" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}>
-                <div className="px-3 py-1.5 mb-1" style={{ borderBottom: '0.5px solid var(--color-pill-bg)' }}>
-                  <p className="text-[13px] font-medium" style={{ color: 'var(--color-text)' }}>{displayName}</p>
-                  <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Signed in</p>
+          ) : (
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-semibold shrink-0"
+                style={{ background: 'var(--color-avatar-bg)', border: '1.5px solid var(--color-amber)', color: 'var(--color-amber)' }}
+              >
+                {initials}
+              </button>
+              {showMenu && (
+                <div className="absolute right-0 top-10 rounded-[10px] py-2 px-1 z-50 min-w-[140px]" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}>
+                  <div className="px-3 py-1.5 mb-1" style={{ borderBottom: '0.5px solid var(--color-pill-bg)' }}>
+                    <p className="text-[13px] font-medium" style={{ color: 'var(--color-text)' }}>{displayName}</p>
+                    <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Signed in</p>
+                  </div>
+                  <button
+                    onClick={() => { setShowMenu(false); setShowSettings(true) }}
+                    className="w-full text-left px-3 py-1.5 rounded-md text-[13px]"
+                    style={{ color: 'var(--color-text)' }}
+                  >
+                    Settings
+                  </button>
+                  <button
+                    onClick={() => { setShowMenu(false); onSignOut() }}
+                    className="w-full text-left px-3 py-1.5 rounded-md text-[13px]"
+                    style={{ color: 'var(--color-error)' }}
+                  >
+                    Sign out
+                  </button>
                 </div>
-                <button
-                  onClick={() => { setShowMenu(false); setShowSettings(true) }}
-                  className="w-full text-left px-3 py-1.5 rounded-md text-[13px]"
-                  style={{ color: 'var(--color-text)' }}
-                >
-                  Settings
-                </button>
-                <button
-                  onClick={() => { setShowMenu(false); onSignOut() }}
-                  className="w-full text-left px-3 py-1.5 rounded-md text-[13px]"
-                  style={{ color: 'var(--color-error)' }}
-                >
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
           </div>
         </div>
         {showMenu && <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />}
