@@ -20,6 +20,7 @@ import OnboardingSplash, { openWelcomeCard } from '@/components/OnboardingSplash
 import WhatsNewRibbon from '@/components/WhatsNewRibbon'
 import SubmitEvent from '@/components/SubmitEvent'
 import ConnectLuma from '@/components/ConnectLuma'
+import SupportTicketButton from '@/components/SupportTicketButton'
 
 const QuestMap = dynamic(() => import('@/components/QuestMap'), {
   ssr: false,
@@ -1043,6 +1044,7 @@ function QuestBoard({
 
       </div>
       <OnboardingSplash />
+      <SupportTicketButton />
     </div>
   )
 }

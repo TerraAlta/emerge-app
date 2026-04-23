@@ -56,7 +56,7 @@ My vote: **1**. Names the ask upfront. Says "credit first" so he knows this isn'
 
 ## What to do BEFORE sending
 
-1. Verify the onboarding card actually links to his site (it does — `https://holmgren.com.au/product/permaculture-flower-poster/`).
+1. Verify the onboarding card actually links to his flower page (it does — `https://permacultureprinciples.com/flower/` — the official page for the seven domains of permaculture action).
 2. Click through your own app as an anon visitor and time the journey from landing to seeing the permaculture flower paragraph. Should be under 30 seconds. If it's not, fix that first.
 3. Ideally: reply to one of his blog posts or mastodon / bluesky in the weeks before emailing, so your name isn't a total stranger.
 

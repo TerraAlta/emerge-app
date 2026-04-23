@@ -122,7 +122,7 @@ export default function OnboardingSplash() {
             <p className="text-[11.5px] leading-relaxed mb-3" style={{ color: 'var(--color-text-secondary)' }}>
               Everything we curate — quests, news, practitioners — is sorted across the seven petals of{' '}
               <a
-                href="https://holmgren.com.au/product/permaculture-flower-poster/"
+                href="https://permacultureprinciples.com/flower/"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: 'var(--color-amber)', textDecoration: 'underline' }}
