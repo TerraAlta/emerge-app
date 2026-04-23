@@ -201,7 +201,7 @@ function MyPitchesPage() {
         )}
 
         {pitches.length > 1 && (
-          <div className="flex gap-1.5 mb-4 overflow-x-auto pill-scroll">
+          <div className="flex flex-wrap gap-1.5 mb-4">
             {pitches.map(p => (
               <button
                 key={p.id}

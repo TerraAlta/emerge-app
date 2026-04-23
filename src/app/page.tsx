@@ -108,7 +108,13 @@ function displaySourceName(sourceName: string, sourceUrl?: string | null): strin
   return sourceName.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-type TabKey = 'quests' | 'map' | 'news' | 'skills'
+/**
+ * Top-level doors — three primary sections of the app.
+ * Guild is a separate router route (/guild), so it's not a TabKey.
+ */
+type TabKey = 'quests' | 'news'
+/** Sub-views inside the Quests door. List is the default. */
+type QuestView = 'list' | 'map' | 'skills'
 
 export default function Home() {
   const { user, profile, loading: authLoading, signIn, signUp, signOut } = useAuth()
@@ -118,6 +124,7 @@ export default function Home() {
   const [showSubmitEvent, setShowSubmitEvent] = useState(false)
   const [showConnectLuma, setShowConnectLuma] = useState(false)
   const [activeTab, setActiveTab] = useState<TabKey>('quests')
+  const [questView, setQuestView] = useState<QuestView>('list')
 
   if (authLoading) {
     return (
@@ -184,6 +191,8 @@ export default function Home() {
       userId={user.id}
       activeTab={activeTab}
       onTabChange={setActiveTab}
+      questView={questView}
+      setQuestView={setQuestView}
       onSignOut={signOut}
       onSelectQuest={setSelectedQuest}
       onPostQuest={() => setShowPostQuest(true)}
@@ -192,48 +201,79 @@ export default function Home() {
   )
 }
 
-/* ── Top Nav (horizontal pill bar) ── */
+/* ── Quest View Sub-Nav — List / Map / Skills toggle + Post CTA ── */
+function QuestViewNav({
+  questView,
+  setQuestView,
+  onPostQuest,
+}: {
+  questView: QuestView
+  setQuestView: (v: QuestView) => void
+  onPostQuest: () => void
+}) {
+  const views: { key: QuestView; label: string; icon: string }[] = [
+    { key: 'list',   label: 'List',   icon: '\u{1F33F}' },
+    { key: 'map',    label: 'Map',    icon: '\u{1F5FA}\uFE0F' },
+    { key: 'skills', label: 'Skills', icon: '\u{1F331}' },
+  ]
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-b"
+      style={{ borderColor: 'var(--color-border)' }}>
+      <div className="flex flex-wrap gap-1.5">
+        {views.map(v => {
+          const isActive = questView === v.key
+          return (
+            <button
+              key={v.key}
+              onClick={() => setQuestView(v.key)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
+              style={{
+                background: isActive ? 'var(--color-amber-light)' : 'var(--color-pill-bg)',
+                color: isActive ? 'var(--color-amber)' : 'var(--color-text-secondary)',
+                border: isActive ? '0.5px solid var(--color-amber-border)' : '0.5px solid transparent',
+              }}
+            >
+              <span className="text-[13px]">{v.icon}</span> {v.label}
+            </button>
+          )
+        })}
+      </div>
+      <button
+        onClick={onPostQuest}
+        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold active:scale-95 transition-transform"
+        style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none' }}
+        aria-label="Post quest"
+      >
+        <span className="text-[14px]">+</span> Post a quest
+      </button>
+    </div>
+  )
+}
+
+/* ── Top Nav — three primary doors, no horizontal scroll ── */
 function TopNav({
   activeTab,
   onTabChange,
-  onPostQuest,
 }: {
   activeTab: TabKey
   onTabChange: (tab: TabKey) => void
-  onPostQuest: () => void
 }) {
   const router = useRouter()
-  const tabs: { key: TabKey | 'post' | 'guild'; label: string; icon: string }[] = [
+  const tabs: { key: TabKey | 'guild'; label: string; icon: string }[] = [
     { key: 'quests', label: 'Quests', icon: '\u{1F33F}' },
-    { key: 'map',    label: 'Map',    icon: '\u{1F5FA}\uFE0F' },
-    { key: 'post',   label: 'Post',   icon: '+' },
     { key: 'news',   label: 'News',   icon: '\u{1F4F0}' },
-    { key: 'skills', label: 'Skills', icon: '\u{1F331}' },
     { key: 'guild',  label: 'Guild',  icon: '\u{1F33C}' },
   ]
 
   return (
-    <div className="flex items-center gap-1.5 px-4 py-2 overflow-x-auto pill-scroll">
+    <div className="flex items-center justify-center gap-2 px-4 py-2">
       {tabs.map(tab => {
-        if (tab.key === 'post') {
-          return (
-            <button
-              key="post"
-              onClick={onPostQuest}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap shrink-0 active:scale-95 transition-transform"
-              style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)' }}
-              aria-label="Post quest"
-            >
-              <span className="text-[15px]">+</span> Post
-            </button>
-          )
-        }
         if (tab.key === 'guild') {
           return (
             <button
               key="guild"
               onClick={() => router.push('/guild')}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium whitespace-nowrap shrink-0 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium transition-all"
               style={{
                 background: 'var(--color-pill-bg)',
                 color: 'var(--color-text-secondary)',
@@ -250,7 +290,7 @@ function TopNav({
           <button
             key={tab.key}
             onClick={() => onTabChange(tab.key as TabKey)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium whitespace-nowrap shrink-0 transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium transition-all"
             style={{
               background: isActive ? 'var(--color-amber-light)' : 'var(--color-pill-bg)',
               color: isActive ? 'var(--color-amber)' : 'var(--color-text-secondary)',
@@ -380,6 +420,8 @@ function QuestBoard({
   userId,
   activeTab,
   onTabChange,
+  questView,
+  setQuestView,
   onSignOut,
   onSelectQuest,
   onPostQuest,
@@ -389,6 +431,8 @@ function QuestBoard({
   userId: string
   activeTab: TabKey
   onTabChange: (tab: TabKey) => void
+  questView: QuestView
+  setQuestView: (v: QuestView) => void
   onSignOut: () => void
   onSelectQuest: (quest: any) => void
   onPostQuest: () => void
@@ -510,23 +554,30 @@ function QuestBoard({
           </p>
         </div>
 
-        {/* Top navigation — always visible, centered on desktop */}
+        {/* Top navigation — 3 primary doors, always visible, centered on desktop */}
         <div className="shrink-0 sticky top-0 z-40" style={{ background: 'var(--color-bg)' }}>
           <div className="mx-auto w-full max-w-[640px]">
-            <TopNav activeTab={activeTab} onTabChange={onTabChange} onPostQuest={onPostQuest} />
+            <TopNav activeTab={activeTab} onTabChange={onTabChange} />
           </div>
         </div>
 
         {/* Tab content area */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
-          {activeTab === 'map' && (
-            <MapScreen quests={quests} userLocation={location} onSelectQuest={onSelectQuest} />
-          )}
-          {activeTab === 'skills' && (
-            <SkillsScreen userId={userId} quests={quests} onSelectQuest={onSelectQuest} />
-          )}
           {activeTab === 'news' && <NewsScreen />}
-          {activeTab === 'quests' && (<div>
+          {activeTab === 'quests' && questView === 'map' && (
+            <div>
+              <QuestViewNav questView={questView} setQuestView={setQuestView} onPostQuest={onPostQuest} />
+              <MapScreen quests={quests} userLocation={location} onSelectQuest={onSelectQuest} />
+            </div>
+          )}
+          {activeTab === 'quests' && questView === 'skills' && (
+            <div>
+              <QuestViewNav questView={questView} setQuestView={setQuestView} onPostQuest={onPostQuest} />
+              <SkillsScreen userId={userId} quests={quests} onSelectQuest={onSelectQuest} />
+            </div>
+          )}
+          {activeTab === 'quests' && questView === 'list' && (<div>
+            <QuestViewNav questView={questView} setQuestView={setQuestView} onPostQuest={onPostQuest} />
 
         {/* Header row */}
         <div className="flex items-center justify-between px-4 pt-5 pb-1">

@@ -106,7 +106,7 @@ export default function PitchesBrowsePage() {
 
         {/* Filter chips */}
         <div className="space-y-2 mb-5">
-          <div className="flex gap-1.5 overflow-x-auto pill-scroll">
+          <div className="flex flex-wrap gap-1.5">
             {([
               { v: 'recent', l: 'Most recent' },
               { v: 'earliest_stage', l: 'Earliest stage' },
@@ -124,7 +124,7 @@ export default function PitchesBrowsePage() {
             ))}
           </div>
 
-          <div className="flex gap-1.5 overflow-x-auto pill-scroll">
+          <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setSelectedStage(null)}
               className="rounded-full px-3 py-1.5 text-[11px] whitespace-nowrap shrink-0"
@@ -147,7 +147,7 @@ export default function PitchesBrowsePage() {
             ))}
           </div>
 
-          <div className="flex gap-1.5 overflow-x-auto pill-scroll">
+          <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setSelectedPetal(null)}
               className="rounded-full px-3 py-1.5 text-[11px] whitespace-nowrap shrink-0"
@@ -174,7 +174,7 @@ export default function PitchesBrowsePage() {
           </div>
 
           {countries.length > 0 && (
-            <div className="flex gap-1.5 overflow-x-auto pill-scroll">
+            <div className="flex flex-wrap gap-1.5">
               <button
                 onClick={() => setSelectedCountry(null)}
                 className="rounded-full px-3 py-1.5 text-[11px] whitespace-nowrap shrink-0"

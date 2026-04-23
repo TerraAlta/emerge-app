@@ -244,7 +244,7 @@ export default function NewsScreen() {
       </div>
 
       {/* Mode chips: time range + Saved */}
-      <div className="flex gap-1.5 px-4 pt-3 pb-2 overflow-x-auto pill-scroll">
+      <div className="flex flex-wrap gap-1.5 px-4 pt-3 pb-2">
         {([{ v: '7d', l: 'This week' }, { v: '30d', l: 'This month' }, { v: 'all', l: 'All' }] as const).map(r => {
           const isActive = !savedOnly && timeRange === r.v
           return (
@@ -279,7 +279,7 @@ export default function NewsScreen() {
 
       {/* Petal filter chips */}
       {!savedOnly && (
-        <div className="flex gap-1.5 px-4 pt-1 pb-3 overflow-x-auto pill-scroll">
+        <div className="flex flex-wrap gap-1.5 px-4 pt-1 pb-3">
           <button
             onClick={() => setSelectedPetal(null)}
             className="rounded-full px-3 py-1.5 text-[11px] whitespace-nowrap shrink-0 transition-all"
