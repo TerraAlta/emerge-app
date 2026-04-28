@@ -28,6 +28,13 @@ const EMPTY_DRAFT: PitchDraft = {
   contact_value: '',
 }
 
+interface DraftSummary {
+  id: string
+  title: string
+  one_line_vision: string
+  updated_at: string
+}
+
 export default function GuildPitchNewPage() {
   const router = useRouter()
   const [step, setStep] = useState<Step>('intro')
@@ -43,16 +50,74 @@ export default function GuildPitchNewPage() {
   const [draft, setDraft] = useState<PitchDraft>(EMPTY_DRAFT)
   const [intakeMode, setIntakeMode] = useState<'ai_interview' | 'manual'>('ai_interview')
 
+  // Resume support
+  const [existingDrafts, setExistingDrafts] = useState<DraftSummary[]>([])
+
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
+    async function init() {
+      const { data: u } = await supabase.auth.getUser()
+      if (!u.user) {
         router.push('/?auth=signin')
         return
       }
-      setUserId(data.user.id)
+      setUserId(u.user.id)
+
+      // Find any existing drafts for this user
+      const { data: drafts } = await supabase
+        .from('guild_pitches')
+        .select('id, title, one_line_vision, updated_at')
+        .eq('user_id', u.user.id)
+        .eq('status', 'draft')
+        .order('updated_at', { ascending: false })
+        .limit(5)
+      const list = (drafts as DraftSummary[]) || []
+      setExistingDrafts(list)
+
+      // ?resume=<id> auto-loads that specific draft
+      const resumeId = new URLSearchParams(window.location.search).get('resume')
+      if (resumeId && list.some(d => d.id === resumeId)) {
+        await resumeDraft(resumeId)
+      }
+
       setAuthLoading(false)
-    })
+    }
+    init()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
+
+  /** Load a saved draft pitch row into form state and jump to the review step. */
+  async function resumeDraft(id: string) {
+    setError('')
+    const { data, error: dbErr } = await supabase
+      .from('guild_pitches')
+      .select('*')
+      .eq('id', id)
+      .single()
+    if (dbErr || !data) {
+      setError(dbErr?.message || 'Could not load draft')
+      return
+    }
+    setPitchId(data.id)
+    setIntakeMode(data.intake_mode === 'manual' ? 'manual' : 'ai_interview')
+    setDraft({
+      title: data.title || '',
+      one_line_vision: data.one_line_vision || '',
+      vision_long: data.vision_long || '',
+      stage: data.stage || 'idea',
+      commitment_level: data.commitment_level || 'exploratory',
+      country: data.country || '',
+      region: data.region || '',
+      target_region_flexibility: data.target_region_flexibility || '',
+      flower_petals: data.flower_petals || [],
+      roles_sought: data.roles_sought || [],
+      offering: data.offering || '',
+      seed_capital_range: data.seed_capital_range || '',
+      language: data.language || 'en',
+      contact_method: data.contact_method === 'external_link' ? 'external_link' : 'email',
+      contact_value: data.contact_value || '',
+    })
+    setStep('review')
+  }
 
   /** Create a draft pitch row so we have an id to attach transcripts/matches to. */
   async function createDraftPitch(mode: 'ai_interview' | 'manual', urls: string[] = []): Promise<string | null> {
@@ -175,9 +240,13 @@ export default function GuildPitchNewPage() {
     setStep('publishing')
     setError('')
     await saveDraft()
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/guild/pitch/publish', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+      },
       body: JSON.stringify({ pitchId }),
     })
     if (!res.ok) {
@@ -214,6 +283,39 @@ export default function GuildPitchNewPage() {
 
         {step === 'intro' && (
           <div className="space-y-5">
+            {existingDrafts.length > 0 && (
+              <div className="rounded-2xl p-4" style={{ background: 'var(--color-amber-light)', border: '0.5px solid var(--color-amber-border)' }}>
+                <p className="text-[12px] mb-2 font-semibold" style={{ color: 'var(--color-text)' }}>
+                  You have {existingDrafts.length === 1 ? 'an unfinished pitch' : `${existingDrafts.length} unfinished pitches`}
+                </p>
+                <div className="space-y-1.5">
+                  {existingDrafts.map(d => (
+                    <button
+                      key={d.id}
+                      onClick={() => resumeDraft(d.id)}
+                      className="w-full text-left rounded-lg px-3 py-2 transition-all active:scale-[0.99]"
+                      style={{ background: 'var(--color-bg)', border: '0.5px solid var(--color-amber-border)', cursor: 'pointer' }}
+                    >
+                      <p className="text-[13px]" style={{ color: 'var(--color-text)' }}>
+                        {d.title?.trim() || '(untitled)'}
+                      </p>
+                      {d.one_line_vision && (
+                        <p className="text-[11px] mt-0.5 line-clamp-1" style={{ color: 'var(--color-text-secondary)' }}>
+                          {d.one_line_vision}
+                        </p>
+                      )}
+                      <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                        Resume editing →
+                      </p>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] mt-2" style={{ color: 'var(--color-text-muted)' }}>
+                  Or scroll down to start a new pitch.
+                </p>
+              </div>
+            )}
+
             <div>
               <h1 className="font-heading text-[28px] font-light leading-tight mb-2" style={{ color: 'var(--color-text)' }}>
                 Share your <em style={{ color: 'var(--color-amber)' }}>seed</em>

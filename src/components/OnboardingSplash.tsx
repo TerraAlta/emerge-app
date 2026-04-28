@@ -97,7 +97,7 @@ export default function OnboardingSplash() {
                 {
                   icon: '🌼',
                   title: 'Guild',
-                  body: 'A living network. Find verified practitioners, commission a paid scoping if you have land, publish a free pitch if you have a vision and need your seven people.',
+                  body: 'A living network. Find verified practitioners, commission a free scoping if you have land, publish a free pitch if you have a vision and need your seven people.',
                 },
               ].map((d, i) => (
                 <div key={i} className="flex gap-3">

@@ -11,6 +11,8 @@ export default function GuildPage() {
   const [practitioners, setPractitioners] = useState<Practitioner[]>([])
   const [loading, setLoading] = useState(true)
   const [hasOwnProfile, setHasOwnProfile] = useState<boolean | null>(null)
+  const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null)
+  const [authGate, setAuthGate] = useState<null | 'practitioner' | 'land' | 'vision'>(null)
 
   // Filters
   const [filterCountry, setFilterCountry] = useState('')
@@ -34,7 +36,8 @@ export default function GuildPage() {
 
     // Check if current user has a profile
     supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) { setHasOwnProfile(false); return }
+      if (!data.user) { setIsSignedIn(false); setHasOwnProfile(false); return }
+      setIsSignedIn(true)
       supabase
         .from('guild_practitioners')
         .select('id')
@@ -71,6 +74,35 @@ export default function GuildPage() {
   }
 
   const activeFilterCount = [filterCountry, filterLanguage, filterPetal, filterScale].filter(Boolean).length
+
+  // Door click handlers — gate behind auth for non-signed-in users
+  function openPractitionerDoor() {
+    if (isSignedIn === false) { setAuthGate('practitioner'); return }
+    router.push(hasOwnProfile ? '/guild/pitch/mine' : '/guild/join')
+  }
+  function openLandDoor() {
+    if (isSignedIn === false) { setAuthGate('land'); return }
+    router.push('/guild/project/new')
+  }
+  function openVisionDoor() {
+    if (isSignedIn === false) { setAuthGate('vision'); return }
+    router.push('/guild/pitch/new')
+  }
+
+  const gateCopy: Record<NonNullable<typeof authGate>, { title: string; body: string }> = {
+    practitioner: {
+      title: 'Create an account to join the Guild',
+      body: 'Practitioner profiles are tied to your Emerge account so you can edit them, get matched, and stay in touch.',
+    },
+    land: {
+      title: 'Create an account to start a project',
+      body: 'Your scoping doc and matched practitioners live in your account so you can come back and check progress.',
+    },
+    vision: {
+      title: 'Create an account to publish a pitch',
+      body: 'Pitches are tied to your account so you can edit, receive matches, and reach out.',
+    },
+  }
 
   return (
     <div className="min-h-screen font-body flex justify-center" style={{ background: 'var(--color-bg)' }}>
@@ -118,7 +150,7 @@ export default function GuildPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6 mb-2 relative z-10 max-w-[720px] mx-auto">
             {/* Door 1 — practitioner */}
             <button
-              onClick={() => router.push(hasOwnProfile ? '/guild/pitch/mine' : '/guild/join')}
+              onClick={openPractitionerDoor}
               className="flex-1 rounded-2xl p-4 text-left transition-all active:scale-[0.99]"
               style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)', cursor: 'pointer', minHeight: 120 }}
             >
@@ -135,24 +167,24 @@ export default function GuildPage() {
 
             {/* Door 2 — client / scoping */}
             <button
-              onClick={() => router.push('/guild/project/new')}
+              onClick={openLandDoor}
               className="flex-1 rounded-2xl p-4 text-left transition-all active:scale-[0.99]"
               style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', cursor: 'pointer', minHeight: 120 }}
             >
-              <p className="text-[11px] uppercase mb-1" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.1em' }}>
-                €40
+              <p className="text-[11px] uppercase mb-1" style={{ color: 'var(--color-amber)', letterSpacing: '0.1em' }}>
+                Free
               </p>
               <p className="font-heading text-[15px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>
                 I have <em style={{ color: 'var(--color-amber)' }}>land</em>, help me plan
               </p>
               <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
-                Receive a scoping doc with 2-6 matched practitioners.
+                Receive a scoping doc with practitioners from the Guild. The network is small today — expect a few matches, not many.
               </p>
             </button>
 
             {/* Door 3 — pitch */}
             <button
-              onClick={() => router.push('/guild/pitch/new')}
+              onClick={openVisionDoor}
               className="flex-1 rounded-2xl p-4 text-left transition-all active:scale-[0.99]"
               style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', cursor: 'pointer', minHeight: 120 }}
             >
@@ -328,6 +360,54 @@ export default function GuildPage() {
           </div>
         </div>
       </div>
+
+      {/* Auth gate popup — for non-signed-in users clicking a Guild door */}
+      {authGate && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-5"
+          style={{ background: 'rgba(0, 0, 0, 0.5)' }}
+          onClick={() => setAuthGate(null)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className="rounded-2xl p-6 w-full max-w-[400px]"
+            style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}
+          >
+            <p className="text-[11px] uppercase tracking-[0.2em] mb-2" style={{ color: 'var(--color-amber)' }}>
+              One step first
+            </p>
+            <h3 className="font-heading text-[20px] font-light leading-tight mb-3" style={{ color: 'var(--color-text)' }}>
+              {gateCopy[authGate].title}
+            </h3>
+            <p className="text-[13px] leading-relaxed mb-5" style={{ color: 'var(--color-text-secondary)' }}>
+              {gateCopy[authGate].body}
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => router.push('/?auth=signup')}
+                className="rounded-xl py-3 text-[14px] font-medium"
+                style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
+              >
+                Create an account
+              </button>
+              <button
+                onClick={() => router.push('/?auth=signin')}
+                className="rounded-xl py-3 text-[13px]"
+                style={{ background: 'transparent', color: 'var(--color-text-secondary)', border: '0.5px solid var(--color-border)', cursor: 'pointer' }}
+              >
+                I already have one — sign in
+              </button>
+              <button
+                onClick={() => setAuthGate(null)}
+                className="text-[12px] mt-1"
+                style={{ background: 'none', color: 'var(--color-text-muted)', border: 'none', cursor: 'pointer' }}
+              >
+                Not now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

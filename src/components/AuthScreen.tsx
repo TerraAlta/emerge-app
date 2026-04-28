@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 interface Props {
   onSignIn: (email: string, password: string) => Promise<any>
   onSignUp: (email: string, password: string, firstName: string) => Promise<any>
+  defaultMode?: 'login' | 'signup'
 }
 
 function SeedlingIcon({ size = 34 }: { size?: number }) {
@@ -19,8 +20,8 @@ function SeedlingIcon({ size = 34 }: { size?: number }) {
   )
 }
 
-export default function AuthScreen({ onSignIn, onSignUp }: Props) {
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
+export default function AuthScreen({ onSignIn, onSignUp, defaultMode = 'login' }: Props) {
+  const [mode, setMode] = useState<'login' | 'signup'>(defaultMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)

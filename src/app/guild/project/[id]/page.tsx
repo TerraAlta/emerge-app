@@ -43,14 +43,14 @@ export default function GuildProjectPage() {
   const params = useParams()
   const searchParams = useSearchParams()
   const projectId = params?.id as string
-  const justPaid = searchParams.get('paid') === '1'
+  const justSubmitted = searchParams.get('submitted') === '1' || searchParams.get('paid') === '1'
 
   const [loading, setLoading] = useState(true)
   const [project, setProject] = useState<ProjectRow | null>(null)
   const [doc, setDoc] = useState<ScopingDocRow | null>(null)
   const [practitioners, setPractitioners] = useState<Record<string, PractitionerRow>>({})
   const [error, setError] = useState('')
-  const [payLoading, setPayLoading] = useState(false)
+  const [submitLoading, setSubmitLoading] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -101,25 +101,29 @@ export default function GuildProjectPage() {
 
   useEffect(() => { if (projectId) void load() }, [projectId])
 
-  async function retryCheckout() {
+  async function submitForScoping() {
     if (!project) return
-    setPayLoading(true)
+    setSubmitLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/guild/checkout', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/guild/submit-for-scoping', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         body: JSON.stringify({ projectId: project.id }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Could not start checkout')
+        throw new Error(err.error || 'Could not submit project')
       }
-      const { url } = await res.json()
-      if (url) window.location.href = url
+      router.replace(`/guild/project/${project.id}?submitted=1`)
+      await load()
     } catch (err: any) {
-      setError(err.message || 'Checkout failed')
-      setPayLoading(false)
+      setError(err.message || 'Submission failed')
+      setSubmitLoading(false)
     }
   }
 
@@ -150,7 +154,7 @@ export default function GuildProjectPage() {
   const isApproved = !!doc?.approved_at
   const isPendingReview = project.status === 'matched' && !isApproved
   const isScoping = project.status === 'scoping'
-  const isPreviewOnly = !project.paid && (project.status === 'intake')
+  const canSubmit = project.status === 'intake' && project.extracted_brief && Object.keys(project.extracted_brief).length > 0
 
   return (
     <div className="min-h-screen font-body flex justify-center" style={{ background: 'var(--color-bg)' }}>
@@ -171,15 +175,15 @@ export default function GuildProjectPage() {
           )}
         </div>
 
-        {justPaid && (isPendingReview || isScoping) && (
+        {justSubmitted && (isPendingReview || isScoping) && (
           <div className="rounded-2xl p-4 mb-5" style={{ background: 'var(--color-amber-light)', border: '0.5px solid var(--color-amber-border)' }}>
             <p className="text-[13px]" style={{ color: 'var(--color-text)' }}>
-              Thank you. Payment received. Your scoping document is being drafted and will be personally reviewed before we send it — usually within 2 days. You will receive an email when it is ready.
+              Thank you. Your scoping document is being drafted and will be personally reviewed before we send it — usually within 2 days. You will receive an email when it is ready.
             </p>
           </div>
         )}
 
-        {isScoping && !justPaid && (
+        {isScoping && !justSubmitted && (
           <div className="rounded-2xl p-6 mb-5 text-center" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}>
             <p className="text-[14px]" style={{ color: 'var(--color-text)' }}>Drafting your scoping document...</p>
             <p className="text-[11px] mt-1" style={{ color: 'var(--color-text-secondary)' }}>Refresh in a minute.</p>
@@ -228,19 +232,22 @@ export default function GuildProjectPage() {
           </section>
         )}
 
-        {/* Pay CTA if not yet paid */}
-        {isPreviewOnly && (
+        {/* Submit CTA if intake done but not yet submitted for scoping */}
+        {canSubmit && (
           <div className="rounded-2xl p-5 space-y-3 mb-5" style={{ background: 'var(--color-amber-light)', border: '0.5px solid var(--color-amber-border)' }}>
             <h3 className="font-heading text-[18px] font-light" style={{ color: 'var(--color-text)' }}>The full scoping document</h3>
             <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text)' }}>
-              Unlock the full doc — site reading, design principles, phased approach, and 2-6 matched practitioners with reasoning.
+              We will draft the full doc — site reading, design principles, phased approach, and 2-6 matched practitioners with reasoning.
+            </p>
+            <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+              Free while we grow the Guild. The network is small today — expect a few matches, not many. Personally reviewed before delivery, usually within 2 days.
             </p>
             <button
-              onClick={retryCheckout}
-              disabled={payLoading}
+              onClick={submitForScoping}
+              disabled={submitLoading}
               className="w-full py-3 rounded-full text-[14px] font-semibold"
-              style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: payLoading ? 'default' : 'pointer', opacity: payLoading ? 0.5 : 1 }}
-            >{payLoading ? 'Opening checkout...' : 'Unlock full scoping — €40'}</button>
+              style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: submitLoading ? 'default' : 'pointer', opacity: submitLoading ? 0.5 : 1 }}
+            >{submitLoading ? 'Submitting...' : 'Submit for scoping'}</button>
           </div>
         )}
 

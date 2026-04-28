@@ -1,14 +1,21 @@
 /**
- * Guild Scoping Doc Generator — POST-PAYMENT ONLY.
+ * Guild Scoping Doc Generator.
  *
- * Takes a paid project, reads its intake transcript + brief + all verified
- * practitioners, and generates a structured scoping document with matched
- * practitioners. Writes to guild_scoping_docs (unapproved) and moves the
- * project to 'matched' status, which puts it in Pedro's admin review queue.
+ * Reads a project's intake transcript + brief + all verified practitioners
+ * and generates a structured scoping document with matched practitioners.
+ * Writes to guild_scoping_docs (unapproved) and moves the project to
+ * 'matched' status, which puts it in Pedro's admin review queue.
  *
  * Client NEVER sees the doc until admin approves it (RLS enforced).
  *
- * POST body: { projectId }  (authenticated as admin OR called from Stripe webhook with X-Internal-Key header)
+ * Auth: only callable with INTERNAL_TRIGGER_KEY. Triggered by:
+ *   - /api/guild/submit-for-scoping (free flow, current default)
+ *   - /api/stripe/webhook (paid flow, kept for when payment is wired back on)
+ *
+ * The `paid` flag on guild_projects is no longer required — scoping is free
+ * while the Guild grows. The internal-key check is the only auth gate.
+ *
+ * POST body: { projectId }
  * Returns:   { ok: true, docId }
  */
 import { NextRequest, NextResponse } from 'next/server'
@@ -122,10 +129,6 @@ export async function POST(request: NextRequest) {
 
     if (projectErr || !project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
-    }
-
-    if (!project.paid) {
-      return NextResponse.json({ error: 'Project is not paid' }, { status: 402 })
     }
 
     const brief = project.extracted_brief || {}

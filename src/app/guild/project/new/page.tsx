@@ -173,24 +173,27 @@ export default function GuildProjectNewPage() {
     }
   }
 
-  async function startCheckout() {
+  async function submitForScoping() {
     if (!projectId) return
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/guild/checkout', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/guild/submit-for-scoping', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         body: JSON.stringify({ projectId }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Could not start checkout')
+        throw new Error(err.error || 'Could not submit project')
       }
-      const { url } = await res.json()
-      if (url) window.location.href = url
+      router.push(`/guild/project/${projectId}?submitted=1`)
     } catch (err: any) {
-      setError(err.message || 'Checkout failed')
+      setError(err.message || 'Submission failed')
       setLoading(false)
     }
   }
@@ -238,15 +241,15 @@ export default function GuildProjectNewPage() {
               <ol className="space-y-3 text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
                 <li><strong style={{ color: 'var(--color-text)' }}>1.</strong> Share the basics (1 min)</li>
                 <li><strong style={{ color: 'var(--color-text)' }}>2.</strong> A warm AI intake — 10 to 15 questions about your land, vision, and what you are looking for (~15 min)</li>
-                <li><strong style={{ color: 'var(--color-text)' }}>3.</strong> We show you a free preview of what we heard</li>
-                <li><strong style={{ color: 'var(--color-text)' }}>4.</strong> If it resonates, pay <strong style={{ color: 'var(--color-amber)' }}>€40</strong> for the full scoping document with suggested practitioners</li>
+                <li><strong style={{ color: 'var(--color-text)' }}>3.</strong> We show you a preview of what we heard</li>
+                <li><strong style={{ color: 'var(--color-text)' }}>4.</strong> If it resonates, submit it and we draft the full scoping document with suggested practitioners</li>
                 <li><strong style={{ color: 'var(--color-text)' }}>5.</strong> Each doc is personally reviewed before we send it — usually within 2 days</li>
               </ol>
             </div>
 
             <div className="rounded-2xl p-5" style={{ background: 'var(--color-amber-light)', border: '0.5px solid var(--color-amber-border)' }}>
               <p className="text-[13px] italic leading-relaxed" style={{ color: 'var(--color-text)' }}>
-                The scoping doc is our only revenue. Practitioners never pay to be listed and we take nothing from the work you commission with them. If the doc is not useful, we refund you.
+                Free while we grow the Guild. Honest note: the network is small today — your doc may surface only a handful of matches, sometimes just one or two. We are growing it slowly, by trust, and expect it to take at least a year to deepen. Practitioners never pay to be listed. You will never pay for placement.
               </p>
             </div>
 
@@ -329,7 +332,7 @@ export default function GuildProjectNewPage() {
                 How would you like to describe your project?
               </h2>
               <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-                Both paths cost the same (€40) and produce the same scoping document with matched practitioners. The difference is only how you tell us about your land.
+                Both paths produce the same scoping document with matched practitioners. The difference is only how you tell us about your land.
               </p>
             </div>
             <button
@@ -353,7 +356,7 @@ export default function GuildProjectNewPage() {
                 Fill a form myself
               </h3>
               <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-                Skip the AI chat. Type directly into the brief form. Your scoping document is still AI-generated after payment.
+                Skip the AI chat. Type directly into the brief form. Your scoping document is AI-generated once you submit.
               </p>
             </button>
           </div>
@@ -464,10 +467,10 @@ export default function GuildProjectNewPage() {
                 A structured scoping doc — site reading, regenerative design principles, phased approach, and 2-6 practitioners from the Guild matched to your project with reasoning.
               </p>
               <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                Personally reviewed before delivery. If the doc is not useful, we refund you.
+                Free while we grow the Guild. The network is small today — expect a few matches, not many. Personally reviewed before delivery, usually within 2 days.
               </p>
               <button
-                onClick={startCheckout}
+                onClick={submitForScoping}
                 disabled={loading}
                 className="w-full py-3 rounded-full text-[14px] font-semibold mt-2"
                 style={{
@@ -477,7 +480,7 @@ export default function GuildProjectNewPage() {
                   cursor: loading ? 'default' : 'pointer',
                   opacity: loading ? 0.5 : 1,
                 }}
-              >{loading ? 'Opening checkout...' : 'Unlock full scoping — €40'}</button>
+              >{loading ? 'Submitting...' : 'Submit for scoping'}</button>
             </div>
 
             {error && <p className="text-[12px] text-center" style={{ color: 'var(--color-error)' }}>{error}</p>}

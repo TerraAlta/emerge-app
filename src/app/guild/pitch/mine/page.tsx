@@ -126,7 +126,9 @@ function MyPitchesPage() {
 
   async function confirmActive(pitchId: string) {
     setBusy(true)
-    await fetch(`/api/guild/pitch/${pitchId}/confirm-active`, { method: 'POST' })
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers = session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined
+    await fetch(`/api/guild/pitch/${pitchId}/confirm-active`, { method: 'POST', headers })
     setPitches(p => p.map(x => x.id === pitchId
       ? { ...x, last_confirmed_active_at: new Date().toISOString() } : x))
     setBusy(false)
@@ -134,7 +136,9 @@ function MyPitchesPage() {
 
   async function reactivate(pitchId: string) {
     setBusy(true)
-    await fetch(`/api/guild/pitch/${pitchId}/reactivate`, { method: 'POST' })
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers = session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined
+    await fetch(`/api/guild/pitch/${pitchId}/reactivate`, { method: 'POST', headers })
     window.location.reload()
   }
 
@@ -267,11 +271,19 @@ function MyPitchesPage() {
               )}
 
               <div className="flex gap-2 flex-wrap">
-                <button
-                  onClick={() => router.push(`/guild/pitch/${active.id}`)}
-                  className="rounded-full px-4 py-2 text-[12px]"
-                  style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
-                >View public page</button>
+                {active.status === 'draft' ? (
+                  <button
+                    onClick={() => router.push(`/guild/pitch/new?resume=${active.id}`)}
+                    className="rounded-full px-4 py-2 text-[12px]"
+                    style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
+                  >Continue editing</button>
+                ) : (
+                  <button
+                    onClick={() => router.push(`/guild/pitch/${active.id}`)}
+                    className="rounded-full px-4 py-2 text-[12px]"
+                    style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
+                  >View public page</button>
+                )}
                 {active.status === 'published' && (
                   <button
                     onClick={() => setStatus(active.id, 'paused')}

@@ -239,7 +239,7 @@ export default function AdminGuildPage() {
   async function rejectProject(projectId: string) {
     const reason = prompt('Reason for rejection (shown to client):')
     if (reason === null) return
-    if (!confirm('Reject and issue a full refund via Stripe?')) return
+    if (!confirm('Reject this scoping doc? (If the project was paid, a full Stripe refund will be issued automatically. Free projects close without refund.)')) return
     setActionLoading(projectId)
     try {
       const res = await fetch('/api/guild/admin/reject', {

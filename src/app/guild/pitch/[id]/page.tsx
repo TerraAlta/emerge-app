@@ -118,11 +118,13 @@ export default function PitchPublicPage() {
   async function toggleWatch() {
     if (!userId || !pitch) return
     setWatchLoading(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers = session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined
     if (watching) {
-      await fetch(`/api/guild/pitch/${pitch.id}/watch`, { method: 'DELETE' })
+      await fetch(`/api/guild/pitch/${pitch.id}/watch`, { method: 'DELETE', headers })
       setWatching(false)
     } else {
-      await fetch(`/api/guild/pitch/${pitch.id}/watch`, { method: 'POST' })
+      await fetch(`/api/guild/pitch/${pitch.id}/watch`, { method: 'POST', headers })
       setWatching(true)
     }
     setWatchLoading(false)

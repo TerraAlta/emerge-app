@@ -76,13 +76,16 @@ export async function POST(request: NextRequest) {
     const { data: clientUser } = await supabase.auth.admin.getUserById(project.client_user_id)
     const email = clientUser?.user?.email
     if (email && isEmailConfigured()) {
+      const wasRefunded = !!refundId
       await sendEmail({
         to: email,
-        subject: `Refund issued for your Guild scoping — ${project.project_name || 'your project'}`,
+        subject: wasRefunded
+          ? `Refund issued for your Guild scoping — ${project.project_name || 'your project'}`
+          : `Your Guild scoping — ${project.project_name || 'your project'}`,
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 20px; color: #1a1a1a; line-height: 1.6;">
-            <h1 style="font-weight: 300; font-size: 24px; margin: 0 0 16px;">We have refunded your scoping</h1>
-            <p>After reviewing the draft scoping document for <strong>${project.project_name || 'your project'}</strong>, we concluded it would not serve you well. We have issued a full refund to your payment method — it should arrive within 5-10 business days.</p>
+            <h1 style="font-weight: 300; font-size: 24px; margin: 0 0 16px;">${wasRefunded ? 'We have refunded your scoping' : 'We could not deliver this scoping'}</h1>
+            <p>After reviewing the draft scoping document for <strong>${project.project_name || 'your project'}</strong>, we concluded it would not serve you well.${wasRefunded ? ' We have issued a full refund to your payment method — it should arrive within 5-10 business days.' : ''}</p>
             ${reason ? `<p><strong>Note from the reviewer:</strong><br/>${reason}</p>` : ''}
             <p style="margin-top: 24px;">If you would like to try the intake again — with a different focus or more detail — you are welcome to. Reply to this email and we will guide you.</p>
             <p style="font-size: 12px; color: #999; margin-top: 32px;">— The Guild · Emerge</p>
