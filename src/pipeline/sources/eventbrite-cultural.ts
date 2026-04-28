@@ -16,7 +16,7 @@ import { CULTURAL_KEYWORDS, getActiveSeasonalKeywords } from './cultural-keyword
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
 const FETCH_TIMEOUT = 10_000
-const RATE_LIMIT_MS = 1_200
+const RATE_LIMIT_MS = 400
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))

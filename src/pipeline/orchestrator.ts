@@ -281,8 +281,14 @@ import { openagenda } from './sources/openagenda'
 // import { dice } from './sources/dice'
 import { scoreQuest } from './score-quest'
 
-// All registered source fetchers
+// All registered source fetchers.
+// Order matters: high-value regen-aligned federated platforms run FIRST so they
+// always land in the DB even if later scrapers overrun. Cultural/feast scrapers
+// run LAST because they're the slowest (220 cities × 55 keywords each).
 const SOURCES: SourceFetcher[] = [
+  // Federated regen platforms — highest yield, run first
+  mobilizon,
+  openagenda,
   inaturalist,
   repairCafe,
   wwoof,
@@ -530,13 +536,10 @@ const SOURCES: SourceFetcher[] = [
   eventbriteCities,
   eventbriteApi,
   localNetworks,
-  // Diaspora cultural feast sources
+  // Diaspora cultural feast sources — slowest scrapers, run LAST so they
+  // can't starve mobilizon/openagenda (which now run first).
   eventbriteCultural,
   alleventsCultural,
-  // Federated event platforms (Mobilizon/ActivityPub)
-  mobilizon,
-  // EU event platforms with free APIs
-  openagenda,
   // Ticketing platforms: all disabled (see import block above)
 ]
 
