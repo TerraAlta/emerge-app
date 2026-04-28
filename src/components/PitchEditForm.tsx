@@ -1,6 +1,8 @@
 'use client'
 
+import { useRef, useState } from 'react'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
+import { supabase } from '@/lib/supabase'
 
 export interface PitchDraft {
   title: string
@@ -18,6 +20,7 @@ export interface PitchDraft {
   language: string
   contact_method: 'email' | 'external_link'
   contact_value: string
+  hero_image_url: string
 }
 
 interface Props {
@@ -42,8 +45,52 @@ const COMMITMENTS = [
 ]
 
 export default function PitchEditForm({ value, onChange, disabled }: Props) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+
   function update<K extends keyof PitchDraft>(key: K, v: PitchDraft[K]) {
     onChange({ ...value, [key]: v })
+  }
+
+  async function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadError('')
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image must be under 5 MB.')
+      return
+    }
+
+    setUploading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('You need to be signed in to upload.')
+
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`
+
+      const { error: uploadErr } = await supabase.storage
+        .from('pitch-images')
+        .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type })
+      if (uploadErr) throw uploadErr
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('pitch-images')
+        .getPublicUrl(path)
+      update('hero_image_url', publicUrl)
+    } catch (err: any) {
+      setUploadError(err?.message || 'Upload failed')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  function removeHero() {
+    update('hero_image_url', '')
+    setUploadError('')
   }
 
   function togglePetal(key: string) {
@@ -74,6 +121,59 @@ export default function PitchEditForm({ value, onChange, disabled }: Props) {
 
   return (
     <div className="space-y-5">
+      <div>
+        <Label>Hero image (optional)</Label>
+        {value.hero_image_url ? (
+          <div className="space-y-2">
+            <div className="w-full rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'var(--color-pill-bg)' }}>
+              <img src={value.hero_image_url} alt="Pitch hero" className="w-full h-full object-cover" />
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={disabled || uploading}
+                className="text-[12px] underline"
+                style={{ color: 'var(--color-amber)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >Replace image</button>
+              <button
+                type="button"
+                onClick={removeHero}
+                disabled={disabled || uploading}
+                className="text-[12px] underline"
+                style={{ color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >Remove</button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={disabled || uploading}
+            className="w-full rounded-xl py-6 text-[13px] flex flex-col items-center justify-center gap-1"
+            style={{
+              background: 'var(--color-pill-bg)',
+              border: '0.5px dashed var(--color-amber-border)',
+              color: 'var(--color-text-secondary)',
+              cursor: uploading ? 'default' : 'pointer',
+            }}
+          >
+            <span>{uploading ? 'Uploading…' : '+ Add a hero image'}</span>
+            <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>JPG, PNG, WebP or GIF · max 5 MB</span>
+          </button>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={handleHeroUpload}
+          style={{ display: 'none' }}
+        />
+        {uploadError && (
+          <p className="text-[11px] mt-1" style={{ color: 'var(--color-error)' }}>{uploadError}</p>
+        )}
+      </div>
+
       <div>
         <Label>Title</Label>
         <input

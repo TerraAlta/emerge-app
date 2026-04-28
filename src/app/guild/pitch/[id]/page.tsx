@@ -25,6 +25,7 @@ interface Pitch {
   contact_method: 'email' | 'external_link'
   contact_value: string
   hero_image_url: string | null
+  prep_context_urls: string[] | null
   published_at: string | null
   last_confirmed_active_at: string | null
   expires_at: string | null
@@ -240,6 +241,34 @@ export default function PitchPublicPage() {
                 )
               })}
             </div>
+          </div>
+        )}
+
+        {/* Inspiration & references — links the founder shared during intake */}
+        {pitch.prep_context_urls && pitch.prep_context_urls.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-[11px] uppercase mb-2" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.12em' }}>
+              Inspiration & references
+            </h2>
+            <ul className="space-y-1.5">
+              {pitch.prep_context_urls.map((url, i) => {
+                let host = url
+                try { host = new URL(url).hostname.replace(/^www\./, '') } catch {}
+                return (
+                  <li key={i}>
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[13px] underline break-all"
+                      style={{ color: 'var(--color-amber)' }}
+                    >
+                      {host}
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         )}
 

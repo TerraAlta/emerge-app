@@ -26,6 +26,7 @@ const EMPTY_DRAFT: PitchDraft = {
   language: 'en',
   contact_method: 'email',
   contact_value: '',
+  hero_image_url: '',
 }
 
 interface DraftSummary {
@@ -115,6 +116,7 @@ export default function GuildPitchNewPage() {
       language: data.language || 'en',
       contact_method: data.contact_method === 'external_link' ? 'external_link' : 'email',
       contact_value: data.contact_value || '',
+      hero_image_url: data.hero_image_url || '',
     })
     setStep('review')
   }
@@ -196,6 +198,7 @@ export default function GuildPitchNewPage() {
         language: pitch.language || 'en',
         contact_method: pitch.contact_method === 'external_link' ? 'external_link' : 'email',
         contact_value: pitch.contact_value || '',
+        hero_image_url: pitch.hero_image_url || '',
       })
       setStep('review')
     } catch (err: any) {
@@ -225,6 +228,7 @@ export default function GuildPitchNewPage() {
         language: draft.language || 'en',
         contact_method: draft.contact_method,
         contact_value: draft.contact_value.trim(),
+        hero_image_url: draft.hero_image_url.trim() || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', pitchId)

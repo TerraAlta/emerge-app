@@ -161,7 +161,7 @@ export default function GuildPage() {
                 I'm a <em style={{ color: 'var(--color-amber)' }}>practitioner</em>
               </p>
               <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
-                {hasOwnProfile ? '✓ Your profile is submitted' : 'Join the directory. Free listing, always.'}
+                {hasOwnProfile ? '✓ Your profile is submitted' : 'Offer your craft to regenerative projects. Free listing, no bidding, no commission.'}
               </p>
             </button>
 
