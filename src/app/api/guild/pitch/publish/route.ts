@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     // If already published (re-publish after pause), keep going live and just refresh expiry
     if (pitch.status === 'published') {
-      await supabase
+      const { error: refreshErr } = await supabase
         .from('guild_pitches')
         .update({
           last_confirmed_active_at: now.toISOString(),
@@ -82,17 +82,25 @@ export async function POST(request: NextRequest) {
           updated_at: now.toISOString(),
         })
         .eq('id', pitchId)
+      if (refreshErr) {
+        console.error('[pitch-publish] re-publish update failed:', refreshErr)
+        return NextResponse.json({ error: refreshErr.message }, { status: 500 })
+      }
       return NextResponse.json({ ok: true, status: 'published', expiresAt: expires.toISOString() })
     }
 
     // First-time submit (or re-submit from draft) → go to admin review
-    await supabase
+    const { error: submitErr } = await supabase
       .from('guild_pitches')
       .update({
         status: 'pending_review',
         updated_at: now.toISOString(),
       })
       .eq('id', pitchId)
+    if (submitErr) {
+      console.error('[pitch-publish] submit update failed:', submitErr)
+      return NextResponse.json({ error: submitErr.message }, { status: 500 })
+    }
 
     // Notify admin
     try {
