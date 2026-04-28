@@ -1,16 +1,24 @@
 /**
- * Publish a pitch: status='draft' → 'published', set published_at,
- * expires_at (+6mo), last_confirmed_active_at. Kicks off matching job
- * via waitUntil so the response returns immediately.
+ * Submit a pitch for admin review: status='draft' → 'pending_review'.
+ *
+ * Pitches are NOT auto-published. They wait in the admin queue at
+ * /admin/guild until Pedro approves, at which point status flips to
+ * 'published' and matching kicks off (see approve-pitch route).
+ *
+ * If a pitch is already 'published' (e.g. owner re-publishing after pause),
+ * we keep the existing behaviour: bump expires_at and re-confirm active.
  *
  * POST body: { pitchId }  — auth via Supabase session cookie
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { waitUntil } from '@vercel/functions'
+import { sendEmail, isEmailConfigured } from '@/lib/email'
 import { getAppUrl } from '@/lib/app-url'
+import { FLOWER_PETALS } from '@/lib/flower-petals'
 
 export const maxDuration = 30
+
+const ADMIN_NOTIFY_EMAIL = process.env.GUILD_ADMIN_EMAIL || 'terraalta.sintra@gmail.com'
 
 function getServiceClient() {
   return createClient(
@@ -32,21 +40,8 @@ async function authedUser(request: NextRequest): Promise<string | null> {
   return data.user?.id || null
 }
 
-function triggerMatching(pitchId: string, origin: string) {
-  const url = `${origin}/api/guild/pitch/match`
-  const p = fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-internal-key': process.env.INTERNAL_TRIGGER_KEY || '' },
-    body: JSON.stringify({ pitchId }),
-  })
-    .then(async r => {
-      if (!r.ok) {
-        const body = await r.text().catch(() => '')
-        console.error('[pitch-publish] matching non-2xx:', r.status, body.slice(0, 300))
-      }
-    })
-    .catch(e => console.error('[pitch-publish] matching failed:', e?.message || e))
-  waitUntil(p)
+function petalLabel(key: string): string {
+  return FLOWER_PETALS.find(p => p.key === key)?.label || key
 }
 
 export async function POST(request: NextRequest) {
@@ -62,14 +57,14 @@ export async function POST(request: NextRequest) {
     // Verify ownership
     const { data: pitch } = await supabase
       .from('guild_pitches')
-      .select('id, user_id, status, title, one_line_vision')
+      .select('id, user_id, status, title, one_line_vision, country, region, language, flower_petals')
       .eq('id', pitchId)
       .single()
     if (!pitch || pitch.user_id !== userId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    // Require a title + one_line_vision before publishing
+    // Require a title + one_line_vision before submitting
     if (!pitch.title?.trim() || !pitch.one_line_vision?.trim()) {
       return NextResponse.json({ error: 'Title and one-line vision are required before publishing' }, { status: 400 })
     }
@@ -77,24 +72,59 @@ export async function POST(request: NextRequest) {
     const now = new Date()
     const expires = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000)
 
+    // If already published (re-publish after pause), keep going live and just refresh expiry
+    if (pitch.status === 'published') {
+      await supabase
+        .from('guild_pitches')
+        .update({
+          last_confirmed_active_at: now.toISOString(),
+          expires_at: expires.toISOString(),
+          updated_at: now.toISOString(),
+        })
+        .eq('id', pitchId)
+      return NextResponse.json({ ok: true, status: 'published', expiresAt: expires.toISOString() })
+    }
+
+    // First-time submit (or re-submit from draft) → go to admin review
     await supabase
       .from('guild_pitches')
       .update({
-        status: 'published',
-        published_at: now.toISOString(),
-        last_confirmed_active_at: now.toISOString(),
-        expires_at: expires.toISOString(),
+        status: 'pending_review',
         updated_at: now.toISOString(),
       })
       .eq('id', pitchId)
 
-    // Kick off matching (fire-and-forget via waitUntil)
-    const origin = request.headers.get('origin') || getAppUrl()
-    triggerMatching(pitchId, origin)
+    // Notify admin
+    try {
+      if (isEmailConfigured()) {
+        const { data: u } = await supabase.auth.admin.getUserById(userId)
+        const submitterEmail = u?.user?.email || 'unknown'
+        const appUrl = getAppUrl()
+        const petals = (pitch.flower_petals || []).map(petalLabel).join(' · ')
 
-    return NextResponse.json({ ok: true, expiresAt: expires.toISOString() })
+        await sendEmail({
+          to: ADMIN_NOTIFY_EMAIL,
+          subject: `[Guild] New pitch pending review — ${pitch.title}`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; padding: 24px; line-height: 1.6; color: #1a1a1a;">
+              <h2 style="font-weight: 300; font-size: 22px; margin: 0 0 12px;">New pitch pending review</h2>
+              <p style="margin: 0 0 4px;"><strong>${pitch.title}</strong></p>
+              <p style="margin: 0 0 4px; color: #555;">${pitch.one_line_vision || ''}</p>
+              <p style="margin: 0 0 4px; font-size: 13px; color: #666;">${[pitch.country, pitch.region].filter(Boolean).join(' · ')}${pitch.language ? ` · ${pitch.language}` : ''}</p>
+              ${petals ? `<p style="margin: 0 0 4px; font-size: 13px; color: #666;">Petals: ${petals}</p>` : ''}
+              <p style="margin: 4px 0 16px; font-size: 12px; color: #999;">${submitterEmail}</p>
+              <p><a href="${appUrl}/admin/guild" style="display:inline-block;background:#C8913A;color:white;padding:10px 20px;border-radius:999px;text-decoration:none;font-weight:600;">Open review queue</a></p>
+            </div>
+          `,
+        })
+      }
+    } catch (e) {
+      console.error('[pitch-publish] admin notify failed:', e)
+    }
+
+    return NextResponse.json({ ok: true, status: 'pending_review' })
   } catch (err: any) {
     console.error('[pitch-publish]', err)
-    return NextResponse.json({ error: err?.message || 'Publish failed' }, { status: 500 })
+    return NextResponse.json({ error: err?.message || 'Submit failed' }, { status: 500 })
   }
 }

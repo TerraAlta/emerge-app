@@ -220,6 +220,22 @@ export default function GuildJoinPage() {
 
     setLoading(false)
     if (dbErr) { setError(dbErr.message); return }
+
+    // Fire-and-forget admin notification — don't block the user if it fails
+    try {
+      const { data: sess } = await supabase.auth.getSession()
+      const token = sess?.session?.access_token
+      if (token) {
+        void fetch('/api/guild/notify-admin-pending-practitioner', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` },
+          body: JSON.stringify({ practitionerId }),
+        }).catch(() => {})
+      }
+    } catch {
+      // ignore — notification is best-effort
+    }
+
     setStep('done')
   }
 

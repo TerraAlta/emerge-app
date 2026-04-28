@@ -40,7 +40,7 @@ const STAGE_LABELS: Record<string, string> = {
   seeking_land: 'Seeking land', has_land: 'Has land',
 }
 const STATUS_LABELS: Record<string, string> = {
-  draft: 'Draft', published: 'Live', paused: 'Paused', expired: 'Expired',
+  draft: 'Draft', pending_review: 'In review', published: 'Live', paused: 'Paused', expired: 'Expired',
   closed_success: 'Closed (success)', closed_abandoned: 'Closed (abandoned)',
 }
 

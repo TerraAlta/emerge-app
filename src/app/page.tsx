@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useMemo, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/hooks/useAuth'
@@ -119,14 +119,40 @@ type TabKey = 'quests' | 'news'
 type QuestView = 'list' | 'map' | 'skills'
 
 export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center font-body" style={{ background: 'var(--color-bg)' }}>
+        <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Loading...</span>
+      </div>
+    }>
+      <HomeInner />
+    </Suspense>
+  )
+}
+
+function HomeInner() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, profile, loading: authLoading, signIn, signUp, signOut } = useAuth()
   const [selectedQuest, setSelectedQuest] = useState<any>(null)
   const [showAuthFromDetail, setShowAuthFromDetail] = useState(false)
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
   const [showPostQuest, setShowPostQuest] = useState(false)
   const [showSubmitEvent, setShowSubmitEvent] = useState(false)
   const [showConnectLuma, setShowConnectLuma] = useState(false)
   const [activeTab, setActiveTab] = useState<TabKey>('quests')
   const [questView, setQuestView] = useState<QuestView>('list')
+
+  // Open the auth screen when redirected here with ?auth=signin|signup
+  // (e.g. from a Guild sub-page that requires an account).
+  useEffect(() => {
+    const auth = searchParams?.get('auth')
+    if (auth === 'signin' || auth === 'signup') {
+      setAuthMode(auth === 'signup' ? 'signup' : 'login')
+      setShowAuthFromDetail(true)
+      router.replace('/')
+    }
+  }, [searchParams, router])
 
   if (authLoading) {
     return (
@@ -145,6 +171,7 @@ export default function Home() {
   if (showAuthFromDetail) {
     return (
       <AuthScreen
+        defaultMode={authMode}
         onSignIn={async (email, pw) => {
           const data = await signIn(email, pw)
           setShowAuthFromDetail(false)

@@ -345,8 +345,8 @@ export default function GuildPitchNewPage() {
               </h2>
               <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
                 {intakeMode === 'ai_interview'
-                  ? 'This is what I understood. Edit anything before publishing.'
-                  : 'Fill in each field. Nothing is published until you hit publish.'}
+                  ? 'This is what I understood. Edit anything before submitting.'
+                  : 'Fill in each field. Nothing goes live until you submit.'}
               </p>
             </div>
 
@@ -377,7 +377,7 @@ export default function GuildPitchNewPage() {
                   cursor: 'pointer',
                 }}
               >
-                Publish pitch
+                Submit pitch
               </button>
             </div>
           </div>
@@ -385,7 +385,7 @@ export default function GuildPitchNewPage() {
 
         {step === 'publishing' && (
           <div className="rounded-xl p-8 text-center" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}>
-            <p className="text-[13px]" style={{ color: 'var(--color-text)' }}>Publishing and finding your matches...</p>
+            <p className="text-[13px]" style={{ color: 'var(--color-text)' }}>Submitting your pitch for review...</p>
           </div>
         )}
 
@@ -398,11 +398,11 @@ export default function GuildPitchNewPage() {
               </svg>
             </div>
             <h2 className="font-heading text-[26px] font-light" style={{ color: 'var(--color-text)' }}>
-              Your pitch is <em style={{ color: 'var(--color-amber)' }}>live</em>
+              Pitch <em style={{ color: 'var(--color-amber)' }}>submitted</em>
             </h2>
             <p className="text-[14px] leading-relaxed max-w-sm mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
-              Matches are being drafted in the background. You'll receive an email if anyone matches.
-              Share your pitch anywhere — it's public.
+              We personally review every pitch before it goes live in the Guild.
+              You'll get an email once it's published, usually within a day or two.
             </p>
             <div className="flex gap-2 justify-center pt-2">
               <button
