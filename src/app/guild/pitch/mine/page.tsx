@@ -152,38 +152,26 @@ function MyPitchesPage() {
   async function deletePitch(pitchId: string) {
     if (!confirm('Permanently delete this pitch? This cannot be undone.')) return
     setBusy(true)
-
-    // Best-effort: delete the hero image from storage if it lives in our bucket.
-    // We pull the row first to grab the URL.
-    const { data: row } = await supabase
-      .from('guild_pitches')
-      .select('hero_image_url')
-      .eq('id', pitchId)
-      .maybeSingle()
-    const heroUrl: string | undefined = row?.hero_image_url || undefined
-    if (heroUrl) {
-      const marker = '/storage/v1/object/public/pitch-images/'
-      const idx = heroUrl.indexOf(marker)
-      if (idx !== -1) {
-        const path = heroUrl.slice(idx + marker.length)
-        // Fire and forget — if it fails (already gone, etc.) we still delete the row.
-        await supabase.storage.from('pitch-images').remove([path]).catch(() => {})
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(`/api/guild/pitch/${pitchId}/delete`, {
+        method: 'POST',
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Delete failed')
       }
-    }
-
-    const { error } = await supabase.from('guild_pitches').delete().eq('id', pitchId)
-    if (error) {
-      alert(`Could not delete: ${error.message}`)
+      setPitches(prev => {
+        const next = prev.filter(x => x.id !== pitchId)
+        if (activePitchId === pitchId) setActivePitchId(next[0]?.id ?? null)
+        return next
+      })
+    } catch (err: any) {
+      alert(`Could not delete: ${err?.message || 'unknown'}`)
+    } finally {
       setBusy(false)
-      return
     }
-
-    setPitches(prev => {
-      const next = prev.filter(x => x.id !== pitchId)
-      if (activePitchId === pitchId) setActivePitchId(next[0]?.id ?? null)
-      return next
-    })
-    setBusy(false)
   }
 
   async function markMatchSeen(matchId: string) {
