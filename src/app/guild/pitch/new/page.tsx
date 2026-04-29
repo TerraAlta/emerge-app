@@ -77,9 +77,11 @@ export default function GuildPitchNewPage() {
       const list = (drafts as DraftSummary[]) || []
       setExistingDrafts(list)
 
-      // ?resume=<id> auto-loads that specific draft
+      // ?resume=<id> auto-loads any pitch the user owns — drafts AND non-draft
+      // pitches (Edit button on /guild/pitch/mine routes here for published etc).
+      // resumeDraft loads by id; RLS rejects if the user doesn't own it.
       const resumeId = new URLSearchParams(window.location.search).get('resume')
-      if (resumeId && list.some(d => d.id === resumeId)) {
+      if (resumeId) {
         await resumeDraft(resumeId)
       }
 
