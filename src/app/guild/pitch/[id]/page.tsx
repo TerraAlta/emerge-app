@@ -267,7 +267,7 @@ export default function PitchPublicPage() {
     <div className="min-h-screen font-body flex justify-center" style={{ background: 'var(--color-bg)' }}>
       <div className="w-full" style={{ maxWidth: 720, padding: '24px 20px 60px' }}>
 
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-6">
           <button
             onClick={() => router.push('/guild/pitches')}
             className="text-[13px]"
@@ -275,6 +275,20 @@ export default function PitchPublicPage() {
           >
             ← All pitches
           </button>
+          {userId && pitch.user_id === userId && (
+            <button
+              onClick={() => router.push(`/guild/pitch/new?resume=${pitch.id}`)}
+              className="rounded-full px-4 py-2 text-[12px] font-semibold"
+              style={{
+                background: 'var(--color-amber)',
+                color: 'var(--color-pill-active-text)',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              Edit your pitch
+            </button>
+          )}
         </div>
 
         {pitch.hero_image_url && (
