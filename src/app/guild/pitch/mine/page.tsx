@@ -149,6 +149,43 @@ function MyPitchesPage() {
     setBusy(false)
   }
 
+  async function deletePitch(pitchId: string) {
+    if (!confirm('Permanently delete this pitch? This cannot be undone.')) return
+    setBusy(true)
+
+    // Best-effort: delete the hero image from storage if it lives in our bucket.
+    // We pull the row first to grab the URL.
+    const { data: row } = await supabase
+      .from('guild_pitches')
+      .select('hero_image_url')
+      .eq('id', pitchId)
+      .maybeSingle()
+    const heroUrl: string | undefined = row?.hero_image_url || undefined
+    if (heroUrl) {
+      const marker = '/storage/v1/object/public/pitch-images/'
+      const idx = heroUrl.indexOf(marker)
+      if (idx !== -1) {
+        const path = heroUrl.slice(idx + marker.length)
+        // Fire and forget — if it fails (already gone, etc.) we still delete the row.
+        await supabase.storage.from('pitch-images').remove([path]).catch(() => {})
+      }
+    }
+
+    const { error } = await supabase.from('guild_pitches').delete().eq('id', pitchId)
+    if (error) {
+      alert(`Could not delete: ${error.message}`)
+      setBusy(false)
+      return
+    }
+
+    setPitches(prev => {
+      const next = prev.filter(x => x.id !== pitchId)
+      if (activePitchId === pitchId) setActivePitchId(next[0]?.id ?? null)
+      return next
+    })
+    setBusy(false)
+  }
+
   async function markMatchSeen(matchId: string) {
     await supabase.from('guild_pitch_matches').update({ seen_by_pitcher: true }).eq('id', matchId)
     setMatches(m => m.map(x => x.id === matchId ? { ...x, seen_by_pitcher: true } : x))
@@ -323,6 +360,12 @@ function MyPitchesPage() {
                     >Close (abandoned)</button>
                   </>
                 )}
+                <button
+                  onClick={() => deletePitch(active.id)}
+                  disabled={busy}
+                  className="rounded-full px-4 py-2 text-[12px]"
+                  style={{ background: 'transparent', color: 'var(--color-error)', border: '0.5px solid var(--color-error)', cursor: 'pointer' }}
+                >Delete pitch</button>
               </div>
             </div>
 
