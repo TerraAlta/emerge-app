@@ -13,10 +13,18 @@ function ShareSection({ url, title, oneLineVision }: { url: string; title: strin
     setCanNativeShare(typeof navigator !== 'undefined' && typeof (navigator as any).share === 'function')
   }, [])
 
-  const shareText = oneLineVision ? `${title} — ${oneLineVision}` : title
-  const waUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText}\n${url}`)}`
-  const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText)}`
-  const mailUrl = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`${shareText}\n\n${url}`)}`
+  // Pre-filled invite text. Two versions because WhatsApp + Email need the URL
+  // inside the text body, while Telegram + Web Share API append the URL themselves
+  // (so including it in the text would duplicate it).
+  const inviteWithoutUrl = oneLineVision
+    ? `${title}\n\n"${oneLineVision}"\n\nI'm sharing my pitch on Emerge — a network for people building real regenerative projects. If this resonates with you, or someone you know, read more.`
+    : `${title}\n\nI'm sharing my pitch on Emerge — a network for people building real regenerative projects. If this resonates with you, or someone you know, read more.`
+  const inviteWithUrl = `${inviteWithoutUrl}\n${url}`
+  const emailSubject = `A pitch on Emerge — ${title}`
+
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(inviteWithUrl)}`
+  const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(inviteWithoutUrl)}`
+  const mailUrl = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(inviteWithUrl)}`
 
   async function copyLink() {
     try {
@@ -31,7 +39,7 @@ function ShareSection({ url, title, oneLineVision }: { url: string; title: strin
 
   async function nativeShare() {
     try {
-      await (navigator as any).share({ title, text: oneLineVision || title, url })
+      await (navigator as any).share({ title, text: inviteWithoutUrl, url })
     } catch {
       // User cancelled — silent
     }
