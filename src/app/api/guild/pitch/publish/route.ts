@@ -72,7 +72,8 @@ export async function POST(request: NextRequest) {
     const now = new Date()
     const expires = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000)
 
-    // If already published (re-publish after pause), keep going live and just refresh expiry
+    // If already published (edit by the owner), keep it live and refresh expiry,
+    // then notify the admin so they can spot-check the edit.
     if (pitch.status === 'published') {
       const { error: refreshErr } = await supabase
         .from('guild_pitches')
@@ -86,6 +87,32 @@ export async function POST(request: NextRequest) {
         console.error('[pitch-publish] re-publish update failed:', refreshErr)
         return NextResponse.json({ error: refreshErr.message }, { status: 500 })
       }
+
+      // Edit notification — fire-and-forget, never block the response
+      try {
+        if (isEmailConfigured()) {
+          const { data: u } = await supabase.auth.admin.getUserById(userId)
+          const submitterEmail = u?.user?.email || 'unknown'
+          const appUrl = getAppUrl()
+          await sendEmail({
+            to: ADMIN_NOTIFY_EMAIL,
+            subject: `[Guild] Published pitch edited — ${pitch.title}`,
+            html: `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; padding: 24px; line-height: 1.6; color: #1a1a1a;">
+                <h2 style="font-weight: 300; font-size: 22px; margin: 0 0 12px;">A live pitch was edited</h2>
+                <p style="margin: 0 0 4px;"><strong>${pitch.title}</strong></p>
+                <p style="margin: 0 0 4px; color: #555;">${pitch.one_line_vision || ''}</p>
+                <p style="margin: 4px 0 16px; font-size: 12px; color: #999;">edited by ${submitterEmail}</p>
+                <p><a href="${appUrl}/guild/pitch/${pitchId}" style="display:inline-block;background:#C8913A;color:white;padding:10px 20px;border-radius:999px;text-decoration:none;font-weight:600;">Open the pitch</a></p>
+                <p style="margin-top:16px; font-size:12px; color:#999;">No action needed — this is FYI. The edit is already live.</p>
+              </div>
+            `,
+          })
+        }
+      } catch (e) {
+        console.error('[pitch-publish] edit notify failed:', e)
+      }
+
       return NextResponse.json({ ok: true, status: 'published', expiresAt: expires.toISOString() })
     }
 

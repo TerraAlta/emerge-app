@@ -53,6 +53,9 @@ export default function GuildPitchNewPage() {
 
   // Resume support
   const [existingDrafts, setExistingDrafts] = useState<DraftSummary[]>([])
+  // Tracks the pitch's status BEFORE this editing session — so we can label the submit button
+  // and success screen differently for "first submit" vs "edit an already-published pitch".
+  const [originalStatus, setOriginalStatus] = useState<string | null>(null)
 
   useEffect(() => {
     async function init() {
@@ -99,6 +102,7 @@ export default function GuildPitchNewPage() {
       return
     }
     setPitchId(data.id)
+    setOriginalStatus(data.status || null)
     setIntakeMode(data.intake_mode === 'manual' ? 'manual' : 'ai_interview')
     setDraft({
       title: data.title || '',
@@ -443,16 +447,30 @@ export default function GuildPitchNewPage() {
           </div>
         )}
 
-        {step === 'review' && (
+        {step === 'review' && (() => {
+          const isEditingPublished = originalStatus === 'published'
+          const isEditingPendingReview = originalStatus === 'pending_review'
+          const isEdit = isEditingPublished || isEditingPendingReview
+          const submitLabel = isEditingPublished
+            ? 'Save changes'
+            : isEditingPendingReview
+              ? 'Update submission'
+              : 'Submit pitch'
+          const reviewSubtitle = isEditingPublished
+            ? 'Edit any field — your changes save instantly. Pedro is notified by email.'
+            : isEditingPendingReview
+              ? 'Your pitch is in review. Edits update what Pedro sees in the queue.'
+              : intakeMode === 'ai_interview'
+                ? 'This is what I understood. Edit anything before submitting.'
+                : 'Fill in each field. Nothing goes live until you submit.'
+          return (
           <div className="space-y-4">
             <div>
               <h2 className="font-heading text-[22px] font-light mb-1" style={{ color: 'var(--color-text)' }}>
-                Your <em style={{ color: 'var(--color-amber)' }}>pitch</em>
+                {isEdit ? <>Edit your <em style={{ color: 'var(--color-amber)' }}>pitch</em></> : <>Your <em style={{ color: 'var(--color-amber)' }}>pitch</em></>}
               </h2>
               <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-                {intakeMode === 'ai_interview'
-                  ? 'This is what I understood. Edit anything before submitting.'
-                  : 'Fill in each field. Nothing goes live until you submit.'}
+                {reviewSubtitle}
               </p>
             </div>
 
@@ -461,18 +479,20 @@ export default function GuildPitchNewPage() {
             {error && <p className="text-[12px] text-center" style={{ color: 'var(--color-error)' }}>{error}</p>}
 
             <div className="flex gap-2">
-              <button
-                onClick={saveDraft}
-                className="rounded-full px-5 py-3 text-[13px]"
-                style={{
-                  background: 'transparent',
-                  color: 'var(--color-text-secondary)',
-                  border: '0.5px solid var(--color-border)',
-                  cursor: 'pointer',
-                }}
-              >
-                Save draft
-              </button>
+              {!isEdit && (
+                <button
+                  onClick={saveDraft}
+                  className="rounded-full px-5 py-3 text-[13px]"
+                  style={{
+                    background: 'transparent',
+                    color: 'var(--color-text-secondary)',
+                    border: '0.5px solid var(--color-border)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Save draft
+                </button>
+              )}
               <button
                 onClick={publish}
                 className="flex-1 py-3 rounded-full text-[14px] font-semibold"
@@ -483,19 +503,24 @@ export default function GuildPitchNewPage() {
                   cursor: 'pointer',
                 }}
               >
-                Submit pitch
+                {submitLabel}
               </button>
             </div>
           </div>
-        )}
+          )
+        })()}
 
         {step === 'publishing' && (
           <div className="rounded-xl p-8 text-center" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}>
-            <p className="text-[13px]" style={{ color: 'var(--color-text)' }}>Submitting your pitch for review...</p>
+            <p className="text-[13px]" style={{ color: 'var(--color-text)' }}>
+              {originalStatus === 'published' ? 'Saving your changes...' : 'Submitting your pitch for review...'}
+            </p>
           </div>
         )}
 
-        {step === 'done' && pitchId && (
+        {step === 'done' && pitchId && (() => {
+          const isEdit = originalStatus === 'published' || originalStatus === 'pending_review'
+          return (
           <div className="text-center space-y-5 py-10">
             <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center"
               style={{ background: 'var(--color-amber-light)', border: '1px solid var(--color-amber-border)' }}>
@@ -504,11 +529,16 @@ export default function GuildPitchNewPage() {
               </svg>
             </div>
             <h2 className="font-heading text-[26px] font-light" style={{ color: 'var(--color-text)' }}>
-              Pitch <em style={{ color: 'var(--color-amber)' }}>submitted</em>
+              {isEdit
+                ? <>Changes <em style={{ color: 'var(--color-amber)' }}>saved</em></>
+                : <>Pitch <em style={{ color: 'var(--color-amber)' }}>submitted</em></>}
             </h2>
             <p className="text-[14px] leading-relaxed max-w-sm mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
-              We personally review every pitch before it goes live in the Guild.
-              You'll get an email once it's published, usually within a day or two.
+              {originalStatus === 'published'
+                ? 'Your pitch is still live. Pedro has been notified of the changes.'
+                : originalStatus === 'pending_review'
+                  ? 'Your pitch is still in review. Pedro will see the updated version.'
+                  : "We personally review every pitch before it goes live in the Guild. You'll get an email once it's published, usually within a day or two."}
             </p>
             <div className="flex gap-2 justify-center pt-2">
               <button
@@ -527,7 +557,8 @@ export default function GuildPitchNewPage() {
               </button>
             </div>
           </div>
-        )}
+          )
+        })()}
       </div>
     </div>
   )

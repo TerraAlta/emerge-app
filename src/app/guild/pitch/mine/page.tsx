@@ -278,11 +278,18 @@ function MyPitchesPage() {
                     style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
                   >Continue editing</button>
                 ) : (
-                  <button
-                    onClick={() => router.push(`/guild/pitch/${active.id}`)}
-                    className="rounded-full px-4 py-2 text-[12px]"
-                    style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
-                  >View public page</button>
+                  <>
+                    <button
+                      onClick={() => router.push(`/guild/pitch/${active.id}`)}
+                      className="rounded-full px-4 py-2 text-[12px]"
+                      style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer' }}
+                    >View public page</button>
+                    <button
+                      onClick={() => router.push(`/guild/pitch/new?resume=${active.id}`)}
+                      className="rounded-full px-4 py-2 text-[12px]"
+                      style={{ background: 'var(--color-pill-bg)', color: 'var(--color-text)', border: '0.5px solid var(--color-amber-border)', cursor: 'pointer' }}
+                    >Edit</button>
+                  </>
                 )}
                 {active.status === 'published' && (
                   <button

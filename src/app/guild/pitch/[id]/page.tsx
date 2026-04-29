@@ -5,6 +5,106 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
 
+function ShareSection({ url, title, oneLineVision }: { url: string; title: string; oneLineVision: string }) {
+  const [copied, setCopied] = useState(false)
+  const [canNativeShare, setCanNativeShare] = useState(false)
+
+  useEffect(() => {
+    setCanNativeShare(typeof navigator !== 'undefined' && typeof (navigator as any).share === 'function')
+  }, [])
+
+  const shareText = oneLineVision ? `${title} — ${oneLineVision}` : title
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText}\n${url}`)}`
+  const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText)}`
+  const mailUrl = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`${shareText}\n\n${url}`)}`
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Clipboard API can fail in insecure contexts — fall back to prompt
+      window.prompt('Copy this link', url)
+    }
+  }
+
+  async function nativeShare() {
+    try {
+      await (navigator as any).share({ title, text: oneLineVision || title, url })
+    } catch {
+      // User cancelled — silent
+    }
+  }
+
+  const btn = {
+    background: 'var(--color-card)',
+    border: '0.5px solid var(--color-amber-border)',
+    color: 'var(--color-text)',
+    cursor: 'pointer',
+  } as const
+
+  return (
+    <div className="mb-6">
+      <h2 className="text-[11px] uppercase mb-2" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.12em' }}>
+        Share this pitch
+      </h2>
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={copyLink}
+          className="rounded-full px-4 py-2 text-[12px] font-semibold transition-all"
+          style={{
+            background: copied ? 'var(--color-amber)' : 'var(--color-amber)',
+            color: 'var(--color-pill-active-text)',
+            border: 'none',
+            cursor: 'pointer',
+            opacity: copied ? 0.85 : 1,
+          }}
+          aria-live="polite"
+        >
+          {copied ? '✓ Link copied' : 'Copy link'}
+        </button>
+
+        {canNativeShare && (
+          <button
+            onClick={nativeShare}
+            className="rounded-full px-4 py-2 text-[12px]"
+            style={btn}
+          >
+            Share…
+          </button>
+        )}
+
+        <a
+          href={waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full px-4 py-2 text-[12px] no-underline"
+          style={btn}
+        >
+          WhatsApp
+        </a>
+        <a
+          href={tgUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full px-4 py-2 text-[12px] no-underline"
+          style={btn}
+        >
+          Telegram
+        </a>
+        <a
+          href={mailUrl}
+          className="rounded-full px-4 py-2 text-[12px] no-underline"
+          style={btn}
+        >
+          Email
+        </a>
+      </div>
+    </div>
+  )
+}
+
 interface Pitch {
   id: string
   user_id: string
@@ -181,6 +281,14 @@ export default function PitchPublicPage() {
         <p className="font-heading text-[17px] italic leading-relaxed mb-5" style={{ color: 'var(--color-amber)' }}>
           {pitch.one_line_vision}
         </p>
+
+        {pitch.status === 'published' && typeof window !== 'undefined' && (
+          <ShareSection
+            url={window.location.href.split('?')[0].split('#')[0]}
+            title={pitch.title}
+            oneLineVision={pitch.one_line_vision}
+          />
+        )}
 
         {/* Stage + commitment */}
         <div className="rounded-2xl p-4 mb-5" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
