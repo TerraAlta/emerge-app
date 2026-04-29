@@ -21,6 +21,22 @@ export interface PitchDraft {
   contact_method: 'email' | 'external_link'
   contact_value: string
   hero_image_url: string
+  prep_context_urls: string[]
+}
+
+const MAX_URLS = 5
+
+function normalizeUrl(raw: string): string | null {
+  const trimmed = raw.trim()
+  if (!trimmed) return null
+  const withProto = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  try {
+    const u = new URL(withProto)
+    if (!u.hostname.includes('.')) return null
+    return u.href
+  } catch {
+    return null
+  }
 }
 
 interface Props {
@@ -48,9 +64,34 @@ export default function PitchEditForm({ value, onChange, disabled }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [urlInput, setUrlInput] = useState('')
+  const [urlError, setUrlError] = useState('')
 
   function update<K extends keyof PitchDraft>(key: K, v: PitchDraft[K]) {
     onChange({ ...value, [key]: v })
+  }
+
+  function addUrl() {
+    setUrlError('')
+    const normalized = normalizeUrl(urlInput)
+    if (!normalized) {
+      setUrlError('Please enter a valid URL.')
+      return
+    }
+    if (value.prep_context_urls.includes(normalized)) {
+      setUrlError('Already added.')
+      return
+    }
+    if (value.prep_context_urls.length >= MAX_URLS) {
+      setUrlError(`Up to ${MAX_URLS} links.`)
+      return
+    }
+    update('prep_context_urls', [...value.prep_context_urls, normalized])
+    setUrlInput('')
+  }
+
+  function removeUrl(url: string) {
+    update('prep_context_urls', value.prep_context_urls.filter(u => u !== url))
   }
 
   async function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -360,6 +401,65 @@ export default function PitchEditForm({ value, onChange, disabled }: Props) {
           style={{ ...input, resize: 'vertical' }}
           disabled={disabled}
         />
+      </div>
+
+      <div>
+        <Label>Inspiration & references (optional, up to {MAX_URLS})</Label>
+        <p className="text-[11px] mb-2" style={{ color: 'var(--color-text-muted)' }}>
+          Project site, design doc, manifesto, a video — anything that helps people feel the vision. These appear publicly on your pitch.
+        </p>
+        {value.prep_context_urls.length > 0 && (
+          <ul className="space-y-1.5 mb-2">
+            {value.prep_context_urls.map((url, i) => {
+              let host = url
+              try { host = new URL(url).hostname.replace(/^www\./, '') } catch {}
+              return (
+                <li key={i} className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'var(--color-pill-bg)', border: '0.5px solid var(--color-amber-border)' }}>
+                  <span className="flex-1 text-[12px] truncate" style={{ color: 'var(--color-text)' }} title={url}>
+                    {host}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeUrl(url)}
+                    disabled={disabled}
+                    aria-label={`Remove ${host}`}
+                    className="text-[14px] leading-none"
+                    style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '0 4px' }}
+                  >×</button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+        {value.prep_context_urls.length < MAX_URLS && (
+          <div className="flex gap-2">
+            <input
+              value={urlInput}
+              onChange={e => { setUrlInput(e.target.value); if (urlError) setUrlError('') }}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addUrl() } }}
+              placeholder="https://your-project.org"
+              className="flex-1 rounded-lg px-3 py-2 text-[13px]"
+              style={input}
+              disabled={disabled}
+            />
+            <button
+              type="button"
+              onClick={addUrl}
+              disabled={disabled || !urlInput.trim()}
+              className="rounded-lg px-4 py-2 text-[12px] font-semibold"
+              style={{
+                background: 'var(--color-amber)',
+                color: 'var(--color-pill-active-text)',
+                border: 'none',
+                cursor: disabled || !urlInput.trim() ? 'default' : 'pointer',
+                opacity: disabled || !urlInput.trim() ? 0.5 : 1,
+              }}
+            >Add</button>
+          </div>
+        )}
+        {urlError && (
+          <p className="text-[11px] mt-1" style={{ color: 'var(--color-error)' }}>{urlError}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
