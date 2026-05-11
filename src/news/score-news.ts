@@ -53,7 +53,13 @@ export async function scoreNews(input: {
     message = await getClient().messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,
-      system: buildNewsScoringPrompt(getSoulDocument()),
+      system: [
+        {
+          type: 'text',
+          text: buildNewsScoringPrompt(getSoulDocument()),
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
       messages: [
         {
           role: 'user',
