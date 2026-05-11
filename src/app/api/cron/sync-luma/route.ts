@@ -23,7 +23,13 @@ async function scoreEvent(title: string, description: string, location: string) 
     const result = await getAI().messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,
-      system: buildScoringPrompt(),
+      system: [
+        {
+          type: 'text',
+          text: buildScoringPrompt(),
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
       messages: [{ role: 'user', content: `Event: "${title}"\nDescription: "${description}"\nLocation: "${location}"` }],
     })
 

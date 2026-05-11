@@ -176,7 +176,13 @@ export async function POST(request: NextRequest) {
       aiResult = await getAI().messages.create({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 200,
-        system: buildScoringPrompt(),
+        system: [
+          {
+            type: 'text',
+            text: buildScoringPrompt(),
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
         messages: [{
           role: 'user',
           content: `Event: "${event.title}"\nDescription: "${event.description}"\nLocation: "${event.location_name}"\nOrganiser: "${event.organizer}"`,
