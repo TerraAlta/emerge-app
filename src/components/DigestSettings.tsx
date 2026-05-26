@@ -13,24 +13,54 @@ const RADIUS_OPTIONS = [2, 10, 25, 50]
 export default function DigestSettings({ userId, onClose }: DigestSettingsProps) {
   const [enabled, setEnabled] = useState(true)
   const [radius, setRadius] = useState(25)
+  const [firstName, setFirstName] = useState('')
+  const [initialFirstName, setInitialFirstName] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [nameSaved, setNameSaved] = useState(false)
 
   useEffect(() => {
     async function load() {
       const { data } = await supabase
         .from('profiles')
-        .select('email_digest_enabled, email_digest_radius_km')
+        .select('email_digest_enabled, email_digest_radius_km, first_name')
         .eq('id', userId)
         .single()
       if (data) {
         setEnabled(data.email_digest_enabled ?? true)
         setRadius(data.email_digest_radius_km ?? 25)
+        setFirstName(data.first_name ?? '')
+        setInitialFirstName(data.first_name ?? '')
       }
       setLoading(false)
     }
     load()
   }, [userId])
+
+  async function saveName() {
+    const trimmed = firstName.trim()
+    if (!trimmed || trimmed === initialFirstName) return
+    setSaving(true)
+    setNameSaved(false)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ first_name: trimmed })
+        .eq('id', userId)
+      if (!error) {
+        setInitialFirstName(trimmed)
+        setNameSaved(true)
+        // useAuth caches the profile and only refetches on auth state change,
+        // so the menu/header still shows the old name. A short reload lets
+        // every consumer pick up the new name without threading a refresh
+        // callback through every prop.
+        setTimeout(() => { window.location.reload() }, 600)
+      }
+    } catch (err) {
+      console.error('Failed to update name:', err)
+    }
+    setSaving(false)
+  }
 
   async function toggle(val: boolean) {
     setEnabled(val)
@@ -71,6 +101,44 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
           </button>
           <h2 className="font-heading text-[18px] font-light" style={{ color: 'var(--color-text)' }}>Settings</h2>
           <div className="w-[50px]" />
+        </div>
+
+        {/* Name */}
+        <div className="rounded-[12px] px-4 py-3 mb-3" style={{ background: 'var(--color-pill-bg)', border: '0.5px solid var(--color-pill-bg)' }}>
+          <p className="text-[12px] font-medium mb-2" style={{ color: 'var(--color-text)' }}>Your name</p>
+          <div className="flex gap-2">
+            <input
+              value={firstName}
+              onChange={e => setFirstName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveName() } }}
+              maxLength={40}
+              placeholder="e.g. Pedro"
+              className="flex-1 rounded-lg px-3 py-2 text-[13px]"
+              style={{
+                background: 'var(--color-card)',
+                border: '0.5px solid var(--color-text-faint)',
+                color: 'var(--color-text)',
+                outline: 'none',
+              }}
+            />
+            <button
+              onClick={saveName}
+              disabled={!firstName.trim() || firstName.trim() === initialFirstName || saving}
+              className="rounded-lg px-4 text-[12px] font-medium"
+              style={{
+                background: 'var(--color-amber)',
+                color: 'var(--color-pill-active-text)',
+                border: 'none',
+                cursor: (!firstName.trim() || firstName.trim() === initialFirstName || saving) ? 'default' : 'pointer',
+                opacity: (!firstName.trim() || firstName.trim() === initialFirstName || saving) ? 0.5 : 1,
+              }}
+            >
+              {nameSaved ? 'Saved' : 'Save'}
+            </button>
+          </div>
+          <p className="text-[11px] mt-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+            Shown on your menu and in the weekly digest greeting.
+          </p>
         </div>
 
         {/* Digest toggle */}
