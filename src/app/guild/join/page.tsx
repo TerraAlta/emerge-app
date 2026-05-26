@@ -22,9 +22,19 @@ interface ExtractedProfile {
   notable_projects?: string[]
   languages_detected?: string[]
   regions_experienced?: string[]
+  profile_photo_url?: string
+  portfolio_urls?: Array<{ label: string; url: string }>
 }
 
 interface Message { role: 'user' | 'assistant'; content: string }
+
+const URL_LABELS: Array<{ key: string; label: string; placeholder: string }> = [
+  { key: 'website',   label: 'Website',   placeholder: 'https://your-site.com' },
+  { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/you' },
+  { key: 'linkedin',  label: 'LinkedIn',  placeholder: 'https://linkedin.com/in/you' },
+  { key: 'youtube',   label: 'YouTube',   placeholder: 'https://youtube.com/@you' },
+  { key: 'other',     label: 'Other',     placeholder: 'https://...' },
+]
 
 const COMMON_LANGUAGES = [
   'English', 'Spanish', 'Portuguese', 'French', 'German', 'Italian',
@@ -88,6 +98,8 @@ export default function GuildJoinPage() {
           pdc_certified: existing.pdc_certified || false,
           advanced_certifications: existing.advanced_certifications || '',
           rate_range: existing.rate_range || '',
+          profile_photo_url: existing.profile_photo_url || '',
+          portfolio_urls: Array.isArray(existing.portfolio_urls) ? existing.portfolio_urls : [],
         })
         setStep('review')
         setLoading(false)
@@ -210,6 +222,54 @@ export default function GuildJoinPage() {
     setStep('url_prep')
   }
 
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [photoError, setPhotoError] = useState('')
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !userId) return
+    setPhotoError('')
+    if (file.size > 5 * 1024 * 1024) { setPhotoError('Image must be under 5 MB.'); return }
+    setPhotoUploading(true)
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+      const path = `${userId}/${crypto.randomUUID()}.${ext}`
+      const { error: uploadErr } = await supabase.storage
+        .from('practitioner-photos')
+        .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type })
+      if (uploadErr) throw uploadErr
+      const { data: { publicUrl } } = supabase.storage
+        .from('practitioner-photos')
+        .getPublicUrl(path)
+      setProfile(prev => prev ? { ...prev, profile_photo_url: publicUrl } : prev)
+    } catch (err: any) {
+      setPhotoError(err?.message || 'Upload failed')
+    } finally {
+      setPhotoUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  function removePhoto() {
+    setProfile(prev => prev ? { ...prev, profile_photo_url: '' } : prev)
+    setPhotoError('')
+  }
+
+  function setUrl(key: string, url: string) {
+    setProfile(prev => {
+      if (!prev) return prev
+      const existing = (prev.portfolio_urls || []).filter(u => u.label !== key)
+      return {
+        ...prev,
+        portfolio_urls: url.trim() ? [...existing, { label: key, url: url.trim() }] : existing,
+      }
+    })
+  }
+
+  function getUrl(key: string): string {
+    return (profile?.portfolio_urls || []).find(u => u.label === key)?.url || ''
+  }
+
   async function handleInterviewComplete(finalTranscript: Message[]) {
     setTranscript(finalTranscript)
     setStep('review')
@@ -257,6 +317,11 @@ export default function GuildJoinPage() {
     setLoading(true)
     setError('')
 
+    // Strip empty URLs out before persisting so we don't store {label: 'x', url: ''}
+    const cleanedUrls = (profile.portfolio_urls || [])
+      .map(u => ({ label: (u.label || '').trim(), url: (u.url || '').trim() }))
+      .filter(u => u.url.length > 0)
+
     const { error: dbErr } = await supabase
       .from('guild_practitioners')
       .update({
@@ -269,6 +334,8 @@ export default function GuildJoinPage() {
         pdc_certified: profile.pdc_certified || false,
         advanced_certifications: profile.advanced_certifications || '',
         rate_range: profile.rate_range || '',
+        profile_photo_url: profile.profile_photo_url || null,
+        portfolio_urls: cleanedUrls,
       })
       .eq('id', practitionerId)
 
@@ -605,6 +672,49 @@ export default function GuildJoinPage() {
 
             {profile && !extracting && (
               <>
+                {/* Profile photo */}
+                <div>
+                  <label className="text-[12px] mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
+                    Profile photo (optional)
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-16 h-16 rounded-full flex items-center justify-center text-[14px] font-semibold shrink-0 overflow-hidden"
+                      style={{ background: 'var(--color-avatar-bg)', border: '1.5px solid var(--color-amber)', color: 'var(--color-amber)' }}
+                    >
+                      {profile.profile_photo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={profile.profile_photo_url} alt="" className="w-full h-full object-cover" />
+                      ) : (displayName || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <label
+                        className="inline-block rounded-full px-3 py-1.5 text-[12px] font-medium cursor-pointer"
+                        style={{ background: 'var(--color-pill-bg)', border: '0.5px solid var(--color-amber-border)', color: 'var(--color-text)' }}
+                      >
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          onChange={handlePhotoUpload}
+                          style={{ display: 'none' }}
+                        />
+                        {photoUploading ? 'Uploading...' : (profile.profile_photo_url ? 'Replace photo' : 'Upload photo')}
+                      </label>
+                      {profile.profile_photo_url && (
+                        <button
+                          onClick={removePhoto}
+                          className="ml-2 text-[11px] underline"
+                          style={{ color: 'var(--color-text-secondary)', background: 'none', border: 'none', cursor: 'pointer' }}
+                        >
+                          Remove
+                        </button>
+                      )}
+                      <p className="text-[10px] mt-1" style={{ color: 'var(--color-text-muted)' }}>JPG/PNG/WebP, max 5 MB.</p>
+                      {photoError && <p className="text-[11px] mt-1" style={{ color: 'var(--color-error)' }}>{photoError}</p>}
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-[12px] mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
                     Tagline (one-line summary)
@@ -773,6 +883,31 @@ export default function GuildJoinPage() {
                       >
                         {zone}
                       </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Links */}
+                <div>
+                  <label className="text-[12px] mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
+                    Links (optional)
+                  </label>
+                  <p className="text-[11px] mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                    Your website, social media, portfolio. All optional.
+                  </p>
+                  <div className="space-y-2">
+                    {URL_LABELS.map(({ key, label, placeholder }) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <span className="text-[11px] shrink-0" style={{ color: 'var(--color-text-secondary)', width: 70 }}>{label}</span>
+                        <input
+                          type="url"
+                          value={getUrl(key)}
+                          onChange={e => setUrl(key, e.target.value)}
+                          placeholder={placeholder}
+                          className="flex-1 rounded-lg px-3 py-2 text-[12px]"
+                          style={inputStyle}
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>

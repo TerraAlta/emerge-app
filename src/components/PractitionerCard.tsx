@@ -21,6 +21,15 @@ export interface Practitioner {
   rate_range: string
   availability_status: string
   profile_photo_url: string | null
+  portfolio_urls: Array<{ label: string; url: string }> | null
+}
+
+const URL_LABELS_DISPLAY: Record<string, string> = {
+  website: 'Website',
+  instagram: 'Instagram',
+  linkedin: 'LinkedIn',
+  youtube: 'YouTube',
+  other: 'Link',
 }
 
 interface Props {
@@ -154,6 +163,25 @@ export default function PractitionerCard({ practitioner: p }: Props) {
             <div>
               <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--color-text-muted)' }}>Certifications</p>
               <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>{p.advanced_certifications}</p>
+            </div>
+          )}
+          {p.portfolio_urls && p.portfolio_urls.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--color-text-muted)' }}>Links</p>
+              <div className="flex flex-wrap gap-1.5">
+                {p.portfolio_urls.map((u, i) => (
+                  <a
+                    key={i}
+                    href={u.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full px-2.5 py-1 text-[11px]"
+                    style={{ background: 'var(--color-pill-bg)', color: 'var(--color-amber)', border: '0.5px solid var(--color-amber-border)', textDecoration: 'none' }}
+                  >
+                    {URL_LABELS_DISPLAY[u.label] || u.label || 'Link'} ↗
+                  </a>
+                ))}
+              </div>
             </div>
           )}
         </div>
