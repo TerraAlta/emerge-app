@@ -177,19 +177,23 @@ export default function GuildJoinPage() {
   function chooseManualPath() {
     // Skip the AI interview entirely. If the user uploaded a CV / pasted URLs
     // in the prep step, drop the raw extracted text into the bio as a
-    // starting draft they can edit. Otherwise start blank.
+    // starting draft — but only when bio is currently empty. Returning users
+    // already have a bio they care about; don't clobber it.
     const draftBio = prepContextText
-      // Strip the per-source headers ('--- filename ---') we injected upstream
       .replace(/^---[^\n]*---\n?/gm, '')
       .trim()
       .slice(0, 1500)
-    setProfile({
-      tagline: '',
-      bio: draftBio,
-      specialties: [],
-      climate_zones_worked: [],
-      project_scales: [],
-    })
+    setProfile(prev => ({
+      tagline: prev?.tagline || '',
+      bio: (prev?.bio && prev.bio.trim().length > 0) ? prev.bio : draftBio,
+      specialties: prev?.specialties || [],
+      climate_zones_worked: prev?.climate_zones_worked || [],
+      project_scales: prev?.project_scales || [],
+      years_experience: prev?.years_experience,
+      pdc_certified: prev?.pdc_certified,
+      advanced_certifications: prev?.advanced_certifications,
+      rate_range: prev?.rate_range,
+    }))
     setStep('review')
   }
 
@@ -199,9 +203,11 @@ export default function GuildJoinPage() {
   }
 
   function switchToAIInterview() {
-    // Lets a user on the review step (who chose manual) hop back to fork
-    // and pick the AI interview instead.
-    setStep('fork')
+    // Lets a returning user (or anyone on review) hop back through url_prep
+    // first so they can attach a CV / URLs, then pick AI vs manual at the
+    // fork. Without this route, existing practitioners had no way to upload
+    // a CV at all — useEffect jumps them straight to review on load.
+    setStep('url_prep')
   }
 
   async function handleInterviewComplete(finalTranscript: Message[]) {
@@ -585,7 +591,7 @@ export default function GuildJoinPage() {
                 className="text-[12px] underline self-start"
                 style={{ color: 'var(--color-amber)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                ← Try the AI interview instead
+                ← Upload a CV / try the AI interview
               </button>
             )}
 

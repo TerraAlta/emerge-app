@@ -96,8 +96,15 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ profile })
-  } catch (err) {
+  } catch (err: any) {
     console.error('[guild-extract]', err)
+    const msg = err?.error?.error?.message || err?.message || ''
+    if (typeof msg === 'string' && msg.toLowerCase().includes('credit balance')) {
+      return NextResponse.json(
+        { error: 'Guild AI is temporarily unavailable — admin has been notified. You can still edit and submit manually.' },
+        { status: 503 }
+      )
+    }
     return NextResponse.json({ error: 'Extraction failed. Please try again.' }, { status: 500 })
   }
 }

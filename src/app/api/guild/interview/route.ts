@@ -140,8 +140,18 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ reply: cleanReply, done })
-  } catch (err) {
+  } catch (err: any) {
     console.error('[guild-interview]', err)
+    // Anthropic rejects with 400 + 'credit balance' when the workspace is out
+    // of credits. Surface a clear admin-actionable message instead of the
+    // generic 'try again' which sends users into a retry loop.
+    const msg = err?.error?.error?.message || err?.message || ''
+    if (typeof msg === 'string' && msg.toLowerCase().includes('credit balance')) {
+      return NextResponse.json(
+        { error: 'Guild AI is temporarily unavailable — admin has been notified. Try again in a bit, or use the manual form.' },
+        { status: 503 }
+      )
+    }
     return NextResponse.json({ error: 'Interview failed. Please try again.' }, { status: 500 })
   }
 }
