@@ -61,21 +61,33 @@ export default function UrlPrepStep({
     setErrors([])
 
     try {
-      // Fire URL + file requests in parallel, then merge combinedText
-      const urlPromise = cleanedUrls.length > 0
-        ? fetch('/api/guild/pitch/prep-context', {
+      // Fire URL + file requests in parallel, then merge combinedText.
+      // Read each response defensively — a 500 returns {error} with no
+      // `results` array, and a Vercel timeout can return non-JSON HTML.
+      async function readJsonSafe(p: Promise<Response>): Promise<any> {
+        try {
+          const res = await p
+          const body = await res.json().catch(() => ({}))
+          if (!res.ok && !body.error) body.error = `Request failed (HTTP ${res.status})`
+          return body
+        } catch (e: any) {
+          return { error: e?.message || 'Network error' }
+        }
+      }
+
+      const urlPromise: Promise<any> = cleanedUrls.length > 0
+        ? readJsonSafe(fetch('/api/guild/pitch/prep-context', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ urls: cleanedUrls }),
-          }).then(r => r.json())
+          }))
         : Promise.resolve({ results: [], combinedText: '' })
 
       let filePromise: Promise<any> = Promise.resolve({ results: [], combinedText: '' })
       if (files.length > 0) {
         const form = new FormData()
         files.forEach((f, i) => form.append(`file${i + 1}`, f))
-        filePromise = fetch('/api/guild/pitch/prep-files', { method: 'POST', body: form })
-          .then(r => r.json())
+        filePromise = readJsonSafe(fetch('/api/guild/pitch/prep-files', { method: 'POST', body: form }))
       }
 
       const [urlData, fileData] = await Promise.all([urlPromise, filePromise])
@@ -87,6 +99,9 @@ export default function UrlPrepStep({
       for (const r of fileData.results || []) {
         if (!r.ok) errs.push(`${r.filename}: ${r.error}`)
       }
+      // Surface top-level errors from a failed response (no .results array)
+      if (urlData.error && !(urlData.results || []).length) errs.push(`Links: ${urlData.error}`)
+      if (fileData.error && !(fileData.results || []).length) errs.push(`Files: ${fileData.error}`)
 
       // If nothing succeeded, show errors and let user retry or skip
       const anyOk = (urlData.results || []).some((r: any) => r.ok)

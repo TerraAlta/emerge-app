@@ -8,9 +8,20 @@
  * Files are NOT persisted. We parse, return text, discard bytes.
  */
 
+// Polyfill: unpdf's bundled pdf.js calls Promise.try, which only exists in
+// Node.js >=22.5. Without this, PDF uploads hang forever on older runtimes
+// (the rejection happens inside a pdf.js worker promise, never reaches our
+// outer await). Safe no-op when Promise.try is already native.
+if (typeof (Promise as any).try !== 'function') {
+  (Promise as any).try = function tryPolyfill<T>(fn: (...args: any[]) => T | PromiseLike<T>, ...args: any[]): Promise<T> {
+    return new Promise<T>((resolve) => resolve(fn(...args)))
+  }
+}
+
 const MAX_FILES = 3
 const MAX_BYTES_PER_FILE = 5 * 1024 * 1024 // 5 MB per file
 const TOTAL_TEXT_CAP = 20_000             // hard cap on combined text returned
+const PDF_PARSE_TIMEOUT_MS = 20_000       // hard cap so a stuck parse can't hang the route
 
 export interface FileIngestResult {
   filename: string
@@ -36,7 +47,12 @@ function isPdf(mime: string, filename: string): boolean {
 async function parsePdfBuffer(buf: Uint8Array): Promise<string> {
   // Dynamic import — unpdf ships ESM and also wants to avoid top-level cost
   const { extractText } = await import('unpdf')
-  const result = await extractText(buf, { mergePages: true })
+  const result = await Promise.race([
+    extractText(buf, { mergePages: true }),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('PDF parsing timed out')), PDF_PARSE_TIMEOUT_MS),
+    ),
+  ])
   // result.text is string | string[] depending on mergePages
   const text = Array.isArray(result.text) ? result.text.join('\n\n') : (result.text || '')
   return text
@@ -62,6 +78,19 @@ async function parseOne(file: File): Promise<FileIngestResult> {
     }
     // Normalize whitespace
     text = text.replace(/\s+/g, ' ').trim()
+    // A PDF that parsed but yielded no extractable text is almost always a
+    // scanned/image-only PDF. Tell the user instead of silently succeeding —
+    // otherwise the AI interview gets empty context and the user thinks it
+    // never read their file.
+    if (isPdf(mime, filename) && text.length < 40) {
+      return {
+        filename,
+        ok: false,
+        error: 'No text could be extracted (looks like a scanned or image-only PDF). Try a text-based PDF or paste a URL instead.',
+        bytes: file.size,
+        mime,
+      }
+    }
     return { filename, ok: true, text, bytes: file.size, mime }
   } catch (err: any) {
     return { filename, ok: false, error: err?.message || 'Failed to read file', bytes: file.size, mime }
