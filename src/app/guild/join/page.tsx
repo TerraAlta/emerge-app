@@ -159,7 +159,7 @@ export default function GuildJoinPage() {
         await supabase.from('guild_practitioners')
           .update({ display_name: displayName.trim(), country: country.trim(), languages, flower_petals: petals })
           .eq('id', existing.id)
-        setStep('fork')
+        setStep('url_prep')
         return
       }
       setError(dbErr.message)
@@ -167,18 +167,25 @@ export default function GuildJoinPage() {
     }
 
     setPractitionerId(data.id)
-    setStep('fork')
-  }
-
-  function chooseAIPath() {
     setStep('url_prep')
   }
 
+  function chooseAIPath() {
+    setStep('interview')
+  }
+
   function chooseManualPath() {
-    // Skip AI entirely — go to review with empty extracted profile
+    // Skip the AI interview entirely. If the user uploaded a CV / pasted URLs
+    // in the prep step, drop the raw extracted text into the bio as a
+    // starting draft they can edit. Otherwise start blank.
+    const draftBio = prepContextText
+      // Strip the per-source headers ('--- filename ---') we injected upstream
+      .replace(/^---[^\n]*---\n?/gm, '')
+      .trim()
+      .slice(0, 1500)
     setProfile({
       tagline: '',
-      bio: '',
+      bio: draftBio,
       specialties: [],
       climate_zones_worked: [],
       project_scales: [],
@@ -188,7 +195,13 @@ export default function GuildJoinPage() {
 
   function handleUrlPrepDone(result: { combinedText: string }) {
     setPrepContextText(result.combinedText)
-    setStep('interview')
+    setStep('fork')
+  }
+
+  function switchToAIInterview() {
+    // Lets a user on the review step (who chose manual) hop back to fork
+    // and pick the AI interview instead.
+    setStep('fork')
   }
 
   async function handleInterviewComplete(finalTranscript: Message[]) {
@@ -510,7 +523,7 @@ export default function GuildJoinPage() {
             >
               <h3 className="font-heading text-[17px] font-light mb-1" style={{ color: 'var(--color-text)' }}>Let the AI interview me</h3>
               <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-                A warm conversation, ~5–15 questions. Share URLs (CV, project page, portfolio) first for a much shorter interview.
+                A warm conversation, ~5–15 questions. {prepContextText ? "I'll use what you just shared to keep it short." : 'Best if you didn’t share a CV / URL.'}
               </p>
             </button>
             <button
@@ -520,7 +533,7 @@ export default function GuildJoinPage() {
             >
               <h3 className="font-heading text-[17px] font-light mb-1" style={{ color: 'var(--color-text)' }}>Fill the profile myself</h3>
               <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-                Skip the AI entirely. Type directly into the profile form.
+                Skip the AI entirely. Type directly into the profile form{prepContextText ? ' — your CV / URL text will be dropped in as a starting draft.' : '.'}
               </p>
             </button>
           </div>
@@ -530,8 +543,8 @@ export default function GuildJoinPage() {
         {step === 'url_prep' && (
           <UrlPrepStep
             onDone={handleUrlPrepDone}
-            title="Share a page about your work (optional)"
-            subtitle="Paste up to 3 URLs — your personal site, a project page, a CV, a portfolio. I'll read them first so the interview is much shorter. Skip to just chat."
+            title="Share your CV or a page about your work (optional)"
+            subtitle="Upload a CV (PDF / text) and/or paste up to 3 URLs — your site, a project page, a portfolio. We'll read them so the next step is much faster, whether you choose the AI interview or fill the form yourself."
           />
         )}
 
@@ -562,8 +575,19 @@ export default function GuildJoinPage() {
               Your <em style={{ color: 'var(--color-amber)' }}>profile</em>
             </h2>
             <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-              This is what the AI drew from your words. Edit anything freely.
+              {transcript.length > 0
+                ? 'This is what the AI drew from your words. Edit anything freely.'
+                : 'Fill this in at your own pace. Want a hand? You can switch to the AI interview instead.'}
             </p>
+            {transcript.length === 0 && (
+              <button
+                onClick={switchToAIInterview}
+                className="text-[12px] underline self-start"
+                style={{ color: 'var(--color-amber)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                ← Try the AI interview instead
+              </button>
+            )}
 
             {extracting && (
               <div className="rounded-xl p-5 text-center" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}>
