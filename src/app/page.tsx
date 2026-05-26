@@ -384,8 +384,33 @@ function FooterDisclaimer() {
     { flag: '\u{1F1ED}\u{1F1FA}', name: 'Hungary', cities: 'Budapest' },
   ]
 
+  const donateUrl = process.env.NEXT_PUBLIC_DONATE_URL
+
   return (
     <div className="px-4 pt-5 pb-4">
+      {donateUrl && (
+        <div className="mx-auto max-w-[420px] mb-5 rounded-[14px] px-4 py-4 text-center"
+          style={{ background: 'var(--color-amber-bg)', border: '0.5px solid var(--color-amber-border)' }}>
+          <p className="font-heading text-[15px] font-light leading-snug" style={{ color: 'var(--color-text)' }}>
+            Emerge is <em style={{ color: 'var(--color-amber)' }}>free</em>. Always.
+          </p>
+          <p className="text-[11px] mt-1.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+            No ads. No algorithms. No paid placement. Built by one person, kept alive by people who believe community and nature heal the same wound.
+          </p>
+          <p className="text-[11px] mt-1.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+            If Emerge helped you find something real, a small gift keeps the seeds being planted.
+          </p>
+          <a
+            href={donateUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-3 rounded-full px-4 py-2 text-[12px] font-semibold active:scale-95 transition-transform"
+            style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', textDecoration: 'none' }}
+          >
+            Support Emerge
+          </a>
+        </div>
+      )}
       <div className="text-center">
         <p className="text-[8px]" style={{ color: 'var(--color-text-muted)' }}>
           Created by Pedro Valdjiu · <a href="https://terralta.org" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-amber-border)', textDecoration: 'underline' }}>terralta.org</a>
@@ -538,21 +563,28 @@ function QuestBoard({
       )
       if (!res.ok) throw new Error(`Search failed (${res.status})`)
       const data = await res.json()
-      let results: Array<{ lat: number; lng: number; name: string; detail: string; cc: string }> = (data.features || []).map((f: any) => {
-        const p = f.properties || {}
-        const coords = f.geometry?.coordinates || [0, 0]
-        const city = p.city || p.name || p.locality || 'Unknown'
-        const region = p.state || p.county || ''
-        const country = p.country || ''
-        const cc = (p.countrycode || '').toUpperCase()
-        return {
-          lat: coords[1],
-          lng: coords[0],
-          name: city,
-          detail: [region, country].filter(Boolean).join(', '),
-          cc,
-        }
-      })
+      let results: Array<{ lat: number; lng: number; name: string; detail: string; cc: string }> = (data.features || [])
+        // Drop OSM administrative boundaries (county/district/state/country
+        // polygons). Their centroids are the geometric middle of the whole
+        // region — often dozens of km from the actual city. Users typing
+        // 'Lisbon' want the city, not the Lisbon district centroid up in
+        // Loures.
+        .filter((f: any) => f?.properties?.osm_value !== 'administrative')
+        .map((f: any) => {
+          const p = f.properties || {}
+          const coords = f.geometry?.coordinates || [0, 0]
+          const city = p.city || p.name || p.locality || 'Unknown'
+          const region = p.state || p.county || ''
+          const country = p.country || ''
+          const cc = (p.countrycode || '').toUpperCase()
+          return {
+            lat: coords[1],
+            lng: coords[0],
+            name: city,
+            detail: [region, country].filter(Boolean).join(', '),
+            cc,
+          }
+        })
       // Dedup: remove results within 10km of each other
       const deduped: typeof results = []
       for (const r of results) {
