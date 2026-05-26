@@ -56,16 +56,51 @@ export default function GuildJoinPage() {
 
   // Check auth on mount
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) {
         router.push('/')
         return
       }
       setUserId(data.user.id)
-      // Prefill display name from existing profile if available
-      supabase.from('profiles').select('first_name').eq('id', data.user.id).single().then(({ data: p }) => {
-        if (p?.first_name) setDisplayName(p.first_name)
-      })
+
+      // If they already have a practitioner profile, pre-fill everything
+      // and jump straight to review so they can edit instead of redoing the
+      // whole onboarding.
+      const { data: existing } = await supabase
+        .from('guild_practitioners')
+        .select('*')
+        .eq('user_id', data.user.id)
+        .maybeSingle()
+
+      if (existing) {
+        setPractitionerId(existing.id)
+        setDisplayName(existing.display_name || '')
+        setCountry(existing.country || '')
+        setLanguages(existing.languages || ['English'])
+        setPetals(existing.flower_petals || [])
+        setProfile({
+          tagline: existing.tagline || '',
+          bio: existing.bio || '',
+          specialties: existing.specialties || [],
+          climate_zones_worked: existing.climate_zones_worked || [],
+          project_scales: existing.project_scales || [],
+          years_experience: existing.years_experience || 0,
+          pdc_certified: existing.pdc_certified || false,
+          advanced_certifications: existing.advanced_certifications || '',
+          rate_range: existing.rate_range || '',
+        })
+        setStep('review')
+        setLoading(false)
+        return
+      }
+
+      // New practitioner — prefill display name from their Emerge profile
+      const { data: p } = await supabase
+        .from('profiles')
+        .select('first_name')
+        .eq('id', data.user.id)
+        .single()
+      if (p?.first_name) setDisplayName(p.first_name)
       setLoading(false)
     })
   }, [router])

@@ -78,7 +78,10 @@ export default function GuildPage() {
   // Door click handlers — gate behind auth for non-signed-in users
   function openPractitionerDoor() {
     if (isSignedIn === false) { setAuthGate('practitioner'); return }
-    router.push(hasOwnProfile ? '/guild/pitch/mine' : '/guild/join')
+    // /guild/join is idempotent — it detects an existing profile via user_id
+    // and re-uses the same row. Pitches (/guild/pitch/mine) are Door 3 and
+    // unrelated to practitioner profiles.
+    router.push('/guild/join')
   }
   function openLandDoor() {
     if (isSignedIn === false) { setAuthGate('land'); return }
