@@ -175,13 +175,13 @@ export default function GuildPage() {
               style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', cursor: 'pointer', minHeight: 120 }}
             >
               <p className="text-[11px] uppercase mb-1" style={{ color: 'var(--color-amber)', letterSpacing: '0.1em' }}>
-                Free
+                Free · Private
               </p>
               <p className="font-heading text-[15px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>
                 I have <em style={{ color: 'var(--color-amber)' }}>land</em>, help me plan
               </p>
               <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
-                Receive a scoping doc with practitioners from the Guild. The network is small today — expect a few matches, not many.
+                A private plan, just for you: an AI scoping doc with practitioners matched and personally reviewed. No one else sees it. Want the community to help instead? Use “I have a vision” →
               </p>
             </button>
 
@@ -192,13 +192,13 @@ export default function GuildPage() {
               style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', cursor: 'pointer', minHeight: 120 }}
             >
               <p className="text-[11px] uppercase mb-1" style={{ color: 'var(--color-amber)', letterSpacing: '0.1em' }}>
-                Free
+                Free · Public
               </p>
               <p className="font-heading text-[15px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>
                 I have a <em style={{ color: 'var(--color-amber)' }}>vision</em>, find my people
               </p>
               <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
-                Publish a pitch. Get matched to practitioners and other pitchers.
+                Post it publicly so the whole community — and matched practitioners — can find you and offer help. Reviewed before it goes live. Land projects welcome.
               </p>
             </button>
           </div>
