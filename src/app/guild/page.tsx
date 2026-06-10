@@ -6,6 +6,21 @@ import { supabase } from '@/lib/supabase'
 import { FLOWER_PETALS, PROJECT_SCALES } from '@/lib/flower-petals'
 import PractitionerCard, { type Practitioner } from '@/components/PractitionerCard'
 
+interface MyProject {
+  id: string
+  project_name: string
+  status: string
+}
+
+// Friendly label + colour for each project status the client might see.
+const PROJECT_STATUS: Record<string, { label: string; live: boolean }> = {
+  intake: { label: 'Draft — continue', live: false },
+  scoping: { label: 'Being drafted', live: false },
+  matched: { label: 'In review', live: false },
+  delivered: { label: 'Ready to view', live: true },
+  closed: { label: 'Closed', live: false },
+}
+
 export default function GuildPage() {
   const router = useRouter()
   const [practitioners, setPractitioners] = useState<Practitioner[]>([])
@@ -13,6 +28,7 @@ export default function GuildPage() {
   const [hasOwnProfile, setHasOwnProfile] = useState<boolean | null>(null)
   const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null)
   const [authGate, setAuthGate] = useState<null | 'practitioner' | 'land' | 'vision'>(null)
+  const [myProjects, setMyProjects] = useState<MyProject[]>([])
 
   // Filters
   const [filterCountry, setFilterCountry] = useState('')
@@ -44,6 +60,15 @@ export default function GuildPage() {
         .eq('user_id', data.user.id)
         .maybeSingle()
         .then(({ data: p }) => setHasOwnProfile(!!p))
+
+      // The signed-in client's own land projects, so they always have a way
+      // back to a delivered scoping doc (no reliance on the approval email).
+      supabase
+        .from('guild_projects')
+        .select('id, project_name, status, updated_at')
+        .eq('client_user_id', data.user.id)
+        .order('updated_at', { ascending: false })
+        .then(({ data: projs }) => setMyProjects((projs as MyProject[]) || []))
     })
   }, [])
 
@@ -214,6 +239,44 @@ export default function GuildPage() {
             </button>
           </div>
         </div>
+
+        {/* Your projects — signed-in clients always have a path back to their doc */}
+        {myProjects.length > 0 && (
+          <div className="px-5 pt-1 pb-2">
+            <div className="max-w-[720px] mx-auto">
+              <h2 className="text-[11px] uppercase tracking-[0.15em] mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                Your projects
+              </h2>
+              <div className="flex flex-col gap-2">
+                {myProjects.map(p => {
+                  const meta = PROJECT_STATUS[p.status] || { label: p.status, live: false }
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => router.push(`/guild/project/${p.id}`)}
+                      className="w-full rounded-xl px-4 py-3 flex items-center justify-between gap-3 text-left transition-all active:scale-[0.99]"
+                      style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)', cursor: 'pointer' }}
+                    >
+                      <span className="text-[13px] truncate" style={{ color: 'var(--color-text)' }}>
+                        {p.project_name || 'Untitled project'}
+                      </span>
+                      <span
+                        className="text-[10px] px-2 py-0.5 rounded-full shrink-0"
+                        style={{
+                          background: meta.live ? 'var(--color-amber-light)' : 'var(--color-pill-bg)',
+                          color: meta.live ? 'var(--color-amber)' : 'var(--color-text-muted)',
+                          border: '0.5px solid var(--color-amber-border)',
+                        }}
+                      >
+                        {meta.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Directory header */}
         <div className="px-5 pt-3">

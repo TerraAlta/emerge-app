@@ -34,10 +34,19 @@ export async function GET(request: NextRequest) {
 
   const { data: recent } = await supabase
     .from('guild_projects')
-    .select('id, project_name, country, status, updated_at')
+    .select('id, project_name, country, region, status, updated_at, client_user_id, extracted_brief')
     .in('status', ['delivered', 'closed'])
     .order('updated_at', { ascending: false })
     .limit(20)
+
+  // Attach the delivered scoping docs so the admin can re-open and re-read them.
+  const { data: recentDocs } = await supabase
+    .from('guild_scoping_docs')
+    .select('*')
+    .in('project_id', (recent || []).map(r => r.id))
+
+  const recentDocByProject: Record<string, any> = {}
+  ;(recentDocs || []).forEach(d => { recentDocByProject[d.project_id] = d })
 
   // Attach client email — fetch via auth admin in parallel
   const pendingWithEmail = await Promise.all(
@@ -51,5 +60,16 @@ export async function GET(request: NextRequest) {
     })
   )
 
-  return NextResponse.json({ pending: pendingWithEmail, recent: recent || [] })
+  const recentWithDoc = await Promise.all(
+    (recent || []).map(async r => {
+      const { data: u } = await supabase.auth.admin.getUserById(r.client_user_id)
+      return {
+        ...r,
+        client_email: u?.user?.email || null,
+        doc: recentDocByProject[r.id] || null,
+      }
+    })
+  )
+
+  return NextResponse.json({ pending: pendingWithEmail, recent: recentWithDoc })
 }

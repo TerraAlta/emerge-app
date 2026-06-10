@@ -21,8 +21,12 @@ interface RecentProject {
   id: string
   project_name: string
   country: string
+  region?: string
   status: string
   updated_at: string
+  client_email?: string | null
+  extracted_brief?: any
+  doc?: any
 }
 
 interface PendingPractitioner {
@@ -745,19 +749,100 @@ export default function AdminGuildPage() {
                   <h2 className="text-[9px] uppercase px-1 mb-2" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.1em' }}>
                     Recent ({recentProjects.length})
                   </h2>
-                  <div className="rounded-[12px] overflow-hidden" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
+                  <div className="space-y-2">
                     {recentProjects.length === 0 ? (
-                      <div className="px-4 py-6 text-center text-[11px]" style={{ color: 'var(--color-text-muted)' }}>No recent activity.</div>
+                      <div className="rounded-[12px] px-4 py-6 text-center text-[11px]" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', color: 'var(--color-text-muted)' }}>No recent activity.</div>
                     ) : (
-                      recentProjects.map((r, i) => (
-                        <div key={r.id} className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: i < recentProjects.length - 1 ? '0.5px solid var(--color-pill-bg)' : 'none' }}>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[12px] truncate" style={{ color: 'var(--color-text)' }}>{r.project_name}</div>
-                            <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>{r.country}</div>
+                      recentProjects.map(r => {
+                        const isExpanded = expanded.has(r.id)
+                        const doc = r.doc
+                        return (
+                          <div key={r.id} className="rounded-[12px] overflow-hidden" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
+                            <button
+                              onClick={() => toggle(r.id)}
+                              className="w-full text-left px-4 py-2.5 flex items-center justify-between gap-3"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                            >
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[12px] truncate" style={{ color: 'var(--color-text)' }}>{r.project_name}</div>
+                                <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>{r.country}{r.client_email ? ` · ${r.client_email}` : ''}</div>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: r.status === 'delivered' ? 'var(--color-amber-light)' : 'var(--color-pill-bg)', color: r.status === 'delivered' ? 'var(--color-amber)' : 'var(--color-text-muted)' }}>{r.status}</span>
+                                <span style={{ color: 'var(--color-text-muted)' }}>{isExpanded ? '▴' : '▾'}</span>
+                              </div>
+                            </button>
+
+                            {isExpanded && (
+                              <div className="px-4 pb-4 space-y-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                                {!doc && (
+                                  <p className="text-[11px] pt-3" style={{ color: 'var(--color-text-muted)' }}>
+                                    No scoping doc on file for this project.
+                                  </p>
+                                )}
+
+                                {doc?.doc_content && (
+                                  <div className="space-y-3 pt-3">
+                                    <div>
+                                      <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Title</div>
+                                      <p className="text-[13px]" style={{ color: 'var(--color-text)' }}>{doc.doc_content.title || r.project_name}</p>
+                                    </div>
+                                    {doc.doc_content.executive_summary && (
+                                      <div>
+                                        <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Summary</div>
+                                        <p className="text-[12px] whitespace-pre-line leading-relaxed" style={{ color: 'var(--color-text)' }}>{doc.doc_content.executive_summary}</p>
+                                      </div>
+                                    )}
+                                    {doc.doc_content.site_reading && (
+                                      <div>
+                                        <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Site reading</div>
+                                        <p className="text-[12px] whitespace-pre-line leading-relaxed" style={{ color: 'var(--color-text)' }}>{doc.doc_content.site_reading}</p>
+                                      </div>
+                                    )}
+                                    {doc.doc_content.design_principles?.length > 0 && (
+                                      <div>
+                                        <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Design principles</div>
+                                        <ul className="text-[11px] space-y-0.5" style={{ color: 'var(--color-text)' }}>
+                                          {doc.doc_content.design_principles.map((d: string, i: number) => <li key={i}>· {d}</li>)}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {doc.doc_content.suggested_phases?.length > 0 && (
+                                      <div>
+                                        <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Phases</div>
+                                        <ul className="text-[11px] space-y-0.5" style={{ color: 'var(--color-text)' }}>
+                                          {doc.doc_content.suggested_phases.map((ph: any, i: number) => <li key={i}>· {ph.phase_name}</li>)}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {doc.doc_content.practitioner_recommendations?.length > 0 && (
+                                      <div>
+                                        <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Matched practitioners</div>
+                                        <ul className="text-[11px] space-y-0.5" style={{ color: 'var(--color-text)' }}>
+                                          {doc.doc_content.practitioner_recommendations.map((rec: any, i: number) => (
+                                            <li key={i}>· <strong>{rec.suggested_role}</strong> — {rec.why_this_match}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {doc.doc_content.closing_note && (
+                                      <div>
+                                        <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Closing note</div>
+                                        <p className="text-[12px] italic whitespace-pre-line leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{doc.doc_content.closing_note}</p>
+                                      </div>
+                                    )}
+                                    {doc.approved_at && (
+                                      <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                                        Delivered {new Date(doc.approved_at).toLocaleDateString()}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: r.status === 'delivered' ? 'var(--color-amber-light)' : 'var(--color-pill-bg)', color: r.status === 'delivered' ? 'var(--color-amber)' : 'var(--color-text-muted)' }}>{r.status}</span>
-                        </div>
-                      ))
+                        )
+                      })
                     )}
                   </div>
                 </section>
