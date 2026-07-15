@@ -298,7 +298,7 @@ function EventViewNav({
   )
 }
 
-/* ── Top Nav — three primary doors, no horizontal scroll ── */
+/* ── Top Nav — primary doors, no horizontal scroll ── */
 function TopNav({
   activeTab,
   onTabChange,
@@ -307,27 +307,29 @@ function TopNav({
   onTabChange: (tab: TabKey) => void
 }) {
   const router = useRouter()
-  const tabs: { key: TabKey | 'guild'; label: string; icon: string }[] = [
+  // 'guild' and 'quests' are their own routes, not in-page TabKeys.
+  const tabs: { key: TabKey | 'guild' | 'quests'; label: string; icon: string; route?: string }[] = [
     { key: 'events', label: 'Events', icon: '\u{1F33F}' },
+    { key: 'quests', label: 'Quests', icon: '\u{1F338}', route: '/quests' },
     { key: 'news',   label: 'News',   icon: '\u{1F4F0}' },
-    { key: 'guild',  label: 'Guild',  icon: '\u{1F33C}' },
+    { key: 'guild',  label: 'Guild',  icon: '\u{1F33C}', route: '/guild' },
   ]
 
   return (
-    <div className="flex items-center justify-center gap-2 px-4 py-2">
+    <div className="flex items-center justify-center gap-1.5 px-2 py-2">
       {tabs.map(tab => {
-        if (tab.key === 'guild') {
+        if (tab.route) {
           return (
             <button
-              key="guild"
-              onClick={() => router.push('/guild')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium transition-all"
+              key={tab.key}
+              onClick={() => router.push(tab.route!)}
+              className="flex items-center gap-1 px-3 py-2 rounded-full text-[13px] font-medium transition-all whitespace-nowrap"
               style={{
                 background: 'var(--color-pill-bg)',
                 color: 'var(--color-text-secondary)',
                 border: '0.5px solid transparent',
               }}
-              aria-label="Guild"
+              aria-label={tab.label}
             >
               <span className="text-[14px]">{tab.icon}</span> {tab.label}
             </button>
@@ -338,7 +340,7 @@ function TopNav({
           <button
             key={tab.key}
             onClick={() => onTabChange(tab.key as TabKey)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium transition-all"
+            className="flex items-center gap-1 px-3 py-2 rounded-full text-[13px] font-medium transition-all whitespace-nowrap"
             style={{
               background: isActive ? 'var(--color-amber-light)' : 'var(--color-pill-bg)',
               color: isActive ? 'var(--color-amber)' : 'var(--color-text-secondary)',
