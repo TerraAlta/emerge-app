@@ -22,7 +22,7 @@ function MapUpdater({ center }: { center: [number, number] }) {
   return null
 }
 
-export default function QuestMap({ quests, userLocation }: Props) {
+export default function EventMap({ quests, userLocation }: Props) {
   const center: [number, number] = userLocation
     ? [userLocation.lat, userLocation.lng]
     : [38.72, -9.14] // Lisbon fallback

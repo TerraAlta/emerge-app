@@ -6,13 +6,13 @@ const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-fraunces', dis
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit', display: 'swap' })
 
 export const metadata: Metadata = {
-  title: 'Emerge — Regenerative Community Quests',
-  description: 'Real quests. Real community. Real change. Discover regenerative events near you.',
+  title: 'Emerge — Regenerative Community Events',
+  description: 'Real events. Real community. Real change. Discover regenerative events near you.',
   manifest: '/manifest.json',
   metadataBase: new URL('https://emerge.terralta.org'),
   openGraph: {
-    title: 'Emerge — Regenerative Community Quests',
-    description: 'Real quests. Real community. Real change. Discover regenerative events near you.',
+    title: 'Emerge — Regenerative Community Events',
+    description: 'Real events. Real community. Real change. Discover regenerative events near you.',
     url: 'https://emerge.terralta.org',
     siteName: 'Emerge',
     images: [
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Emerge — Regenerative Community Quests',
+        alt: 'Emerge — Regenerative Community Events',
         type: 'image/png',
       },
     ],
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Emerge — Regenerative Community Quests',
-    description: 'Real quests. Real community. Real change. Discover regenerative events near you.',
+    title: 'Emerge — Regenerative Community Events',
+    description: 'Real events. Real community. Real change. Discover regenerative events near you.',
     images: ['/og-image.png'],
   },
   appleWebApp: {

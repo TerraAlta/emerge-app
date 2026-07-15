@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const lastEventAt = data?.[0]?.created_at ?? null
 
   if (!lastEventAt) {
-    await notifyPipelineFailure('pipeline_stale', { lastEventAt: null, message: 'No quests in database' })
+    await notifyPipelineFailure('pipeline_stale', { lastEventAt: null, message: 'No events in database' })
     return NextResponse.json({ ok: true, stale: true, lastEventAt: null })
   }
 

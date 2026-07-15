@@ -29,7 +29,7 @@ function formatTime(d: Date, iso?: string): string | null {
 }
 
 /**
- * Format a date for quest cards: "Today 2:30 PM" / "Tomorrow" / "Sat 28 Mar"
+ * Format a date for event cards: "Today 2:30 PM" / "Tomorrow" / "Sat 28 Mar"
  * Handles midnight gracefully (shows "time TBC" or omits time).
  */
 export function formatDate(iso: string): string {
@@ -44,7 +44,7 @@ export function formatDate(iso: string): string {
 }
 
 /**
- * Format a date for quest detail page: "Today at 2:30 PM" / "Saturday, Mar 28 at 3:00 PM"
+ * Format a date for event detail page: "Today at 2:30 PM" / "Saturday, Mar 28 at 3:00 PM"
  */
 export function formatDateTime(iso: string): string {
   const d = new Date(iso)
@@ -60,7 +60,7 @@ export function formatDateTime(iso: string): string {
 }
 
 /**
- * Proximity pill for quest cards.
+ * Proximity pill for event cards.
  * Returns null for events 30+ days away.
  */
 export function proximityPill(iso: string): { text: string; bg: string; color: string } | null {
@@ -77,18 +77,18 @@ export function proximityPill(iso: string): { text: string; bg: string; color: s
 }
 
 /**
- * Filter quests by time window.
+ * Filter events by time window.
  */
-export function filterQuests<T extends { starts_at: string }>(quests: T[], filter: 'today' | 'week' | 'all'): T[] {
+export function filterEvents<T extends { starts_at: string }>(quests: T[], filter: 'today' | 'week' | 'all'): T[] {
   if (filter === 'today') return quests.filter(q => daysUntil(q.starts_at) === 0)
   if (filter === 'week') return quests.filter(q => { const d = daysUntil(q.starts_at); return d >= 0 && d <= 7 })
   return quests
 }
 
 /**
- * Group quests by time proximity for section dividers.
+ * Group events by time proximity for section dividers.
  */
-export function groupQuests<T extends { starts_at: string }>(quests: T[]): { label: string; quests: T[] }[] {
+export function groupEvents<T extends { starts_at: string }>(quests: T[]): { label: string; quests: T[] }[] {
   const groups: { label: string; quests: T[] }[] = []
   const today: T[] = [], week: T[] = [], month: T[] = [], later: T[] = []
   for (const q of quests) {

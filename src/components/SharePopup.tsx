@@ -16,7 +16,7 @@ export default function SharePopup({ questId, questTitle, questDate, questLocati
   const ref = useRef<HTMLDivElement>(null)
 
   const shareUrl = `https://emerge.terralta.org/?quest=${questId}`
-  const shareText = `Join me for ${questTitle} on ${questDate} \u2014 ${questLocation}. Discover regenerative quests on Emerge.`
+  const shareText = `Join me for ${questTitle} on ${questDate} \u2014 ${questLocation}. Discover regenerative events on Emerge.`
 
   useEffect(() => {
     requestAnimationFrame(() => setFadeIn(true))
@@ -86,7 +86,7 @@ export default function SharePopup({ questId, questTitle, questDate, questLocati
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[13px] font-medium" style={{ color: 'var(--color-text)' }}>Share quest</p>
+          <p className="text-[13px] font-medium" style={{ color: 'var(--color-text)' }}>Share event</p>
           <button onClick={onClose} className="p-1 -mr-1 opacity-40 hover:opacity-70 transition-opacity">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

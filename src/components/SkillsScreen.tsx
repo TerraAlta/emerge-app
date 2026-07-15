@@ -8,7 +8,7 @@ interface NearbyQuest extends Quest { distance_km: number }
 interface Props {
   userId: string
   quests: NearbyQuest[]
-  onSelectQuest: (quest: NearbyQuest) => void
+  onSelectEvent: (quest: NearbyQuest) => void
 }
 
 /* ── Full skill taxonomy from the Emerge soul document ── */
@@ -126,7 +126,7 @@ const ALL_SKILLS = SKILL_SECTIONS.flatMap(s => s.skills)
 
 type SkillState = 'have' | 'want'
 
-export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
+export default function SkillsScreen({ userId, quests, onSelectEvent }: Props) {
   const [skillsHave, setSkillsHave] = useState<string[]>([])
   const [skillsWant, setSkillsWant] = useState<string[]>([])
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null)
@@ -198,7 +198,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
             Tap any skill, then choose: <strong style={{ color: 'var(--color-amber)' }}>I have this</strong> or <strong style={{ color: '#8CB87A' }}>I want to learn</strong>.
           </p>
           <p className="text-[13px] mt-1 leading-[1.6]" style={{ color: 'var(--color-text-secondary)' }}>
-            People joining the same quest can see your skills. Organisers can plan better.
+            People joining the same event can see your skills. Organisers can plan better.
           </p>
 
           {/* Legend pills */}
@@ -357,12 +357,12 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
         {selectedSkill && (
           <div className="px-3 pt-2 pb-4">
             <div className="px-1 pb-2 text-[11px] uppercase" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.1em' }}>
-              {ALL_SKILLS.find(s => s.key === selectedSkill)?.label} quests ({filteredQuests.length})
+              {ALL_SKILLS.find(s => s.key === selectedSkill)?.label} events ({filteredQuests.length})
             </div>
             {filteredQuests.length === 0 ? (
               <div className="rounded-[14px] px-4 py-8 text-center" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
                 <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
-                  No matching quests nearby right now.
+                  No matching events nearby right now.
                 </p>
               </div>
             ) : (
@@ -371,7 +371,7 @@ export default function SkillsScreen({ userId, quests, onSelectQuest }: Props) {
                   <div
                     key={quest.id}
                     className="rounded-[14px] px-3.5 py-3 cursor-pointer active:scale-[0.98] transition-transform"
-                    onClick={() => onSelectQuest(quest)}
+                    onClick={() => onSelectEvent(quest)}
                     style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
                   >
                     <div className="text-[13px] font-medium uppercase mb-1" style={{ color: 'var(--color-amber)', letterSpacing: '0.08em' }}>

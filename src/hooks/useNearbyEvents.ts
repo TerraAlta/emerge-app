@@ -49,7 +49,7 @@ function saveLocation(loc: SavedLocation) {
   })
 }
 
-export function useNearbyQuests(options: UseNearbyQuestsOptions = {}) {
+export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
   const { radiusKm = 25, category = null, searchKeyword = null } = options
 
   const [quests, setQuests] = useState<NearbyQuest[]>([])

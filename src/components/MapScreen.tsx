@@ -13,7 +13,7 @@ interface NearbyQuest extends Quest {
 interface Props {
   quests: NearbyQuest[]
   userLocation: { lat: number; lng: number } | null
-  onSelectQuest: (quest: NearbyQuest) => void
+  onSelectEvent: (quest: NearbyQuest) => void
 }
 
 function MapUpdater({ center }: { center: [number, number] }) {
@@ -43,7 +43,7 @@ function getDirectionsUrl(lat: number, lng: number): string {
     : `https://maps.google.com/?q=${lat},${lng}`
 }
 
-export default function MapScreen({ quests, userLocation, onSelectQuest }: Props) {
+export default function MapScreen({ quests, userLocation, onSelectEvent }: Props) {
   // Default center: Lisbon, Portugal — used when user location is unavailable
   const DEFAULT_CENTER: [number, number] = [38.72, -9.14]
   const center: [number, number] = userLocation
@@ -58,7 +58,7 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
           Living <em style={{ color: 'var(--color-amber)' }}>Map</em>
         </h1>
         <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-          {quests.length} quest{quests.length !== 1 ? 's' : ''} near you
+          {quests.length} event{quests.length !== 1 ? 's' : ''} near you
         </p>
       </div>
 
@@ -140,13 +140,13 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
               </>
             )}
 
-            {/* Quest pins */}
+            {/* Event pins */}
             {quests.map((q) => {
               const cat = CATEGORIES[q.category as keyof typeof CATEGORIES]
               const color = cat?.color ?? 'var(--color-amber)'
               const pill = PILL_COLORS[q.category] ?? { bg: '#FFF8E1', text: '#A0522D' }
               return (
-                <QuestDot key={q.id} quest={q} color={color} pill={pill} cat={cat} onSelect={onSelectQuest} />
+                <QuestDot key={q.id} quest={q} color={color} pill={pill} cat={cat} onSelect={onSelectEvent} />
               )
             })}
           </MapContainer>
@@ -173,7 +173,7 @@ export default function MapScreen({ quests, userLocation, onSelectQuest }: Props
   )
 }
 
-/** Individual quest dot with rich popup */
+/** Individual event dot with rich popup */
 function QuestDot({
   quest: q,
   color,
@@ -194,7 +194,7 @@ function QuestDot({
       ref={markerRef}
       center={[q.lat, q.lng]}
       radius={8}
-      aria-label={`Quest: ${q.title}`}
+      aria-label={`Event: ${q.title}`}
       pathOptions={{
         color,
         fillColor: color,
@@ -288,7 +288,7 @@ function QuestDot({
                 lineHeight: 1.3,
               }}
             >
-              Go to quest →
+              Go to event →
             </a>
             <a
               href={getDirectionsUrl(q.lat, q.lng)}

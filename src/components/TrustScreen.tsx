@@ -9,17 +9,17 @@ interface Props {
 }
 
 const TRUST_LEVELS: Array<{ key: string; label: string; emoji: string; color: string; desc: string; unlock?: string }> = [
-  { key: 'newcomer',    label: 'Newcomer',    emoji: '🌱', color: 'var(--color-text-muted)', desc: "You've arrived. Start by joining a quest near you." },
-  { key: 'participant', label: 'Participant',  emoji: '🌿', color: '#4A7C59', desc: 'Attend 3 quests in the real world.', unlock: 'Unlocks: see who else is joining quests' },
-  { key: 'contributor', label: 'Contributor',  emoji: '🌳', color: 'var(--color-amber)', desc: 'Attend 10 quests, or post 3 quests that others join.', unlock: 'Unlocks: listed as a skill sharer on quests you join' },
-  { key: 'steward',     label: 'Steward',      emoji: '🏡', color: '#E8C068', desc: 'Endorsed by 5 or more community members.', unlock: 'Unlocks: your quests are auto-approved, you can flag events for review' },
+  { key: 'newcomer',    label: 'Newcomer',    emoji: '🌱', color: 'var(--color-text-muted)', desc: "You've arrived. Start by joining an event near you." },
+  { key: 'participant', label: 'Participant',  emoji: '🌿', color: '#4A7C59', desc: 'Attend 3 events in the real world.', unlock: 'Unlocks: see who else is joining events' },
+  { key: 'contributor', label: 'Contributor',  emoji: '🌳', color: 'var(--color-amber)', desc: 'Attend 10 events, or post 3 events that others join.', unlock: 'Unlocks: listed as a skill sharer on events you join' },
+  { key: 'steward',     label: 'Steward',      emoji: '🏡', color: '#E8C068', desc: 'Endorsed by 5 or more community members.', unlock: 'Unlocks: your events are auto-approved, you can flag events for review' },
 ]
 
 const GROW_TIPS = [
-  { action: 'Join a quest', desc: 'Find something near you and show up.' },
+  { action: 'Join an event', desc: 'Find something near you and show up.' },
   { action: 'Come back', desc: 'The community grows through regulars, not tourists.' },
-  { action: 'Post a quest', desc: 'Create something for others to join. If they show up, it counts.' },
-  { action: 'Earn an endorsement', desc: 'When someone you\'ve quested with vouches for you, it means something.' },
+  { action: 'Post an event', desc: 'Create something for others to join. If they show up, it counts.' },
+  { action: 'Earn an endorsement', desc: 'When someone you\'ve joined events with vouches for you, it means something.' },
 ]
 
 interface TrustStats {
@@ -91,16 +91,16 @@ export default function TrustScreen({ userId, profile }: Props) {
   if (nextLevel) {
     if (nextLevel.key === 'participant') {
       progressFraction = Math.min(1, stats.quests_attended / 3)
-      progressLabel = `${stats.quests_attended} of 3 quests attended`
+      progressLabel = `${stats.quests_attended} of 3 events attended`
     } else if (nextLevel.key === 'contributor') {
       const attendPath = stats.quests_attended / 10
       const postPath = stats.quests_posted_with_joiners / 3
       if (attendPath >= postPath) {
         progressFraction = Math.min(1, attendPath)
-        progressLabel = `${stats.quests_attended} of 10 quests attended`
+        progressLabel = `${stats.quests_attended} of 10 events attended`
       } else {
         progressFraction = Math.min(1, postPath)
-        progressLabel = `${stats.quests_posted_with_joiners} of 3 quests posted with joiners`
+        progressLabel = `${stats.quests_posted_with_joiners} of 3 events posted with joiners`
       }
     } else if (nextLevel.key === 'steward') {
       progressFraction = Math.min(1, stats.endorsements_received / 5)
@@ -174,8 +174,8 @@ export default function TrustScreen({ userId, profile }: Props) {
         {/* Stats */}
         <div className="flex gap-2 px-3 mb-4">
           {[
-            { val: stats.quests_attended.toString(), label: 'Attended', sub: 'quests attended' },
-            { val: stats.quests_posted_with_joiners.toString(), label: 'Posted', sub: 'quests posted' },
+            { val: stats.quests_attended.toString(), label: 'Attended', sub: 'events attended' },
+            { val: stats.quests_posted_with_joiners.toString(), label: 'Posted', sub: 'events posted' },
             { val: stats.endorsements_received.toString(), label: 'Endorsed', sub: 'endorsements' },
           ].map(stat => (
             <div key={stat.label} className="flex-1 rounded-[10px] px-2.5 py-2.5 text-center" style={{ background: 'var(--color-card)' }}>
@@ -255,7 +255,7 @@ export default function TrustScreen({ userId, profile }: Props) {
               <p className="text-[22px] mb-2">🌱</p>
               <p className="font-heading text-[13px]" style={{ color: 'var(--color-text)' }}>No endorsements yet</p>
               <p className="text-[11px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                Join quests and contribute — endorsements will come.
+                Join events and contribute — endorsements will come.
               </p>
             </div>
           ) : (

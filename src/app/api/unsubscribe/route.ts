@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  return new NextResponse(page("You've been unsubscribed from Emerge quest digests.", true), {
+  return new NextResponse(page("You've been unsubscribed from Emerge event digests.", true), {
     headers: { 'Content-Type': 'text/html' },
   })
 }

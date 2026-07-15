@@ -75,7 +75,7 @@ function approximateLocation(address: string): string {
   return address
 }
 
-export default function QuestDetail({
+export default function EventDetail({
   quest,
   userId,
   onBack,
@@ -167,7 +167,7 @@ export default function QuestDetail({
     const dateStr = new Date(quest.starts_at).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
     const loc = approximateLocation(quest.address)
     const shareUrl = `https://emerge.terralta.org/?quest=${quest.id}`
-    const shareText = `Join me for ${quest.title} on ${dateStr} \u2014 ${loc}. Discover regenerative quests on Emerge.`
+    const shareText = `Join me for ${quest.title} on ${dateStr} \u2014 ${loc}. Discover regenerative events on Emerge.`
 
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
@@ -213,7 +213,7 @@ export default function QuestDetail({
           </span>
 
           {/* Share button */}
-          <button onClick={handleShare} className="opacity-50 hover:opacity-80 transition-opacity" title="Share this quest">
+          <button onClick={handleShare} className="opacity-50 hover:opacity-80 transition-opacity" title="Share this event">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-amber)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
               <polyline points="16 6 12 2 8 6" />
@@ -353,7 +353,7 @@ export default function QuestDetail({
               style={{ background: 'var(--color-pill-bg)', border: '0.5px solid var(--color-border)' }}
             >
               <p className="text-[13px] uppercase font-medium mb-1" style={{ color: 'var(--color-amber)', letterSpacing: '0.08em' }}>
-                Why this quest matters
+                Why this event matters
               </p>
               <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                 {quest.ai_reasoning}
@@ -399,7 +399,7 @@ export default function QuestDetail({
 
               {count === 0 ? (
                 <p className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>
-                  Be the first to join this quest.
+                  Be the first to join this event.
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -443,7 +443,7 @@ export default function QuestDetail({
               <p className="text-[12px]" style={{ color: 'var(--color-success)' }}>✓ Report submitted — thank you</p>
             ) : showReport ? (
               <div className="rounded-[12px] px-3.5 py-3 text-left mx-4" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}>
-                <p className="text-[12px] mb-2" style={{ color: 'var(--color-text-secondary)' }}>Why are you reporting this quest?</p>
+                <p className="text-[12px] mb-2" style={{ color: 'var(--color-text-secondary)' }}>Why are you reporting this event?</p>
                 <div className="space-y-1.5 mb-3">
                   {['Spam or fake event', 'Inappropriate content', 'Wrong location or date', 'Safety concern', 'Other'].map(r => (
                     <button
@@ -496,7 +496,7 @@ export default function QuestDetail({
                 className="text-[12px] underline"
                 style={{ color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
               >
-                Report this quest
+                Report this event
               </button>
             )}
             <p className="text-[13px] leading-relaxed px-4" style={{ color: 'var(--color-text-faint)' }}>
@@ -540,7 +540,7 @@ export default function QuestDetail({
                   letterSpacing: '0.02em',
                 }}
               >
-                {joining ? 'Joining...' : (spotsLeft !== null && spotsLeft <= 0) ? 'Quest full' : 'Join quest'}
+                {joining ? 'Joining...' : (spotsLeft !== null && spotsLeft <= 0) ? 'Event full' : 'Join event'}
               </button>
             )}
           </div>

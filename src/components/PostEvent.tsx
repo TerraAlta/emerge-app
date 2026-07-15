@@ -38,7 +38,7 @@ interface Props {
   onSuccess: () => void
 }
 
-export default function PostQuest({ userId, onBack, onSuccess }: Props) {
+export default function PostEvent({ userId, onBack, onSuccess }: Props) {
   const [mode, setMode] = useState<Mode>('form')
   const [title, setTitle] = useState('')
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
@@ -123,8 +123,8 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
     e.preventDefault()
     setError('')
 
-    if (!title.trim()) { setError('Give your quest a title.'); return }
-    if (selectedTypes.length === 0) { setError('Pick at least one quest type.'); return }
+    if (!title.trim()) { setError('Give your event a title.'); return }
+    if (selectedTypes.length === 0) { setError('Pick at least one event type.'); return }
     if (!description.trim()) { setError('Describe what people will do.'); return }
     if (!date) { setError('Choose a date.'); return }
     if (!time) { setError('Set a start time.'); return }
@@ -194,14 +194,14 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               </svg>
               <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>Back</span>
             </button>
-            <span className="text-[13px] font-medium" style={{ color: 'var(--color-text-muted)' }}>New quest</span>
+            <span className="text-[13px] font-medium" style={{ color: 'var(--color-text-muted)' }}>New event</span>
             <div className="w-[50px]" />
           </div>
 
           {/* Header */}
           <div className="px-4 pt-2 pb-4">
             <h1 className="font-heading text-[22px] font-light leading-tight" style={{ color: 'var(--color-text)' }}>
-              Add a <em style={{ color: 'var(--color-amber)' }}>quest</em>
+              Add an <em style={{ color: 'var(--color-amber)' }}>event</em>
             </h1>
             <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-secondary)' }}>
               Something real for your community to do together.
@@ -221,7 +221,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
             >
               <div className="text-[14px] mb-0.5">🌱</div>
               <div className="text-[13px] font-medium" style={{ color: 'var(--color-text)' }}>Fill in the details</div>
-              <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>Create a quest directly</div>
+              <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>Create an event directly</div>
             </button>
             <button
               type="button"
@@ -280,7 +280,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                 <div className="mt-6 rounded-xl px-4 py-4" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-text-faint)' }}>
                   {urlResult.approved && (
                     <>
-                      <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-amber)' }}>Your quest is live!</p>
+                      <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-amber)' }}>Your event is live!</p>
                       <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                         &ldquo;{urlResult.title}&rdquo; will appear for people nearby.
                       </p>
@@ -323,7 +323,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               {/* FIX 2 — Title with "e.g." placeholder */}
               <div>
                 <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
-                  Quest title
+                  Event title
                 </label>
                 <input
                   type="text"
@@ -339,7 +339,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               {/* FIX 3 — Multi-select type dropdown */}
               <div ref={dropdownRef}>
                 <label className="text-[12px] uppercase block mb-1.5" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
-                  Quest type
+                  Event type
                 </label>
                 <button
                   type="button"
@@ -353,7 +353,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                 >
                   <span className="text-[13px]">
                     {selectedTypes.length === 0
-                      ? 'Select quest type(s)'
+                      ? 'Select event type(s)'
                       : `${selectedTypes.length} type${selectedTypes.length > 1 ? 's' : ''} selected`}
                   </span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
@@ -419,7 +419,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   What will people do?
                 </label>
                 <textarea
-                  placeholder="Describe the quest — what happens, what to bring, who it's for..."
+                  placeholder="Describe the event — what happens, what to bring, who it's for..."
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   rows={4}
@@ -568,7 +568,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
               >
                 <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
                   🛡️ Location will be shown as approximate until someone joins.
-                  Your quest will be reviewed if flagged by the community.
+                  Your event will be reviewed if flagged by the community.
                 </p>
               </div>
 
@@ -589,7 +589,7 @@ export default function PostQuest({ userId, onBack, onSuccess }: Props) {
                   letterSpacing: '0.02em',
                 }}
               >
-                {submitting ? 'Posting...' : 'Post quest'}
+                {submitting ? 'Posting...' : 'Post event'}
               </button>
 
             </form>

@@ -124,10 +124,10 @@ function AnalyticsTab() {
         totalUsers = count
       } catch { /* RLS blocked */ }
 
-      // Total quests
+      // Total events
       const { count: totalQuests } = await supabase.from('quests').select('*', { count: 'exact', head: true })
 
-      // Quests joined
+      // Events joined
       let questsJoined: number | null = null
       try {
         const { count } = await supabase.from('quest_participants').select('*', { count: 'exact', head: true })
@@ -175,7 +175,7 @@ function AnalyticsTab() {
         if (recentUsers) setSignups(recentUsers)
       } catch { /* RLS blocked */ }
 
-      // Most popular quests by participant count
+      // Most popular events by participant count
       // We fetch quest_participants, count per quest, then fetch quest titles
       try {
         const { data: participants } = await supabase
@@ -201,7 +201,7 @@ function AnalyticsTab() {
             setPopular(
               topIds.map(([id, count]) => ({
                 id,
-                title: titleMap[id] || 'Unknown Quest',
+                title: titleMap[id] || 'Unknown Event',
                 participant_count: count,
               }))
             )
@@ -235,8 +235,8 @@ function AnalyticsTab() {
       {/* Stat cards */}
       <div className="flex gap-3 flex-wrap">
         <StatCard label="Total users" value={stats.totalUsers} />
-        <StatCard label="Total quests" value={stats.totalQuests} />
-        <StatCard label="Quests joined" value={stats.questsJoined} />
+        <StatCard label="Total events" value={stats.totalQuests} />
+        <StatCard label="Events joined" value={stats.questsJoined} />
         <StatCard label="User-posted" value={stats.userPostedQuests} />
       </div>
 
@@ -305,9 +305,9 @@ function AnalyticsTab() {
         </div>
       </div>
 
-      {/* Most popular quests */}
+      {/* Most popular events */}
       <div>
-        <SectionHeader>Most popular quests</SectionHeader>
+        <SectionHeader>Most popular events</SectionHeader>
         <div
           className="rounded-[12px] overflow-hidden"
           style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
@@ -433,7 +433,7 @@ function PipelineTab() {
       >
         <span className="w-3" />
         <span className="flex-1">Source</span>
-        <span className="w-14 text-right">Quests</span>
+        <span className="w-14 text-right">Events</span>
         <span className="w-24 text-right">Last event</span>
       </div>
 
@@ -444,7 +444,7 @@ function PipelineTab() {
       >
         {sources.length === 0 ? (
           <div className="px-4 py-8 text-center text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-            No quest sources found
+            No event sources found
           </div>
         ) : (
           sources.map((src, i) => (

@@ -76,18 +76,18 @@ export function buildDigestHtml(opts: {
   const questRows = count > 0
     ? quests.map(questCard).join('\n')
     : `<tr><td style="padding:20px 0;text-align:center;">
-        <p style="font-size:14px;color:rgba(232,242,224,0.5);margin:0;">No quests near you this week.</p>
+        <p style="font-size:14px;color:rgba(232,242,224,0.5);margin:0;">No events near you this week.</p>
         <p style="font-size:12px;color:rgba(232,242,224,0.35);margin:8px 0 0;">Check back soon — or <a href="https://emerge.terralta.org/submit" style="color:#C8913A;">add your own</a>.</p>
       </td></tr>`
 
   const intro = count > 0
-    ? `${count} quest${count > 1 ? 's' : ''} near ${city} this week — showing up is all it takes.`
-    : `Nothing near ${city} this week — but new quests appear every day.`
+    ? `${count} event${count > 1 ? 's' : ''} near ${city} this week — showing up is all it takes.`
+    : `Nothing near ${city} this week — but new events appear every day.`
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Emerge — Weekly Quests</title></head>
+<title>Emerge — Weekly Events</title></head>
 <body style="margin:0;padding:0;background:#0D1A0B;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0D1A0B;">
 <tr><td align="center" style="padding:0;">
@@ -99,7 +99,7 @@ export function buildDigestHtml(opts: {
     em<span style="color:#C8913A;">e</span>rge
   </p>
   <p style="margin:6px 0 0;font-size:9px;color:rgba(232,242,224,0.4);text-transform:uppercase;letter-spacing:0.15em;">
-    real quests &middot; real community
+    real events &middot; real community
   </p>
 </td></tr>
 
@@ -109,7 +109,7 @@ export function buildDigestHtml(opts: {
   <p style="margin:8px 0 0;font-size:12px;color:rgba(232,242,224,0.5);line-height:1.5;">${intro}</p>
 </td></tr>
 
-<!-- Quest cards -->
+<!-- Event cards -->
 <tr><td style="padding:16px 24px 0;">
   <table cellpadding="0" cellspacing="0" border="0" width="100%">
     ${questRows}
@@ -134,7 +134,7 @@ ${newsCount > 0 ? `
 <!-- CTA -->
 <tr><td style="padding:24px 24px 0;text-align:center;">
   <a href="https://emerge.terralta.org" style="display:inline-block;padding:12px 28px;background:#C8913A;color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:20px;">
-    See all quests near you &rarr;
+    See all events near you &rarr;
   </a>
 </td></tr>
 

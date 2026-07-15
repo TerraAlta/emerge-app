@@ -86,7 +86,7 @@ export default function OnboardingSplash() {
               {[
                 {
                   icon: '🌿',
-                  title: 'Quests',
+                  title: 'Events',
                   body: 'Real regenerative events in your area — repair cafés, seed swaps, food forests, work parties. Curated from 220+ networks. Only things you can show up to.',
                 },
                 {
@@ -120,7 +120,7 @@ export default function OnboardingSplash() {
               Built on the permaculture flower
             </p>
             <p className="text-[11.5px] leading-relaxed mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-              Everything we curate — quests, news, practitioners — is sorted across the seven petals of{' '}
+              Everything we curate — events, news, practitioners — is sorted across the seven petals of{' '}
               <a
                 href="https://permacultureprinciples.com/flower/"
                 target="_blank"

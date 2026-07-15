@@ -145,9 +145,9 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
         <div className="rounded-[12px] px-4 py-3 mb-3" style={{ background: 'var(--color-pill-bg)', border: '0.5px solid var(--color-pill-bg)' }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[12px] font-medium" style={{ color: 'var(--color-text)' }}>Weekly quest digest</p>
+              <p className="text-[12px] font-medium" style={{ color: 'var(--color-text)' }}>Weekly event digest</p>
               <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                Get an email every Monday with quests near you
+                Get an email every Monday with events near you
               </p>
             </div>
             <button

@@ -5,13 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/hooks/useAuth'
-import { formatDate, proximityPill, filterQuests, groupQuests, daysUntil } from '@/lib/dateUtils'
-import { useNearbyQuests } from '@/hooks/useNearbyQuests'
+import { formatDate, proximityPill, filterEvents, groupEvents, daysUntil } from '@/lib/dateUtils'
+import { useNearbyEvents } from '@/hooks/useNearbyEvents'
 import { toggleTheme, getTheme } from '@/lib/theme'
 import type { Theme } from '@/lib/theme'
 import AuthScreen from '@/components/AuthScreen'
-import QuestDetail from '@/components/QuestDetail'
-import PostQuest from '@/components/PostQuest'
+import EventDetail from '@/components/EventDetail'
+import PostEvent from '@/components/PostEvent'
 import SkillsScreen from '@/components/SkillsScreen'
 import NewsScreen from '@/components/NewsScreen'
 import DigestSettings from '@/components/DigestSettings'
@@ -22,7 +22,7 @@ import SubmitEvent from '@/components/SubmitEvent'
 import ConnectLuma from '@/components/ConnectLuma'
 import SupportTicketButton from '@/components/SupportTicketButton'
 
-const QuestMap = dynamic(() => import('@/components/QuestMap'), {
+const EventMap = dynamic(() => import('@/components/EventMap'), {
   ssr: false,
   loading: () => (
     <div className="h-full w-full flex items-center justify-center" style={{ background: 'var(--color-card)' }}>
@@ -114,9 +114,9 @@ function displaySourceName(sourceName: string, sourceUrl?: string | null): strin
  * Top-level doors — three primary sections of the app.
  * Guild is a separate router route (/guild), so it's not a TabKey.
  */
-type TabKey = 'quests' | 'news'
-/** Sub-views inside the Quests door. List is the default. */
-type QuestView = 'list' | 'map' | 'skills'
+type TabKey = 'events' | 'news'
+/** Sub-views inside the Events door. List is the default. */
+type EventView = 'list' | 'map' | 'skills'
 
 export default function Home() {
   return (
@@ -134,14 +134,14 @@ function HomeInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, profile, loading: authLoading, signIn, signUp, signOut } = useAuth()
-  const [selectedQuest, setSelectedQuest] = useState<any>(null)
+  const [selectedEvent, setSelectedEvent] = useState<any>(null)
   const [showAuthFromDetail, setShowAuthFromDetail] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
-  const [showPostQuest, setShowPostQuest] = useState(false)
+  const [showPostEvent, setShowPostEvent] = useState(false)
   const [showSubmitEvent, setShowSubmitEvent] = useState(false)
   const [showConnectLuma, setShowConnectLuma] = useState(false)
-  const [activeTab, setActiveTab] = useState<TabKey>('quests')
-  const [questView, setQuestView] = useState<QuestView>('list')
+  const [activeTab, setActiveTab] = useState<TabKey>('events')
+  const [eventView, setEventView] = useState<EventView>('list')
 
   // Open the auth screen when redirected here with ?auth=signin|signup
   // (e.g. from a Guild sub-page that requires an account).
@@ -196,50 +196,50 @@ function HomeInner() {
     return <ConnectLuma userId={user!.id} onBack={() => setShowConnectLuma(false)} />
   }
 
-  // Post quest screen — signed-in only
-  if (showPostQuest || showSubmitEvent) {
+  // Post event screen — signed-in only
+  if (showPostEvent || showSubmitEvent) {
     if (isAnon) {
       setShowAuthFromDetail(true)
-      setShowPostQuest(false)
+      setShowPostEvent(false)
       setShowSubmitEvent(false)
       return null
     }
     return (
-      <PostQuest
+      <PostEvent
         userId={user!.id}
-        onBack={() => { setShowPostQuest(false); setShowSubmitEvent(false) }}
-        onSuccess={() => { setShowPostQuest(false); setShowSubmitEvent(false) }}
+        onBack={() => { setShowPostEvent(false); setShowSubmitEvent(false) }}
+        onSuccess={() => { setShowPostEvent(false); setShowSubmitEvent(false) }}
       />
     )
   }
 
-  // Quest detail — viewable by anyone; Join button triggers onNeedAuth
-  if (selectedQuest) {
+  // Event detail — viewable by anyone; Join button triggers onNeedAuth
+  if (selectedEvent) {
     return (
-      <QuestDetail
-        quest={selectedQuest}
+      <EventDetail
+        quest={selectedEvent}
         userId={user?.id ?? ''}
-        onBack={() => setSelectedQuest(null)}
+        onBack={() => setSelectedEvent(null)}
         onNeedAuth={() => setShowAuthFromDetail(true)}
       />
     )
   }
 
   return (
-    <QuestBoard
+    <EventBoard
       profile={profile}
       userId={user?.id ?? ''}
       isAnon={isAnon}
       activeTab={activeTab}
       onTabChange={setActiveTab}
-      questView={questView}
-      setQuestView={setQuestView}
+      eventView={eventView}
+      setEventView={setEventView}
       onSignOut={signOut}
       onSignIn={() => setShowAuthFromDetail(true)}
-      onSelectQuest={setSelectedQuest}
-      onPostQuest={() => {
+      onSelectEvent={setSelectedEvent}
+      onPostEvent={() => {
         if (isAnon) { setShowAuthFromDetail(true); return }
-        setShowPostQuest(true)
+        setShowPostEvent(true)
       }}
       onConnectLuma={() => {
         if (isAnon) { setShowAuthFromDetail(true); return }
@@ -249,17 +249,17 @@ function HomeInner() {
   )
 }
 
-/* ── Quest View Sub-Nav — List / Map / Skills toggle + Post CTA ── */
-function QuestViewNav({
-  questView,
-  setQuestView,
-  onPostQuest,
+/* ── Event View Sub-Nav — List / Map / Skills toggle + Post CTA ── */
+function EventViewNav({
+  eventView,
+  setEventView,
+  onPostEvent,
 }: {
-  questView: QuestView
-  setQuestView: (v: QuestView) => void
-  onPostQuest: () => void
+  eventView: EventView
+  setEventView: (v: EventView) => void
+  onPostEvent: () => void
 }) {
-  const views: { key: QuestView; label: string; icon: string }[] = [
+  const views: { key: EventView; label: string; icon: string }[] = [
     { key: 'list',   label: 'List',   icon: '\u{1F33F}' },
     { key: 'map',    label: 'Map',    icon: '\u{1F5FA}\uFE0F' },
     { key: 'skills', label: 'Skills', icon: '\u{1F331}' },
@@ -269,11 +269,11 @@ function QuestViewNav({
       style={{ borderColor: 'var(--color-border)' }}>
       <div className="flex flex-wrap gap-1.5">
         {views.map(v => {
-          const isActive = questView === v.key
+          const isActive = eventView === v.key
           return (
             <button
               key={v.key}
-              onClick={() => setQuestView(v.key)}
+              onClick={() => setEventView(v.key)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
               style={{
                 background: isActive ? 'var(--color-amber-light)' : 'var(--color-pill-bg)',
@@ -287,12 +287,12 @@ function QuestViewNav({
         })}
       </div>
       <button
-        onClick={onPostQuest}
+        onClick={onPostEvent}
         className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold active:scale-95 transition-transform"
         style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none' }}
-        aria-label="Post quest"
+        aria-label="Post event"
       >
-        <span className="text-[14px]">+</span> Post a quest
+        <span className="text-[14px]">+</span> Post an event
       </button>
     </div>
   )
@@ -308,7 +308,7 @@ function TopNav({
 }) {
   const router = useRouter()
   const tabs: { key: TabKey | 'guild'; label: string; icon: string }[] = [
-    { key: 'quests', label: 'Quests', icon: '\u{1F33F}' },
+    { key: 'events', label: 'Events', icon: '\u{1F33F}' },
     { key: 'news',   label: 'News',   icon: '\u{1F4F0}' },
     { key: 'guild',  label: 'Guild',  icon: '\u{1F33C}' },
   ]
@@ -456,7 +456,7 @@ function FooterDisclaimer() {
             ))}
           </div>
           <p className="text-[9px] mt-3 italic" style={{ color: 'var(--color-text-muted)' }}>
-            Don&apos;t see your city? Post the first quest and help your community emerge.
+            Don&apos;t see your city? Post the first event and help your community emerge.
           </p>
         </div>
       )}
@@ -470,7 +470,7 @@ function FooterDisclaimer() {
             Emerge is not liable for any loss, injury, or damages arising from attendance at listed events.
           </p>
           <p className="text-[8px] mt-1.5 leading-[1.7]" style={{ color: 'var(--color-text-muted)' }}>
-            Your location data is used only to show nearby quests and is never shared with other users or third parties.
+            Your location data is used only to show nearby events and is never shared with other users or third parties.
             We store only the minimum data needed to operate your account.
           </p>
         </div>
@@ -487,19 +487,19 @@ const COUNTRY_NAMES: Record<string, string> = {
   HU: 'Hungary', CA: 'Canada', US: 'United States',
 }
 
-/* ── Quest Board ── */
-function QuestBoard({
+/* ── Event Board ── */
+function EventBoard({
   profile,
   userId,
   isAnon,
   activeTab,
   onTabChange,
-  questView,
-  setQuestView,
+  eventView,
+  setEventView,
   onSignOut,
   onSignIn,
-  onSelectQuest,
-  onPostQuest,
+  onSelectEvent,
+  onPostEvent,
   onConnectLuma,
 }: {
   profile: { first_name: string; last_name: string } | null
@@ -507,12 +507,12 @@ function QuestBoard({
   isAnon: boolean
   activeTab: TabKey
   onTabChange: (tab: TabKey) => void
-  questView: QuestView
-  setQuestView: (v: QuestView) => void
+  eventView: EventView
+  setEventView: (v: EventView) => void
   onSignOut: () => void
   onSignIn: () => void
-  onSelectQuest: (quest: any) => void
-  onPostQuest: () => void
+  onSelectEvent: (quest: any) => void
+  onPostEvent: () => void
   onConnectLuma: () => void
 }) {
   const [showMap, setShowMap] = useState(false)
@@ -530,7 +530,7 @@ function QuestBoard({
   const [keywordSearch, setKeywordSearch] = useState('')
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
   const [attendedCount, setAttendedCount] = useState(0)
-  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, setManualLocation } = useNearbyQuests({ radiusKm, searchKeyword: keywordSearch || null })
+  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, setManualLocation } = useNearbyEvents({ radiusKm, searchKeyword: keywordSearch || null })
 
   // Fetch quests attended count
   useEffect(() => {
@@ -651,20 +651,20 @@ function QuestBoard({
         {/* Tab content area */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {activeTab === 'news' && <NewsScreen />}
-          {activeTab === 'quests' && questView === 'map' && (
+          {activeTab === 'events' && eventView === 'map' && (
             <div>
-              <QuestViewNav questView={questView} setQuestView={setQuestView} onPostQuest={onPostQuest} />
-              <MapScreen quests={quests} userLocation={location} onSelectQuest={onSelectQuest} />
+              <EventViewNav eventView={eventView} setEventView={setEventView} onPostEvent={onPostEvent} />
+              <MapScreen quests={quests} userLocation={location} onSelectEvent={onSelectEvent} />
             </div>
           )}
-          {activeTab === 'quests' && questView === 'skills' && (
+          {activeTab === 'events' && eventView === 'skills' && (
             <div>
-              <QuestViewNav questView={questView} setQuestView={setQuestView} onPostQuest={onPostQuest} />
-              <SkillsScreen userId={userId} quests={quests} onSelectQuest={onSelectQuest} />
+              <EventViewNav eventView={eventView} setEventView={setEventView} onPostEvent={onPostEvent} />
+              <SkillsScreen userId={userId} quests={quests} onSelectEvent={onSelectEvent} />
             </div>
           )}
-          {activeTab === 'quests' && questView === 'list' && (<div>
-            <QuestViewNav questView={questView} setQuestView={setQuestView} onPostQuest={onPostQuest} />
+          {activeTab === 'events' && eventView === 'list' && (<div>
+            <EventViewNav eventView={eventView} setEventView={setEventView} onPostEvent={onPostEvent} />
 
         {/* Header row */}
         <div className="flex items-center justify-between px-4 pt-5 pb-1">
@@ -673,7 +673,7 @@ function QuestBoard({
               {getTimeGreeting()}
             </p>
             <h1 className="font-heading text-[20px] font-light leading-tight" style={{ color: 'var(--color-text)' }}>
-              Quests <em className="text-emerge-dawn">near you</em>
+              Events <em className="text-emerge-dawn">near you</em>
             </h1>
           </div>
 
@@ -760,7 +760,7 @@ function QuestBoard({
               </div>
               {locationDenied && (
                 <p className="text-[12px] mb-2.5" style={{ color: 'var(--color-text-secondary)' }}>
-                  Location access was denied. Search for your city to see nearby quests.
+                  Location access was denied. Search for your city to see nearby events.
                 </p>
               )}
               <div className="flex gap-1.5">
@@ -824,9 +824,9 @@ function QuestBoard({
         {/* Pulse pills */}
         <div className="flex gap-2 px-4 pt-3 pb-4">
           {[
-            { val: quests.length.toString(), label: 'Quests nearby' },
-            { val: closestDist !== null ? `${closestDist.toFixed(1)}km` : '\u2014', label: 'Closest quest' },
-            { val: attendedCount.toString(), label: 'Quests attended' },
+            { val: quests.length.toString(), label: 'Events nearby' },
+            { val: closestDist !== null ? `${closestDist.toFixed(1)}km` : '\u2014', label: 'Closest event' },
+            { val: attendedCount.toString(), label: 'Events attended' },
           ].map(pill => (
             <div key={pill.label} className="flex-1 rounded-[10px] px-2.5 py-2" style={{ background: 'var(--color-card)' }}>
               <div className="text-[14px] font-semibold" style={{ color: 'var(--color-amber)' }}>{pill.val}</div>
@@ -918,7 +918,7 @@ function QuestBoard({
         <div className="px-4 pb-3">
           <input
             type="text"
-            placeholder="Search quests... (permaculture, repair, yoga, etc.)"
+            placeholder="Search events... (permaculture, repair, yoga, etc.)"
             value={keywordSearch}
             onChange={(e) => setKeywordSearch(e.target.value)}
             className="w-full rounded-[10px] px-3 py-2 text-[13px] outline-none transition-all"
@@ -934,7 +934,7 @@ function QuestBoard({
         {radiusKm === 'national' && countryCode && (
           <div className="px-4 pb-2">
             <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-              Showing all quests in {COUNTRY_NAMES[countryCode] ?? countryCode} — sorted by date and distance
+              Showing all events in {COUNTRY_NAMES[countryCode] ?? countryCode} — sorted by date and distance
             </p>
           </div>
         )}
@@ -946,7 +946,7 @@ function QuestBoard({
           </div>
         )}
 
-        {/* Quest cards */}
+        {/* Event cards */}
         <div className="px-3 space-y-2">
           {loading && [1, 2, 3].map(i => (
             <div key={i} className="rounded-[14px] p-3 animate-pulse" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
@@ -957,7 +957,7 @@ function QuestBoard({
           ))}
 
           {!loading && (() => {
-            const filtered = filterQuests(quests, timeFilter)
+            const filtered = filterEvents(quests, timeFilter)
 
             // Empty states
             if (filtered.length === 0) {
@@ -966,7 +966,7 @@ function QuestBoard({
                   <div className="rounded-[14px] px-4 py-10 text-center" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
                     <p className="font-heading text-base" style={{ color: 'var(--color-text)' }}>Nothing today</p>
                     <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                      There {quests.length === 1 ? 'is 1 quest' : `are ${quests.length} quests`} coming up near you.
+                      There {quests.length === 1 ? 'is 1 event' : `are ${quests.length} events`} coming up near you.
                     </p>
                     <button
                       onClick={() => setTimeFilter('all')}
@@ -983,7 +983,7 @@ function QuestBoard({
                   <div className="rounded-[14px] px-4 py-10 text-center" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
                     <p className="font-heading text-base" style={{ color: 'var(--color-text)' }}>Nothing this week</p>
                     <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                      There {quests.length === 1 ? 'is 1 quest' : `are ${quests.length} quests`} coming up near you.
+                      There {quests.length === 1 ? 'is 1 event' : `are ${quests.length} events`} coming up near you.
                     </p>
                     <button
                       onClick={() => setTimeFilter('all')}
@@ -997,21 +997,21 @@ function QuestBoard({
               }
               return (
                 <div className="rounded-[14px] px-4 py-10 text-center" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
-                  <p className="font-heading text-base" style={{ color: 'var(--color-text)' }}>No quests near you yet.</p>
+                  <p className="font-heading text-base" style={{ color: 'var(--color-text)' }}>No events near you yet.</p>
                   <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Check back soon — or add your own.</p>
                   <button
-                    onClick={onPostQuest}
+                    onClick={onPostEvent}
                     className="mt-3 text-[13px] font-medium"
                     style={{ color: 'var(--color-amber)' }}
                   >
-                    Add a quest &rarr;
+                    Add an event &rarr;
                   </button>
                 </div>
               )
             }
 
             // Grouped view for "All upcoming"
-            const groups = timeFilter === 'all' ? groupQuests(filtered) : [{ label: '', quests: filtered }]
+            const groups = timeFilter === 'all' ? groupEvents(filtered) : [{ label: '', quests: filtered }]
 
             return groups.map((group, gi) => (
               <div key={gi}>
@@ -1028,7 +1028,7 @@ function QuestBoard({
                       <div
                         key={quest.id}
                         className="rounded-[14px] px-3.5 py-3 cursor-pointer active:scale-[0.98] transition-transform"
-                        onClick={() => onSelectQuest(quest)}
+                        onClick={() => onSelectEvent(quest)}
                         style={{
                           background: isFirst ? 'var(--color-amber-bg)' : 'var(--color-card)',
                           border: isFirst ? '0.5px solid var(--color-amber-border)' : '0.5px solid var(--color-border)',
@@ -1090,7 +1090,7 @@ function QuestBoard({
           </div>
         ) : (
           <div className="mx-3 mb-2 rounded-[14px] h-[180px] overflow-hidden" style={{ border: '0.5px solid var(--color-pill-bg)' }}>
-            <QuestMap quests={quests} userLocation={location} />
+            <EventMap quests={quests} userLocation={location} />
           </div>
         )}
 

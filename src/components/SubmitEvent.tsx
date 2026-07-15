@@ -102,7 +102,7 @@ export default function SubmitEvent({ onBack }: { onBack: () => void }) {
           <div className="mt-6 rounded-xl px-4 py-4" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-text-faint)' }}>
             {result.approved && (
               <>
-                <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-amber)' }}>Your quest is live!</p>
+                <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-amber)' }}>Your event is live!</p>
                 <p className="text-[11px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                   &ldquo;{result.title}&rdquo; will appear for people nearby.
                 </p>
