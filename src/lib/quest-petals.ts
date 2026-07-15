@@ -102,7 +102,7 @@ export type QuestProgress = Record<string, PetalProgress>
  */
 export const MOCK_PROGRESS: QuestProgress = {
   ethics:     { status: 'completed', pct: 1 },
-  water:      { status: 'completed', pct: 1 },
+  water:      { status: 'available', pct: 0 },
   buildings:  { status: 'available', pct: 0 },
   finance:    { status: 'available', pct: 0 },
   health:     { status: 'available', pct: 0 },
