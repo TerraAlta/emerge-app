@@ -4,43 +4,69 @@
  * Quests — the gamified permaculture learning section.
  *
  * One route, three views: the Flower (entry) → a petal's quest list → the
- * QuestPlayer. Progress + reflections persist to localStorage for now; Step 3
- * swaps in Supabase `user_quest_progress`.
+ * QuestPlayer. Content comes from Supabase (learning_quests + quest_cards).
+ * Signed-in users' progress + reflections persist to Supabase
+ * (user_quest_progress + quest_journal); anonymous users fall back to
+ * localStorage so they can still play.
  */
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 import FlowerOfPermaculture from '@/components/quests/FlowerOfPermaculture'
 import PetalQuestList from '@/components/quests/PetalQuestList'
 import QuestPlayer from '@/components/quests/QuestPlayer'
 import { QUEST_PETALS, QUEST_PETAL_MAP, getPetalProgress, bloomFraction } from '@/lib/quest-petals'
-import { questsForPetal, type Quest } from '@/lib/quest-content'
+import type { Quest } from '@/lib/quest-content'
 import {
   loadCompleted, saveCompleted, loadJournal, saveJournalEntry,
-  deriveProgress, totalXp, type Journal,
+  deriveProgress, totalXp, questsForPetalIn, type Journal,
 } from '@/lib/quest-progress'
+import { fetchAllQuests, fetchCompleted, completeQuestDb, fetchJournalDb, saveJournalDb } from '@/lib/quest-data'
 
 type View = 'flower' | 'petal' | 'quest'
 
 export default function QuestsPage() {
   const router = useRouter()
 
+  const [userId, setUserId] = useState<string | null>(null)
+  const [allQuests, setAllQuests] = useState<Quest[]>([])
   const [completed, setCompleted] = useState<Set<string>>(new Set())
   const [journal, setJournal] = useState<Journal>({})
   const [view, setView] = useState<View>('flower')
-  const [selectedKey, setSelectedKey] = useState<string | null>(null) // flower bottom-sheet
-  const [petalKey, setPetalKey] = useState<string | null>(null)       // open petal
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  const [petalKey, setPetalKey] = useState<string | null>(null)
   const [activeQuest, setActiveQuest] = useState<Quest | null>(null)
   const [zoomed, setZoomed] = useState(false)
 
-  // Load persisted progress on mount (client only, avoids hydration mismatch).
+  // Load content + progress on mount (auth-aware).
   useEffect(() => {
-    setCompleted(loadCompleted())
-    setJournal(loadJournal())
+    let alive = true
+    ;(async () => {
+      const quests = await fetchAllQuests()
+      if (!alive) return
+      setAllQuests(quests)
+
+      const { data } = await supabase.auth.getUser()
+      const uid = data?.user?.id ?? null
+      if (!alive) return
+      setUserId(uid)
+
+      if (uid) {
+        const [done, jrnl] = await Promise.all([fetchCompleted(uid), fetchJournalDb(uid)])
+        if (!alive) return
+        setCompleted(done)
+        setJournal(jrnl)
+      } else {
+        setCompleted(loadCompleted())
+        setJournal(loadJournal())
+      }
+    })()
+    return () => { alive = false }
   }, [])
 
-  const progress = useMemo(() => deriveProgress(completed), [completed])
-  const xp = useMemo(() => totalXp(completed), [completed])
+  const progress = useMemo(() => deriveProgress(completed, allQuests), [completed, allQuests])
+  const xp = useMemo(() => totalXp(completed, allQuests), [completed, allQuests])
   const bloomed = QUEST_PETALS.filter(p => getPetalProgress(progress, p.key).status === 'completed').length
   const bloomPct = Math.round(bloomFraction(progress) * 100)
 
@@ -51,14 +77,16 @@ export default function QuestsPage() {
     setCompleted(prev => {
       const next = new Set(prev)
       next.add(quest.id)
-      saveCompleted(next)
+      if (userId) completeQuestDb(userId, quest.id, quest.xpReward)
+      else saveCompleted(next)
       return next
     })
   }
 
   function saveReflection(cardId: string, text: string) {
-    saveJournalEntry(cardId, text)
     setJournal(j => ({ ...j, [cardId]: text }))
+    if (userId && activeQuest) saveJournalDb(userId, cardId, activeQuest.id, text)
+    else saveJournalEntry(cardId, text)
   }
 
   // ── QUEST PLAYER ──
@@ -83,7 +111,7 @@ export default function QuestsPage() {
     return (
       <PetalQuestList
         petal={petal}
-        quests={questsForPetal(petalKey)}
+        quests={questsForPetalIn(allQuests, petalKey)}
         completed={completed}
         onOpenQuest={q => { setActiveQuest(q); setView('quest') }}
         onBack={() => { setPetalKey(null); setView('flower') }}
