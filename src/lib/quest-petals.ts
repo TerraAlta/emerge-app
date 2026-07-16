@@ -30,8 +30,8 @@ export const ETHICS_KEY = 'ethics'
 // 7 petals evenly around the ring (360 / 7 ≈ 51.43° apart), centre first.
 export const QUEST_PETALS: QuestPetal[] = [
   {
-    key: 'ethics', label: 'Ethics & Design Principles', short: 'Ethics', icon: '🧭', color: '#C8913A',
-    description: 'Earth care, people care, fair share — the roots every design grows from.',
+    key: 'ethics', label: 'Foundations', short: 'Roots', icon: '🧭', color: '#C8913A',
+    description: 'Ethics, the design principles and pattern literacy — the roots every design grows from. Start here.',
     angle: null, requires: [],
   },
   {
