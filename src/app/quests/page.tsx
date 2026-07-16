@@ -145,7 +145,7 @@ export default function QuestsPage() {
             The <em style={{ color: 'var(--color-amber)' }}>Flower</em> of Permaculture
           </h1>
           <p className="text-[13px] mt-1.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-            Ten living domains. Tend one and it blooms. Grow the whole flower.
+            Seven petals, one ethic at the centre. Tend one and it blooms — grow the whole flower.
           </p>
         </div>
 

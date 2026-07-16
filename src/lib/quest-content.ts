@@ -73,7 +73,7 @@ export interface Quest {
 export const QUEST_CONTENT: Quest[] = [
   {
     id: 'water-1',
-    petalKey: 'water',
+    petalKey: 'land-nature',
     title: 'Water as Teacher',
     description: 'Before you move a single drop, learn to watch it.',
     orderIndex: 0,
@@ -114,7 +114,7 @@ export const QUEST_CONTENT: Quest[] = [
   },
   {
     id: 'water-2',
-    petalKey: 'water',
+    petalKey: 'land-nature',
     title: 'Reading the Landscape',
     description: 'Find the invisible lines the water already follows.',
     orderIndex: 1,
