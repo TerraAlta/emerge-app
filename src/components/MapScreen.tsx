@@ -272,24 +272,26 @@ function QuestDot({
 
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: 6 }}>
-            <a
-              href={`/quests/${q.id}`}
+            <button
+              onClick={() => onSelect(q)}
               style={{
                 flex: 1,
                 display: 'block',
+                width: '100%',
                 textAlign: 'center',
                 padding: '6px 0',
                 borderRadius: 9999,
+                border: 'none',
                 background: 'var(--color-amber)',
                 color: '#fff',
                 fontSize: 13,
                 fontWeight: 600,
-                textDecoration: 'none',
+                cursor: 'pointer',
                 lineHeight: 1.3,
               }}
             >
               Go to event →
-            </a>
+            </button>
             <a
               href={getDirectionsUrl(q.lat, q.lng)}
               target="_blank"
