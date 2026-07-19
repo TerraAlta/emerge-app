@@ -85,22 +85,6 @@ export interface PetalProgress {
 
 export type QuestProgress = Record<string, PetalProgress>
 
-/**
- * PLACEHOLDER base state until every petal has its own quests. Petals with
- * authored content (currently land-nature) derive their real state from
- * completion in quest-progress.ts; petals without content fall back to this.
- */
-export const MOCK_PROGRESS: QuestProgress = {
-  ethics:                { status: 'available', pct: 0 },
-  'land-nature':         { status: 'available', pct: 0 },
-  'building-technology': { status: 'available', pct: 0 },
-  'finance-economics':   { status: 'available', pct: 0 },
-  'health-wellbeing':    { status: 'available', pct: 0 },
-  'education-culture':   { status: 'available', pct: 0 },
-  'tools-materials':     { status: 'available', pct: 0 },
-  'governance-community':{ status: 'available', pct: 0 },
-}
-
 export function getPetalProgress(progress: QuestProgress, key: string): PetalProgress {
   return progress[key] ?? { status: 'locked', pct: 0 }
 }

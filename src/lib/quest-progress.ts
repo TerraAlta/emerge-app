@@ -7,7 +7,7 @@
  * list + completed-set they're given, so they serve both paths.
  */
 
-import { QUEST_PETALS, MOCK_PROGRESS, getPetalProgress, type QuestProgress } from '@/lib/quest-petals'
+import { QUEST_PETALS, type QuestProgress, type PetalStatus } from '@/lib/quest-petals'
 import type { Quest } from '@/lib/quest-content'
 
 const COMPLETED_KEY = 'emerge-quest-completed'
@@ -55,21 +55,32 @@ export function totalXp(completed: Set<string>, allQuests: Quest[]): number {
 }
 
 /**
- * Build the flower's per-petal progress. Petals with authored content derive
- * their status/pct from real completion; petals without content fall back to
- * the mock demo state (until they get their own quests).
+ * Build the flower's per-petal progress from real completion + the prerequisite
+ * chain. A petal is:
+ *   - completed  → it has quests and every one is done
+ *   - available  → all the petals it `requires` are completed (ethics needs none)
+ *   - locked     → otherwise
+ * So a fresh user starts with only the Foundations centre open, and the flower
+ * unlocks outward as each domain blooms.
  */
 export function deriveProgress(completed: Set<string>, allQuests: Quest[]): QuestProgress {
+  const petalCompleted = (key: string): boolean => {
+    const qs = questsForPetalIn(allQuests, key)
+    return qs.length > 0 && qs.every(q => completed.has(q.id))
+  }
   const out: QuestProgress = {}
   for (const petal of QUEST_PETALS) {
     const quests = questsForPetalIn(allQuests, petal.key)
-    const base = getPetalProgress(MOCK_PROGRESS, petal.key)
-    if (quests.length === 0) { out[petal.key] = base; continue }
     const done = quests.filter(q => completed.has(q.id)).length
-    const pct = done / quests.length
-    const status = done === quests.length
-      ? 'completed'
-      : base.status === 'locked' ? 'locked' : 'available'
+    const pct = quests.length ? done / quests.length : 0
+    let status: PetalStatus
+    if (quests.length > 0 && done === quests.length) {
+      status = 'completed'
+    } else if (petal.requires.every(petalCompleted)) {
+      status = 'available'
+    } else {
+      status = 'locked'
+    }
     out[petal.key] = { status, pct }
   }
   return out
