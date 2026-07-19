@@ -9,7 +9,7 @@
 import { useState } from 'react'
 import type { Quest } from '@/lib/quest-content'
 import type { Journal } from '@/lib/quest-progress'
-import { ConceptCard, ChallengeCard, ReflectionCard } from '@/components/quests/QuestCards'
+import { ConceptCard, ChallengeCard, ReflectionCard, ActionCard } from '@/components/quests/QuestCards'
 
 interface Props {
   quest: Quest
@@ -24,9 +24,10 @@ interface Props {
 export default function QuestPlayer({ quest, petalLabel, petalColor, journal, onSaveReflection, onComplete, onExit }: Props) {
   const [index, setIndex] = useState(0)
   const [results, setResults] = useState<Record<string, boolean>>({})
+  const [pledges, setPledges] = useState<Record<string, 'done' | 'later'>>({})
   const [text, setText] = useState<Record<string, string>>(() => {
     const seed: Record<string, string> = {}
-    for (const c of quest.cards) if (c.type === 'reflection') seed[c.id] = journal[c.id] ?? ''
+    for (const c of quest.cards) if (c.type === 'reflection' || c.type === 'action') seed[c.id] = journal[c.id] ?? ''
     return seed
   })
   const [done, setDone] = useState(false)
@@ -37,6 +38,7 @@ export default function QuestPlayer({ quest, petalLabel, petalColor, journal, on
   const ready = (() => {
     if (card.type === 'concept') return true
     if (card.type === 'challenge') return results[card.id] !== undefined
+    if (card.type === 'action') return pledges[card.id] !== undefined
     return (text[card.id] ?? '').trim().length > 0
   })()
 
@@ -101,6 +103,15 @@ export default function QuestPlayer({ quest, petalLabel, petalColor, journal, on
               content={card.content as any}
               value={text[card.id] ?? ''}
               onChange={t => { setText(s => ({ ...s, [card.id]: t })); onSaveReflection(card.id, t) }}
+            />
+          )}
+          {card.type === 'action' && (
+            <ActionCard
+              content={card.content as any}
+              value={text[card.id] ?? ''}
+              onChange={t => { setText(s => ({ ...s, [card.id]: t })); onSaveReflection(card.id, t) }}
+              pledge={pledges[card.id] ?? null}
+              onPledge={k => setPledges(p => ({ ...p, [card.id]: k }))}
             />
           )}
         </div>

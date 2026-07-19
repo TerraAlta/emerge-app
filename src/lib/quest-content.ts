@@ -9,7 +9,7 @@
  * Step 4 migrates this same content into a Supabase seed.
  */
 
-export type CardType = 'concept' | 'challenge' | 'reflection'
+export type CardType = 'concept' | 'challenge' | 'reflection' | 'action'
 
 /** CONCEPT — a short illustrated explanation with one key idea. */
 export interface ConceptContent {
@@ -49,7 +49,17 @@ export interface ReflectionContent {
   placeholder?: string
 }
 
-export type CardContent = ConceptContent | ChallengeContent | ReflectionContent
+/** ACTION — a real-world "field quest": go do something, then check in. */
+export interface ActionContent {
+  icon?: string
+  heading: string
+  body: string
+  /** The concrete real-world task. */
+  action: string
+  placeholder?: string
+}
+
+export type CardContent = ConceptContent | ChallengeContent | ReflectionContent | ActionContent
 
 export interface QuestCard {
   id: string

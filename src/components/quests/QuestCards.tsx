@@ -8,7 +8,7 @@
 
 import { useState } from 'react'
 import type {
-  ConceptContent, ChallengeContent, ReflectionContent, MultipleChoice, ArrangeChallenge,
+  ConceptContent, ChallengeContent, ReflectionContent, ActionContent, MultipleChoice, ArrangeChallenge,
 } from '@/lib/quest-content'
 
 const cardShell = 'rounded-[18px] px-5 py-6'
@@ -200,6 +200,72 @@ function ArrangeCard({ content, onResult }: { content: ArrangeChallenge; onResul
             <button onClick={retry} className="text-[13px] font-medium" style={{ color: 'var(--color-amber)' }}>Try again →</button>
           )}
         </div>
+      )}
+    </div>
+  )
+}
+
+/* ── ACTION (field quest) ────────────────────────────────────────────────── */
+export function ActionCard({ content, value, onChange, pledge, onPledge }: {
+  content: ActionContent
+  value: string
+  onChange: (t: string) => void
+  pledge: 'done' | 'later' | null
+  onPledge: (k: 'done' | 'later') => void
+}) {
+  return (
+    <div className={cardShell} style={{ ...cardStyle, borderColor: 'var(--color-success)', borderWidth: 1 }}>
+      <div className="inline-flex items-center gap-1.5 text-[10px] uppercase font-semibold mb-3 px-2.5 py-1 rounded-full"
+        style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)', letterSpacing: '0.06em' }}>
+        🌍 Take it outside
+      </div>
+      {content.icon && <div className="text-[28px] mb-1">{content.icon}</div>}
+      <h3 className="font-heading text-[19px] font-light leading-snug mb-2" style={{ color: 'var(--color-text)' }}>
+        {content.heading}
+      </h3>
+      <p className="text-[14px] leading-relaxed mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+        {content.body}
+      </p>
+      <div className="rounded-[12px] px-4 py-3 mb-4 flex items-start gap-2.5"
+        style={{ background: 'var(--color-success-bg)', border: '0.5px solid var(--color-success)' }}>
+        <span className="text-[15px] leading-none mt-0.5">👉</span>
+        <p className="text-[13px] leading-snug font-medium" style={{ color: 'var(--color-text)' }}>{content.action}</p>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => onPledge('done')}
+          className="flex-1 py-2.5 rounded-[10px] text-[13px] font-semibold transition-all active:scale-[0.98]"
+          style={{
+            background: pledge === 'done' ? 'var(--color-success)' : 'var(--color-success-bg)',
+            color: pledge === 'done' ? '#fff' : 'var(--color-success)',
+            border: '0.5px solid var(--color-success)',
+          }}
+        >
+          {pledge === 'done' ? 'Done ✓' : 'I did this ✓'}
+        </button>
+        <button
+          onClick={() => onPledge('later')}
+          className="flex-1 py-2.5 rounded-[10px] text-[13px] font-medium transition-all active:scale-[0.98]"
+          style={{
+            background: pledge === 'later' ? 'var(--color-amber-light)' : 'var(--color-pill-bg)',
+            color: pledge === 'later' ? 'var(--color-amber)' : 'var(--color-text-secondary)',
+            border: pledge === 'later' ? '0.5px solid var(--color-amber-border)' : '0.5px solid transparent',
+          }}
+        >
+          I&apos;ll do this soon
+        </button>
+      </div>
+
+      {pledge && (
+        <textarea
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder={content.placeholder ?? (pledge === 'done' ? 'What happened? (optional)' : 'A note to your future self… (optional)')}
+          rows={3}
+          className="w-full mt-3 rounded-[12px] px-3.5 py-3 text-[14px] outline-none resize-none"
+          style={{ background: 'var(--color-bg)', border: '0.5px solid var(--color-success)', color: 'var(--color-text)', fontFamily: 'var(--font-outfit), sans-serif' }}
+        />
       )}
     </div>
   )
