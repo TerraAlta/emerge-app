@@ -97,8 +97,8 @@ export const MOCK_PROGRESS: QuestProgress = {
   'finance-economics':   { status: 'available', pct: 0 },
   'health-wellbeing':    { status: 'available', pct: 0 },
   'education-culture':   { status: 'available', pct: 0 },
-  'tools-materials':     { status: 'locked', pct: 0 },
-  'governance-community':{ status: 'locked', pct: 0 },
+  'tools-materials':     { status: 'available', pct: 0 },
+  'governance-community':{ status: 'available', pct: 0 },
 }
 
 export function getPetalProgress(progress: QuestProgress, key: string): PetalProgress {
