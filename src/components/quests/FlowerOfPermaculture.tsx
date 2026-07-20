@@ -46,10 +46,11 @@ interface Props {
 export default function FlowerOfPermaculture({ progress, selectedKey, onSelectPetal }: Props) {
   const [hovered, setHovered] = useState<string | null>(null)
   const bloom = bloomFraction(progress)
+  const complete = bloom >= 1
 
   // Aura + centre glow strengthen as more petals bloom.
   const auraR = 150 + bloom * 60
-  const auraOpacity = 0.12 + bloom * 0.35
+  const auraOpacity = 0.12 + bloom * 0.35 + (complete ? 0.15 : 0)
 
   function fillFor(color: string, status: PetalStatus): string {
     if (status === 'locked') return LOCKED_FILL
@@ -102,6 +103,10 @@ export default function FlowerOfPermaculture({ progress, selectedKey, onSelectPe
 
       {/* Growing aura behind the flower */}
       <circle className="aura" cx={C} cy={C} r={auraR} fill="url(#auraGrad)" style={{ opacity: auraOpacity }} />
+      {/* Full-bloom golden ring */}
+      {complete && (
+        <circle className="aura" cx={C} cy={C} r={188} fill="none" stroke="var(--color-amber)" strokeWidth="2" strokeOpacity="0.55" />
+      )}
 
       {/* ── Outer petals ── */}
       {OUTER_PETALS.map((petal, i) => {

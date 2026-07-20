@@ -179,15 +179,24 @@ export default function QuestsPage() {
           </p>
         </div>
 
-        {/* Progress strip */}
+        {/* Progress strip — or a full-bloom celebration */}
         <div className="px-5 pt-3 pb-1">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[12px] font-medium" style={{ color: 'var(--color-text)' }}>🌸 {bloomed} of {QUEST_PETALS.length} bloomed</span>
-            <span className="text-[12px]" style={{ color: 'var(--color-amber)' }}>{bloomPct}%</span>
-          </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-pill-bg)' }}>
-            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${bloomPct}%`, background: 'linear-gradient(90deg, var(--color-amber), #E6B85E)' }} />
-          </div>
+          {bloomPct === 100 ? (
+            <div className="rounded-[14px] px-4 py-3 text-center" style={{ background: 'var(--color-amber-bg)', border: '0.5px solid var(--color-amber-border)' }}>
+              <p className="text-[14px] font-medium" style={{ color: 'var(--color-amber)' }}>🌸 Full bloom</p>
+              <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>You&apos;ve tended the whole flower. Now go grow it in the world.</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[12px] font-medium" style={{ color: 'var(--color-text)' }}>🌸 {bloomed} of {QUEST_PETALS.length} bloomed</span>
+                <span className="text-[12px]" style={{ color: 'var(--color-amber)' }}>{bloomPct}%</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-pill-bg)' }}>
+                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${bloomPct}%`, background: 'linear-gradient(90deg, var(--color-amber), #E6B85E)' }} />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Flower */}
