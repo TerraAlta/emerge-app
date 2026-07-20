@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase'
 import FlowerOfPermaculture from '@/components/quests/FlowerOfPermaculture'
 import PetalQuestList from '@/components/quests/PetalQuestList'
 import QuestPlayer from '@/components/quests/QuestPlayer'
+import JournalView, { type JournalEntry } from '@/components/quests/JournalView'
 import { QUEST_PETALS, QUEST_PETAL_MAP, getPetalProgress, bloomFraction } from '@/lib/quest-petals'
 import type { Quest } from '@/lib/quest-content'
 import {
@@ -24,7 +25,7 @@ import {
 } from '@/lib/quest-progress'
 import { fetchAllQuests, fetchCompleted, completeQuestDb, fetchJournalDb, saveJournalDb } from '@/lib/quest-data'
 
-type View = 'flower' | 'petal' | 'quest'
+type View = 'flower' | 'petal' | 'quest' | 'journal'
 
 export default function QuestsPage() {
   const router = useRouter()
@@ -73,6 +74,27 @@ export default function QuestsPage() {
   const selected = selectedKey ? QUEST_PETAL_MAP[selectedKey] : null
   const selectedStatus = selectedKey ? getPetalProgress(progress, selectedKey).status : null
 
+  // Reflection + action notes, resolved to their prompts for the journal.
+  const journalEntries = useMemo<JournalEntry[]>(() => {
+    const info = new Map<string, { prompt: string; petalKey: string; questTitle: string; kind: 'reflection' | 'action' }>()
+    for (const q of allQuests) for (const c of q.cards) {
+      if (c.type === 'reflection') info.set(c.id, { prompt: (c.content as { prompt: string }).prompt, petalKey: q.petalKey, questTitle: q.title, kind: 'reflection' })
+      else if (c.type === 'action') info.set(c.id, { prompt: (c.content as { action: string }).action, petalKey: q.petalKey, questTitle: q.title, kind: 'action' })
+    }
+    return Object.entries(journal)
+      .filter(([, text]) => text && text.trim().length > 0)
+      .map(([cardId, text]) => {
+        const i = info.get(cardId)
+        if (!i) return null
+        const petal = QUEST_PETAL_MAP[i.petalKey]
+        return {
+          key: cardId, kind: i.kind, prompt: i.prompt, text, questTitle: i.questTitle,
+          petalLabel: petal?.label ?? '', petalColor: petal?.color ?? 'var(--color-amber)', petalIcon: petal?.icon ?? '🌱',
+        }
+      })
+      .filter((e): e is JournalEntry => e !== null)
+  }, [journal, allQuests])
+
   function completeQuest(quest: Quest) {
     setCompleted(prev => {
       const next = new Set(prev)
@@ -105,6 +127,11 @@ export default function QuestsPage() {
     )
   }
 
+  // ── JOURNAL ──
+  if (view === 'journal') {
+    return <JournalView entries={journalEntries} onBack={() => setView('flower')} />
+  }
+
   // ── PETAL QUEST LIST ──
   if (view === 'petal' && petalKey) {
     const petal = QUEST_PETAL_MAP[petalKey]
@@ -133,6 +160,9 @@ export default function QuestsPage() {
             <span className="text-[12px] font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--color-amber-bg)', color: 'var(--color-amber)', border: '0.5px solid var(--color-amber-border)' }}>
               ⭐ {xp} XP
             </span>
+            <button onClick={() => setView('journal')} className="w-8 h-8 rounded-full flex items-center justify-center text-[14px] active:scale-90 transition-transform" style={{ background: 'var(--color-amber-bg)', border: '0.5px solid var(--color-amber-border)' }} aria-label="Journal" title="Your journal">
+              📔
+            </button>
             <button onClick={() => setZoomed(z => !z)} className="w-8 h-8 rounded-full flex items-center justify-center text-[14px] active:scale-90 transition-transform" style={{ background: 'var(--color-amber-bg)', border: '0.5px solid var(--color-amber-border)', color: 'var(--color-amber)' }} aria-label={zoomed ? 'Zoom out' : 'Zoom in'}>
               {zoomed ? '−' : '+'}
             </button>
