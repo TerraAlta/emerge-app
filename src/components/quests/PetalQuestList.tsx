@@ -10,6 +10,7 @@ import type { QuestPetal } from '@/lib/quest-petals'
 import type { Quest } from '@/lib/quest-content'
 import { formatDate } from '@/lib/dateUtils'
 import { loadSavedLocation, fetchNearbyEventsForPetal, type NearbyEventLite } from '@/lib/quest-events'
+import { fetchPractitionersForPetal, type PractitionerLite } from '@/lib/quest-guild'
 
 interface Props {
   petal: QuestPetal
@@ -33,6 +34,16 @@ export default function PetalQuestList({ petal, quests, completed, onOpenQuest, 
     fetchNearbyEventsForPetal(petal.key, loc).then(evs => { if (alive) setNearby(evs) })
     return () => { alive = false }
   }, [petal.key])
+
+  // Guild practitioners in this domain (the Ethics centre has no Guild petal).
+  const [practitioners, setPractitioners] = useState<PractitionerLite[]>([])
+  const isGuildDomain = petal.key !== 'ethics'
+  useEffect(() => {
+    if (!isGuildDomain) return
+    let alive = true
+    fetchPractitionersForPetal(petal.key).then(ps => { if (alive) setPractitioners(ps) })
+    return () => { alive = false }
+  }, [petal.key, isGuildDomain])
   const pct = quests.length ? Math.round((doneCount / quests.length) * 100) : 0
 
   return (
@@ -141,6 +152,39 @@ export default function PetalQuestList({ petal, quests, completed, onOpenQuest, 
                   )
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Meet the practitioners in this domain (the Guild) */}
+          {isGuildDomain && (
+            <div className="pt-5">
+              <div className="text-[10px] uppercase font-semibold mb-2" style={{ color: petal.color, letterSpacing: '0.06em' }}>
+                🤝 Practitioners in this domain
+              </div>
+              {practitioners.length > 0 ? (
+                <div className="space-y-2">
+                  {practitioners.map((p, i) => (
+                    <a key={i} href="/guild" className="flex items-center gap-3 rounded-[14px] px-3.5 py-3" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', textDecoration: 'none' }}>
+                      <div className="w-9 h-9 rounded-full bg-cover bg-center shrink-0 flex items-center justify-center text-[15px]"
+                        style={{ background: p.profile_photo_url ? `center/cover url(${p.profile_photo_url})` : 'var(--color-amber-bg)', border: `0.5px solid ${petal.color}` }}>
+                        {p.profile_photo_url ? '' : '🌿'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[13px] font-medium leading-snug" style={{ color: 'var(--color-text)' }}>{p.display_name}</div>
+                        <div className="text-[12px] leading-snug" style={{ color: 'var(--color-text-secondary)' }}>
+                          {[p.region, p.country].filter(Boolean).join(', ') || 'Regenerative practitioner'}
+                        </div>
+                      </div>
+                      <span className="text-[16px] shrink-0" style={{ color: petal.color }}>›</span>
+                    </a>
+                  ))}
+                  <a href="/guild" className="block text-[12px] font-medium pt-1" style={{ color: 'var(--color-amber)' }}>See all in the Guild →</a>
+                </div>
+              ) : (
+                <a href="/guild" className="block rounded-[14px] px-3.5 py-3 text-[12px]" style={{ background: 'var(--color-pill-bg)', color: 'var(--color-text-secondary)', textDecoration: 'none' }}>
+                  No verified practitioners here yet. Do you practise this? <span style={{ color: 'var(--color-amber)', fontWeight: 600 }}>Join the Guild →</span>
+                </a>
+              )}
             </div>
           )}
         </div>
