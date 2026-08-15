@@ -5,8 +5,11 @@
  * progress bar. Quests unlock in order: quest N opens once quest N-1 is done.
  */
 
+import { useEffect, useState } from 'react'
 import type { QuestPetal } from '@/lib/quest-petals'
 import type { Quest } from '@/lib/quest-content'
+import { formatDate } from '@/lib/dateUtils'
+import { loadSavedLocation, fetchNearbyEventsForPetal, type NearbyEventLite } from '@/lib/quest-events'
 
 interface Props {
   petal: QuestPetal
@@ -18,6 +21,18 @@ interface Props {
 
 export default function PetalQuestList({ petal, quests, completed, onOpenQuest, onBack }: Props) {
   const doneCount = quests.filter(q => completed.has(q.id)).length
+
+  // "Do it near you" — real events from the feed, themed to this petal.
+  const [nearby, setNearby] = useState<NearbyEventLite[]>([])
+  const [locName, setLocName] = useState('')
+  useEffect(() => {
+    const loc = loadSavedLocation()
+    if (!loc) return
+    setLocName(loc.name)
+    let alive = true
+    fetchNearbyEventsForPetal(petal.key, loc).then(evs => { if (alive) setNearby(evs) })
+    return () => { alive = false }
+  }, [petal.key])
   const pct = quests.length ? Math.round((doneCount / quests.length) * 100) : 0
 
   return (
@@ -97,6 +112,36 @@ export default function PetalQuestList({ petal, quests, completed, onOpenQuest, 
                 </button>
               )
             })
+          )}
+
+          {/* Do it near you — real events from the feed, themed to this petal */}
+          {nearby.length > 0 && (
+            <div className="pt-5">
+              <div className="text-[10px] uppercase font-semibold mb-0.5" style={{ color: 'var(--color-success)', letterSpacing: '0.06em' }}>
+                🌍 Do it near you
+              </div>
+              <p className="text-[12px] mb-2.5" style={{ color: 'var(--color-text-secondary)' }}>
+                Real events in this domain near {locName}
+              </p>
+              <div className="space-y-2">
+                {nearby.map(ev => {
+                  const Tag = ev.source_url ? 'a' : 'div'
+                  return (
+                    <Tag
+                      key={ev.id}
+                      {...(ev.source_url ? { href: ev.source_url, target: '_blank', rel: 'noopener noreferrer' } : {})}
+                      className="block rounded-[14px] px-3.5 py-3 active:scale-[0.99] transition-transform"
+                      style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-success)', textDecoration: 'none' }}
+                    >
+                      <div className="text-[13px] font-medium leading-snug" style={{ color: 'var(--color-text)' }}>{ev.title}</div>
+                      <div className="text-[12px] mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                        {formatDate(ev.starts_at)} · {ev.distance_km.toFixed(1)}km away{ev.source_name ? ` · via ${ev.source_name}` : ''}
+                      </div>
+                    </Tag>
+                  )
+                })}
+              </div>
+            </div>
           )}
         </div>
       </div>
