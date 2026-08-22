@@ -280,6 +280,8 @@ import { openagenda } from './sources/openagenda'
 // import { outsavvy } from './sources/outsavvy'
 // import { dice } from './sources/dice'
 import { scoreQuest } from './score-quest'
+import { isPotentiallyRelevant } from './pre-filter'
+import { CostCapExceeded } from './cost-cap'
 
 // All registered source fetchers.
 // Order matters: high-value regen-aligned federated platforms run FIRST so they
@@ -624,6 +626,19 @@ export async function runPipeline(opts: OrchestratorOptions = {}): Promise<Orche
       continue
     }
 
+    // 2b. Cost protection: open-catalogue (bulk) sources MUST be keyword
+    // pre-filtered before AI scoring. Otherwise a single weekly run can
+    // score 30,000+ unrelated Eventbrite events and burn $40+ in credits.
+    if (source.bulk) {
+      const before = events.length
+      events = events.filter(isPotentiallyRelevant)
+      const skipped = before - events.length
+      if (skipped > 0) {
+        result.filtered += skipped
+        console.log(`[${source.name}] Pre-filter: ${before} → ${events.length} (${skipped} skipped, no AI cost)`)
+      }
+    }
+
     // 3. Score each event with AI
     for (const event of events) {
       try {
@@ -682,6 +697,11 @@ export async function runPipeline(opts: OrchestratorOptions = {}): Promise<Orche
           result.inserted++ // count as "would insert" in dry run
         }
       } catch (err) {
+        // Cost cap is a hard stop — propagate so the runner can abort.
+        if (err instanceof CostCapExceeded) {
+          results.push(result)
+          throw err
+        }
         console.error(`[${source.name}] Score failed for "${event.title}":`, err)
         result.errors++
       }

@@ -22,6 +22,7 @@ function sleep(ms: number) {
 
 export const meetupCities: SourceFetcher = {
   name: 'meetup-cities',
+  bulk: true,
 
   async fetch() {
     const seen = new Set<string>()

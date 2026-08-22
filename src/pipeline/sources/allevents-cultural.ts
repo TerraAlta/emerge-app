@@ -42,6 +42,7 @@ function citySlug(name: string): string {
 
 export const alleventsCultural: SourceFetcher = {
   name: 'allevents-cultural',
+  bulk: true,
 
   async fetch() {
     const seen = new Set<string>()

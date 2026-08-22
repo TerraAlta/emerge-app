@@ -38,6 +38,7 @@ function countrySlug(country: string): string {
 
 export const eventbriteCultural: SourceFetcher = {
   name: 'eventbrite-cultural',
+  bulk: true,
 
   async fetch() {
     const seen = new Set<string>()

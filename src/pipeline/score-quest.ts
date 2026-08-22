@@ -3,6 +3,9 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import { isCreditError, isRateLimitError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
 import { buildScoringPrompt } from '@/lib/scoring-prompt'
+import { costTracker, CostCapExceeded } from './cost-cap'
+
+export { CostCapExceeded } from './cost-cap'
 
 let _client: Anthropic | null = null
 function getClient() {
@@ -82,6 +85,10 @@ Location: "${event.location ?? 'unknown'}"`,
     }
     throw err
   }
+
+  // Record token usage and throw CostCapExceeded if budget breached.
+  // This MUST happen on the success path so we capture every billable call.
+  costTracker.recordHaiku(message.usage)
 
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
   // Strip any markdown fencing the model might add despite instructions

@@ -25,4 +25,14 @@ export interface FetchOpts {
 export interface SourceFetcher {
   name: string
   fetch(opts: FetchOpts): Promise<RawEvent[]>
+  /**
+   * If true, the source scrapes a large open catalogue (e.g. Eventbrite,
+   * AllEvents, Meetup) where most events are off-topic. The orchestrator
+   * will run a keyword pre-filter before AI scoring to keep costs bounded.
+   *
+   * Default (false / undefined) means the source is curated and every
+   * event is worth scoring — only set this on sources that pull tens of
+   * thousands of unfiltered events.
+   */
+  bulk?: boolean
 }
