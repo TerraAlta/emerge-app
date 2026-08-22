@@ -240,6 +240,7 @@ async function main() {
   } else {
     // Phase 1: Scrape — process one city at a time, pre-filter immediately
     const seen = new Set<string>()
+    let citiesWithRawEvents = 0
 
     for (const city of CITIES) {
       const keywords = getFullKeywordsForCity(city)
@@ -270,19 +271,19 @@ async function main() {
         await sleep(RATE_LIMIT_MS)
       }
 
+      if (cityRaw > 0) citiesWithRawEvents++
       log(`${cityFiltered > 0 ? '✓' : '·'} ${city.name}, ${city.country}: ${cityRaw} raw → ${cityFiltered} relevant`)
     }
 
     log(`\n📊 Phase 1: ${stats.rawEvents} raw → ${stats.preFiltered} pre-filtered (${Math.round(stats.preFiltered / Math.max(1, stats.rawEvents) * 100)}% pass rate)`)
     log(`   Fetches: ${fetchStats.ok} ok, ${fetchStats.httpFail} HTTP-rejected (last status ${fetchStats.lastStatus || 'n/a'}), ${fetchStats.netFail} network/timeout, ${fetchStats.emptyHtml} returned pages with no event data`)
 
-    // A healthy run pulls events from well over half the cities. Anything far
-    // below that means we are being throttled, not that the world went quiet.
-    const citiesWithEvents = allFiltered.length > 0
-      ? new Set(allFiltered.map((e: any) => e.location_name)).size
-      : 0
-    if (citiesWithEvents < CITIES.length * 0.2) {
-      log(`   ⚠️  BLOCK SUSPECTED: only ${citiesWithEvents}/${CITIES.length} cities returned anything.`)
+    // A healthy run pulls raw events from well over half the cities. Anything
+    // far below that means we are being throttled, not that the world went
+    // quiet. Count RAW hits, not pre-filtered ones — pre-filter legitimately
+    // rejects ~94%, so measuring it here would cry wolf on a healthy run.
+    if (citiesWithRawEvents < CITIES.length * 0.2) {
+      log(`   ⚠️  BLOCK SUSPECTED: only ${citiesWithRawEvents}/${CITIES.length} cities returned anything.`)
       log(`      Eventbrite is almost certainly rate-limiting this run. Check RATE_LIMIT_MS.`)
     }
 
