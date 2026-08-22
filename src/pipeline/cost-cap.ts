@@ -22,11 +22,19 @@ const DEFAULT_CAP_USD = 8
  * Per-invocation budgets for the daily Vercel crons. These run unattended
  * every day, so they get a much tighter leash than the weekly launchd run:
  * a runaway daily cron costs 7x a runaway weekly one.
+ *
+ * Sized against real measured need, not guesswork:
+ *   network-pipeline  ~30-60 events survive the pre-filter  → ~$0.03/run
+ *   city-pipeline     ~0 while Eventbrite throttles us      → ~$0.00/run
+ *   news-pipeline     ~100 items scored                     → ~$0.05/run
+ * So ~$0.08/day, ~$2.40/month realistic. The caps below leave 3-5x headroom
+ * for a busy day while holding the absolute ceiling near $19/month even if
+ * something goes badly wrong on every single run.
  */
 export const DAILY_CRON_CAP_USD =
-  parseFloat(process.env.DAILY_CRON_MAX_USD ?? '') || 0.5
+  parseFloat(process.env.DAILY_CRON_MAX_USD ?? '') || 0.25
 export const NEWS_CRON_CAP_USD =
-  parseFloat(process.env.NEWS_MAX_USD ?? '') || 0.3
+  parseFloat(process.env.NEWS_MAX_USD ?? '') || 0.15
 
 export class CostCapExceeded extends Error {
   constructor(spent: number, cap: number) {
