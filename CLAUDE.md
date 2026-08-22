@@ -110,8 +110,46 @@ src/
 ## Pipeline (weekly quest scraping)
 - **launchd job** runs every Sunday 23:00: `com.emerge.weekly-pipeline.plist`
 - Script: `scripts/run-full-pipeline-v2.ts` (NEVER the v1 — it's DISABLED)
-- Pre-filter: 94% rejected before AI → keeps cost at ~$5/week
+- Pre-filter: 94% rejected before AI → keeps cost at ~$3-5/week
 - Daily Vercel crons: `city-pipeline`, `network-pipeline`, `sync-luma`, `stale-check`, `weekly-digest`
+
+### Cost protection (CRITICAL — read before touching the pipeline)
+The pipeline must never blow past ~$5/week. Two guardrails enforce this:
+
+1. **Keyword pre-filter** (`src/pipeline/pre-filter.ts`) — applied to every event from a "bulk" source BEFORE Claude is called. Any source that scrapes a large open catalogue (Eventbrite, AllEvents, Meetup, etc.) MUST set `bulk: true` on its `SourceFetcher` export. The orchestrator runs `isPotentiallyRelevant()` and silently drops events that don't match. Curated sources (small permaculture/transition networks) leave `bulk` unset.
+2. **Hard cost cap** (`src/pipeline/cost-cap.ts`) — `costTracker.recordHaiku()` runs on every successful Haiku call, tallies real token spend, and throws `CostCapExceeded` the instant the budget is breached. Default $8/run; override with `PIPELINE_MAX_USD` env var. Pipeline halts cleanly, logs the cost summary, exits 2.
+
+**Past incident (2026-05-24):** `eventbrite-cultural` and `allevents-cultural` were added to the orchestrator without `bulk: true`, sending 33k unfiltered Eventbrite events directly to Haiku. One weekly run cost ~$25 instead of $5 and ran for 49+ hours. The cap + bulk flag now prevent this class of bug.
+
+**When adding a new source:** if it pulls more than ~500 events per run from an open catalogue, set `bulk: true` and verify a pre-filter keyword match exists for your target audience.
+
+3. **Every entry point must apply both guardrails — not just the orchestrator.**
+   The May fix was applied to `orchestrator.ts` alone, but the two daily cron
+   routes (`/api/cron/city-pipeline`, `/api/cron/network-pipeline`) each keep
+   their own copy of the scrape→score→insert loop. Both were calling
+   `scoreQuest()` with no pre-filter and no cost cap until 2026-08-22. If you
+   add or edit a route that scores events, it MUST:
+   - `costTracker.reset(DAILY_CRON_CAP_USD)` at the top (serverless instances
+     are reused between invocations; without a reset the cap eventually trips
+     forever and the cron dies silently),
+   - filter `source.bulk` events through `isPotentiallyRelevant()` before
+     scoring,
+   - let `CostCapExceeded` propagate out of the per-event `catch`.
+
+   `npx tsx scripts/test-cost-guards.ts` checks all of this and costs nothing
+   to run. Run it after touching `cost-cap.ts` or `pre-filter.ts`.
+
+### What Emerge actually costs (audited 2026-08-22)
+- **Anthropic ~$10/mo** — weekly pipeline $1.21–$1.33/run (~$5.40/mo, measured
+  in the run log); Guild AI $0.24 *lifetime* since April; news pipeline ~$3–5/mo
+  (now measured, not estimated — `costUsd` in the cron response).
+- **Vercel $0** — the team is on the **Hobby** plan. Confirmed via API.
+- **Supabase $25/mo Pro — but shared across 4 live projects** (Emerge 49 MB,
+  terra-alta-hub 93 MB, PermaStudio 18 MB / 126 users, Biogrow 14 MB / 63 users).
+  Emerge's fair share is ~$6/mo and its *marginal* cost is $0. Downgrading the
+  org to Free is **not** a simple win: Free allows only 2 active projects per
+  org, and all four are in current use.
+- Emerge's true marginal cost is therefore **~$10/mo, essentially all Claude.**
 
 ## Features shipped
 - **Quests tab**: browse events by location + radius + category, search, time filters
