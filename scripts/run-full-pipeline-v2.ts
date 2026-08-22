@@ -8,11 +8,13 @@
 import { readFileSync, appendFileSync, existsSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 import { createClient } from '@supabase/supabase-js'
-import { scoreQuest } from '../src/pipeline/score-quest'
+import { scoreQuest, CostCapExceeded } from '../src/pipeline/score-quest'
 import { CITIES, type City } from '../src/pipeline/sources/cities'
 import { getFullKeywordsForCity } from '../src/pipeline/sources/keyword-selector'
 import { stripHtml, extractJsonLd } from '../src/pipeline/sources/utils'
 import { runPipeline } from '../src/pipeline/orchestrator'
+import { isPotentiallyRelevant } from '../src/pipeline/pre-filter'
+import { costTracker } from '../src/pipeline/cost-cap'
 
 // Load env
 const envContent = readFileSync(resolve(process.cwd(), '.env.local'), 'utf-8')
@@ -48,116 +50,9 @@ function log(msg: string) {
   appendFileSync('/Users/pedrovaldjiu/emerge-pipeline-v2.log', line + '\n')
 }
 
-// ── Pre-filter: skip obviously irrelevant events BEFORE AI scoring ──
-// English + all native language keywords from soul document dimensions
-const RELEVANCE_KEYWORDS = new RegExp([
-  // English core
-  'permacultur', 'transition', 'repair.caf', 'seed.swap', 'food.forest',
-  'community.garden', 'allotment', 'compost', 'ferment', 'sourdough',
-  'zero.waste', 'circular', 'upcycl', 'rewild', 'forag', 'gleaning',
-  'harvest', 'orchard', 'cider', 'apple.press', 'wassail', 'eco.?village',
-  'co.?housing', 'intentional.community', 'skill.?share', 'tool.library',
-  'clothing.swap', 'free.shop', 'give.?away', 'mutual.aid', 'solidarity',
-  'cooperativ', 'commons', 'degrowth', 'doughnut.econom', 'local.econom',
-  'timebank', 'community.land', 'CSA', 'organic.farm', 'agroecolog',
-  'biodynamic', 'forest.garden', 'food.sovereig', 'seed.librar', 'seed.sav',
-  'herb.?walk', 'wild.food', 'medicinal.plant', 'natural.build', 'cob.build',
-  'straw.?bale', 'earth.?build', 'roundwood', 'green.wood', 'timber.frame',
-  'community.choir', 'drum.circle', 'folk.session', 'trad.session',
-  'irish.session', 'balfolk', 'ceilidh', 'singaround', 'sacred.harp',
-  'shape.note', 'open.mic', 'jam.session', 'singing.circle', 'community.music',
-  'open.studio', 'community.mural', 'land.art', 'climate.art', 'ecological.art',
-  'zine', 'printmak', 'screen.print', 'art.collective', 'participat.art',
-  'artist.residen', 'forum.theatre', 'theatre.of.the.oppressed', 'playback.theatre',
-  'community.theatre', 'storytell', 'puppet', 'social.circus',
-  'repair', 'fix.?it', 'mend', 'bike.kitchen', 'hack.?space', 'maker.?space',
-  'fab.?lab', 'wood.?work', 'community.kitchen', 'cooking.together',
-  'community.meal', 'potluck', 'feast', 'disco.soup', 'surplus', 'rescued.food',
-  'food.?cycle', 'community.fridge', 'pay.what.you', 'iftar', 'nowruz',
-  'eid.feast', 'diwali', 'lunar.new.year', 'harvest.supper', 'community.table',
-  'shared.meal', 'forest.bath', 'shinrin.?yoku', 'ecotherap', 'nature.connection',
-  'climate.grief', 'eco.?anxiety', 'work.that.reconnects', 'contemplative.walk',
-  'grief.circle', 'rites.of.passage', 'nature.immersion', 'solastalgia',
-  // Portuguese
-  'horta', 'comunitári', 'banco.de.sementes', 'floresta.alimentar',
-  'desperdício.zero', 'coro.comunitário', 'estúdio.aberto', 'banho.de.floresta',
-  'ecoterapia', 'transição', 'arte.ecológic', 'mural.comunitári',
-  'sessão.de.fado', 'círculo.de.percussão', 'oficina.de.música',
-  'cante.alentejano', 'rancho.folclórico', 'atelier.aberto',
-  // German
-  'Gemeinschaftsgarten', 'Saatguttausch', 'Waldgarten', 'Lebensmittelwald',
-  'Null.Abfall', 'Gemeinschaftschor', 'offenes.Atelier', 'Waldtherapie',
-  'Waldbaden', 'Klimatrauer', 'Ökotherapie', 'Naturverbindung',
-  'Folkabend', 'Trommelkreis', 'offene.Jam', 'Singrunde', 'Volksmusik',
-  'ökologische.Kunst', 'Klimakunst', 'Kunstkollektiv', 'Druckwerkstatt',
-  'Gemeinschaftswandgemälde', 'Übergangsriten', 'Streuobst', 'Mosterei',
-  'Schnippeldisko', 'Reparatur', 'Werkstatt',
-  // French
-  'jardin.partagé', 'jardin.communautaire', 'grainothèque', 'forêt.nourricière',
-  'zéro.déchet', 'chorale.communautaire', 'atelier.ouvert', 'bain.de.forêt',
-  'écothérapie', 'deuil.climatique', 'fest.noz', 'bal.folk', 'session.irlandaise',
-  'cercle.de.percussions', 'veillée.musicale', 'chant.collectif',
-  'fresque.communautaire', 'art.écologique', 'art.climatique', 'sérigraphie',
-  'résidence.artistique', 'atelier.musique',
-  // Spanish
-  'huerto.comunitario', 'intercambio.de.semillas', 'bosque.de.alimentos',
-  'cero.residuos', 'coro.comunitario', 'taller.abierto', 'baño.de.bosque',
-  'ecoterapia', 'duelo.climático', 'peña.flamenca', 'taller.de.percusión',
-  'sardana', 'habaneras', 'trikitixa', 'arte.ecológico', 'mural.comunitario',
-  'arte.participativo', 'serigrafía',
-  // Italian
-  'orto.comunitario', 'scambio.semi', 'foresta.alimentare', 'rifiuti.zero',
-  'coro.comunitario', 'studio.aperto', 'bagno.di.foresta', 'ecoterapia',
-  'lutto.climatico', 'sessione.folk', 'cerchio.di.percussione',
-  'musica.tradizionale', 'arte.ecologica', 'murale.comunitario', 'serigrafia',
-  // Dutch
-  'volkstuin', 'gemeenschapstuin', 'zadenruil', 'voedselbos', 'nul.afval',
-  'gemeenschapskoor', 'open.atelier', 'bosbaden', 'ecotherapie',
-  'klimaatrouw', 'natuurverbinding', 'folk.sessie', 'trommelkring',
-  'samenzang', 'ecologische.kunst', 'gemeenschapsschildering', 'zeefdruk',
-  // Danish
-  'fælles.have', 'frøbytte', 'madsskov', 'nul.affald', 'fællessang',
-  'skovbadning', 'naturterapi', 'klimasorg', 'folkemusik', 'trommekrebs',
-  'åbent.atelier', 'fællesskabsmaleri', 'økologisk.kunst', 'klimakunst',
-  // Finnish
-  'yhteisöpuutarha', 'siemenvaihto', 'ruokametsä', 'nollahukkaa',
-  'yhteislaulupiiri', 'metsäkylpy', 'luontoterapia', 'ilmastosurupiiri',
-  'kansanmusiikki', 'rumpupiiri', 'avoin.ateljee', 'ekologinen.taide',
-  // Icelandic
-  'permabygging', 'umbreyting', 'matarskógur', 'fræskipti', 'núll.sorp',
-  'samfélagskór', 'vistmeðferð', 'loftslagssorg', 'þjóðlagasessía',
-  'trommuhringur', 'opið.vinnustofa', 'vistfræðileg.list',
-  // Serbian
-  'permakultura', 'tranzicija', 'šuma.hrane', 'razmena.semena',
-  'nula.otpada', 'zajednički.hor', 'ekoterapija', 'klimatska.tuga',
-  'folk.sesija', 'bubnjarski.krug', 'otvoreni.studio', 'ekološka.umetnost',
-  // Slovenian
-  'permakultura', 'prehod', 'prehranska.gozd', 'izmenjava.semen',
-  'nič.odpadkov', 'skupnostni.zbor', 'ekoterapija', 'podnebna.žalost',
-  'gozdna.kopel', 'bobnarski.krog', 'odprta.delavnica', 'ekološka.umetnost',
-  // Hungarian
-  'permakultura', 'átmenet', 'ételerdő', 'magcsere', 'zero.hulladék',
-  'közösségi.kórus', 'ökoterrápia', 'éghajlati.gyász', 'erdőfürdő',
-  'folk.zenei', 'dobkör', 'nyitott.műterem', 'ökológiai.művészet',
-  // Welsh
-  'sesiwn.werin', 'côr.cymunedol', 'stiwdio.agored', 'murlun.cymunedol',
-  'celf.ecolegol',
-  // Scots Gaelic
-  'coille.bìdh', 'iomlaid.sìl', 'còisir.choimhearsnachd',
-  // Irish
-  'ceardlann', 'comharchumann', 'gairdín.pobail',
-  // Maltese
-  'permacultura', 'bidla.taż.żerriegħa',
-].join('|'), 'i')
-
-const EXCLUDE_KEYWORDS = /webinar|online.only|virtual.event|zoom.meeting|live.?stream|corporate.wellness|team.building.corporate|networking.mixer|pitch.night|startup|venture.capital|blockchain|crypto|NFT|marketing.workshop|sales.training|real.estate|property.investment|stock.market|forex|trading|MBA|business.school|golf|yacht|luxury/i
-
-function preFilter(event: { title: string; description: string }): boolean {
-  const text = `${event.title} ${event.description}`.toLowerCase()
-  if (EXCLUDE_KEYWORDS.test(text)) return false
-  if (RELEVANCE_KEYWORDS.test(text)) return true
-  return false
-}
+// Pre-filter lives in src/pipeline/pre-filter.ts — shared with orchestrator
+// so Phase 0 bulk sources (eventbrite-cultural etc.) get the same protection.
+const preFilter = isPotentiallyRelevant
 
 // ── Country code map ──
 const CC: Record<string, string> = {
@@ -183,6 +78,14 @@ function countrySlug(country: string): string {
 }
 
 // ── Scrapers ──
+/**
+ * Why the counters: between 2026-06-29 and 2026-08-10 every one of the 220
+ * cities silently returned 0 events. The scraper was fine — Eventbrite was
+ * throttling mid-run — but a bare `catch {}` meant seven weeks of runs looked
+ * identical to healthy ones in the log. Never swallow a scrape failure again.
+ */
+const fetchStats = { ok: 0, httpFail: 0, netFail: 0, emptyHtml: 0, lastStatus: 0 }
+
 async function scrapeEventbrite(city: City, keyword: string): Promise<any[]> {
   const slug = countrySlug(city.country)
   const url = `https://www.eventbrite.com/d/${slug}--${encodeURIComponent(city.name)}/${encodeURIComponent(keyword)}/?page=1`
@@ -190,8 +93,14 @@ async function scrapeEventbrite(city: City, keyword: string): Promise<any[]> {
     headers: { 'User-Agent': UA, 'Accept-Language': 'en-GB,en;q=0.9' },
     signal: AbortSignal.timeout(FETCH_TIMEOUT),
   })
-  if (!res.ok) return []
+  if (!res.ok) {
+    fetchStats.httpFail++
+    fetchStats.lastStatus = res.status
+    return []
+  }
+  fetchStats.ok++
   const html = await res.text()
+  if (!html.includes('application/ld+json')) fetchStats.emptyHtml++
   const events = extractJsonLd(html)
   return events.map((ev: any) => ({
     ...ev,
@@ -256,6 +165,8 @@ async function scoreAndInsert(events: any[], stats: any) {
             log(`  ✓ [${scored.ai_score}] ${scored.category} — ${event.title}`)
           }
         } catch (err: any) {
+          // Cost cap is a hard stop — propagate to main().
+          if (err instanceof CostCapExceeded) throw err
           stats.errors++
           if (err?.message?.includes('credit balance')) {
             log(`  ⚠️ CREDITS EXHAUSTED — stopping scoring`)
@@ -310,6 +221,8 @@ async function main() {
       }
       log(`\n📊 Phase 0 complete: ${orchTotal} fetched → ${orchInserted} inserted, ${orchFiltered} filtered, ${orchErrors} errors`)
     } catch (err: any) {
+      // CostCapExceeded must NOT be swallowed — re-throw so the run halts.
+      if (err instanceof CostCapExceeded) throw err
       log(`  ⚠️ Orchestrator error: ${err.message} — continuing with Eventbrite...`)
     }
   }
@@ -351,7 +264,9 @@ async function main() {
               stats.preFiltered++
             }
           }
-        } catch {}
+        } catch {
+          fetchStats.netFail++
+        }
         await sleep(RATE_LIMIT_MS)
       }
 
@@ -359,6 +274,17 @@ async function main() {
     }
 
     log(`\n📊 Phase 1: ${stats.rawEvents} raw → ${stats.preFiltered} pre-filtered (${Math.round(stats.preFiltered / Math.max(1, stats.rawEvents) * 100)}% pass rate)`)
+    log(`   Fetches: ${fetchStats.ok} ok, ${fetchStats.httpFail} HTTP-rejected (last status ${fetchStats.lastStatus || 'n/a'}), ${fetchStats.netFail} network/timeout, ${fetchStats.emptyHtml} returned pages with no event data`)
+
+    // A healthy run pulls events from well over half the cities. Anything far
+    // below that means we are being throttled, not that the world went quiet.
+    const citiesWithEvents = allFiltered.length > 0
+      ? new Set(allFiltered.map((e: any) => e.location_name)).size
+      : 0
+    if (citiesWithEvents < CITIES.length * 0.2) {
+      log(`   ⚠️  BLOCK SUSPECTED: only ${citiesWithEvents}/${CITIES.length} cities returned anything.`)
+      log(`      Eventbrite is almost certainly rate-limiting this run. Check RATE_LIMIT_MS.`)
+    }
 
     // Cache the pre-filtered events so we can resume scoring if it crashes
     const cacheData = JSON.stringify(allFiltered)
@@ -392,9 +318,17 @@ async function main() {
   log(`  Inserted (score ≥50): ${stats.inserted}`)
   log(`  Filtered (score <50): ${stats.filtered}`)
   log(`  Errors: ${stats.errors}`)
+  log(`  💰 ${costTracker.summary()}`)
 }
 
 main().catch(err => {
+  if (err instanceof CostCapExceeded) {
+    log(`\n🛑 ${err.message} — pipeline halted to prevent overspend.`)
+    log(`  💰 ${costTracker.summary()}`)
+    log(`  Raise PIPELINE_MAX_USD env var if this was expected.`)
+    process.exit(2)
+  }
   log(`\n❌ Pipeline crashed: ${err.message}`)
+  log(`  💰 ${costTracker.summary()}`)
   console.error(err)
 })

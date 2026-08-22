@@ -6,7 +6,9 @@ import { eventbriteCities } from '@/pipeline/sources/eventbrite-cities'
 import { eventbriteCultural } from '@/pipeline/sources/eventbrite-cultural'
 import { alleventsCultural } from '@/pipeline/sources/allevents-cultural'
 import { scoreQuest } from '@/pipeline/score-quest'
-import type { RawEvent } from '@/pipeline/sources/types'
+import { isPotentiallyRelevant } from '@/pipeline/pre-filter'
+import { costTracker, CostCapExceeded, DAILY_CRON_CAP_USD } from '@/pipeline/cost-cap'
+import type { RawEvent, SourceFetcher } from '@/pipeline/sources/types'
 
 export const maxDuration = 300
 
@@ -27,16 +29,28 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
   return null
 }
 
-async function processFetcher(name: string, fetchFn: () => Promise<RawEvent[]>) {
-  const result = { source: name, fetched: 0, inserted: 0, filtered: 0, duplicates: 0, errors: 0 }
+async function processSource(name: string, source: SourceFetcher) {
+  const result = {
+    source: name, fetched: 0, prefiltered: 0,
+    inserted: 0, filtered: 0, duplicates: 0, errors: 0,
+  }
 
   let events: RawEvent[] = []
   try {
-    events = await fetchFn()
+    events = await source.fetch({})
     result.fetched = events.length
   } catch {
     result.errors++
     return result
+  }
+
+  // COST PROTECTION — open-catalogue sources get keyword pre-filtered before
+  // any Claude call, exactly as the weekly orchestrator does. Without this,
+  // allevents-cultural alone hands ~1,200 unfiltered events a day straight
+  // to Haiku. This is the same bug that cost $25 in one week in May 2026.
+  if (source.bulk) {
+    events = events.filter(isPotentiallyRelevant)
+    result.prefiltered = result.fetched - events.length
   }
 
   // Geocode missing coordinates
@@ -86,7 +100,9 @@ async function processFetcher(name: string, fetchFn: () => Promise<RawEvent[]>) 
 
       if (error) result.errors++
       else result.inserted++
-    } catch {
+    } catch (err) {
+      // Budget cap is a hard stop for the whole run, not a per-event error.
+      if (err instanceof CostCapExceeded) throw err
       result.errors++
     }
   }
@@ -100,26 +116,43 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // Warm instances are reused between days — zero the counters or the cap
+  // trips permanently. See CostTracker.reset().
+  costTracker.reset(DAILY_CRON_CAP_USD)
+
   const results = []
+  let costCapped = false
 
-  // Local network scrapers
-  results.push(await processFetcher('local-networks', () => localNetworks.fetch({})))
+  const sources: Array<[string, SourceFetcher]> = [
+    ['local-networks', localNetworks],
+    ['meetup-cities', meetupCities],
+    ['eventbrite-cities', eventbriteCities],
+    ['eventbrite-cultural', eventbriteCultural],
+    ['allevents-cultural', alleventsCultural],
+  ]
 
-  // Meetup + Eventbrite with full keyword set
-  results.push(await processFetcher('meetup-cities', () => meetupCities.fetch({})))
-  results.push(await processFetcher('eventbrite-cities', () => eventbriteCities.fetch({})))
-
-  // Diaspora cultural feast sources
-  results.push(await processFetcher('eventbrite-cultural', () => eventbriteCultural.fetch({})))
-  results.push(await processFetcher('allevents-cultural', () => alleventsCultural.fetch({})))
+  try {
+    for (const [name, source] of sources) {
+      results.push(await processSource(name, source))
+    }
+  } catch (err) {
+    if (!(err instanceof CostCapExceeded)) throw err
+    costCapped = true
+    console.warn(`[network-pipeline] ${err.message} — halting run.`)
+  }
 
   const totals = {
     fetched: results.reduce((s, r) => s + r.fetched, 0),
+    prefiltered: results.reduce((s, r) => s + r.prefiltered, 0),
     inserted: results.reduce((s, r) => s + r.inserted, 0),
     duplicates: results.reduce((s, r) => s + r.duplicates, 0),
     filtered: results.reduce((s, r) => s + r.filtered, 0),
     errors: results.reduce((s, r) => s + r.errors, 0),
+    costUsd: Number(costTracker.totalUsd.toFixed(4)),
+    costCapped,
   }
+
+  console.log(`[network-pipeline] ${costTracker.summary()}`)
 
   return NextResponse.json({ ok: true, results, totals })
 }

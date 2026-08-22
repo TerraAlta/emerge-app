@@ -5,6 +5,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { runNewsPipeline } from './orchestrator'
 import { scoreNews } from './score-news'
+import { costTracker, CostCapExceeded, NEWS_CRON_CAP_USD } from '@/pipeline/cost-cap'
 import type { FlowerPetalKey } from './types'
 
 const MIN_PUBLISH_SCORE = 50  // below this we still store (low ai_score) for analytics but RLS hides them
@@ -25,10 +26,16 @@ export interface NewsIngestStats {
   filtered: number    // scored but below threshold
   errors: number
   byPetal: Record<FlowerPetalKey, number>
+  costUsd: number       // real Haiku spend for this run
+  costCapped: boolean   // true if the run stopped early on the budget cap
 }
 
 export async function ingestNews(): Promise<NewsIngestStats> {
   const supabase = getServiceClient()
+
+  // Warm Vercel instances are reused between days — start every run at zero
+  // or the cap trips permanently. See CostTracker.reset().
+  costTracker.reset(NEWS_CRON_CAP_USD)
   const stats: NewsIngestStats = {
     fetched: 0,
     alreadyIngested: 0,
@@ -45,6 +52,8 @@ export async function ingestNews(): Promise<NewsIngestStats> {
       'finance-economics': 0,
       'governance-community': 0,
     },
+    costUsd: 0,
+    costCapped: false,
   }
 
   // 1. Pull URLs already in DB (last 180 days) so we don't re-score old items
@@ -104,13 +113,25 @@ export async function ingestNews(): Promise<NewsIngestStats> {
           stats.filtered++
         }
       } catch (err) {
+        // The budget cap is a hard stop, never an "error" to count and shrug at.
+        if (err instanceof CostCapExceeded) throw err
         console.warn(`[news-ingest] worker error:`, (err as Error).message)
         stats.errors++
       }
     }
   }
 
-  await Promise.all(Array.from({ length: SCORING_CONCURRENCY }, () => worker()))
+  try {
+    await Promise.all(Array.from({ length: SCORING_CONCURRENCY }, () => worker()))
+  } catch (err) {
+    if (!(err instanceof CostCapExceeded)) throw err
+    stats.costCapped = true
+    queue.length = 0  // stop the sibling workers
+    console.warn(`[news-ingest] ${err.message} — stopping this run early.`)
+  }
+
+  stats.costUsd = Number(costTracker.totalUsd.toFixed(4))
+  console.log(`[news-ingest] ${costTracker.summary()}`)
 
   return stats
 }

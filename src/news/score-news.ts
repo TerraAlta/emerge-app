@@ -7,6 +7,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import { isCreditError, isRateLimitError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
+import { costTracker } from '@/pipeline/cost-cap'
 import { buildNewsScoringPrompt } from '@/lib/news-scoring-prompt'
 import type { FlowerPetalKey } from './types'
 import { PETAL_KEYS } from './types'
@@ -80,6 +81,10 @@ Summary/excerpt: "${input.summary.slice(0, 1800)}"`,
     }
     throw err
   }
+
+  // Record real token spend. Throws CostCapExceeded if this run blows its
+  // budget — ingestNews() catches it and stops cleanly.
+  costTracker.recordHaiku(message.usage)
 
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
   const cleaned = text.replace(/```json\s*|```\s*/g, '').trim()

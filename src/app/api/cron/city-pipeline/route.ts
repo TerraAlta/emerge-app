@@ -3,8 +3,10 @@ import { createClient } from '@supabase/supabase-js'
 import { meetupCities } from '@/pipeline/sources/meetup-cities'
 import { eventbriteCities } from '@/pipeline/sources/eventbrite-cities'
 import { scoreQuest } from '@/pipeline/score-quest'
+import { isPotentiallyRelevant } from '@/pipeline/pre-filter'
+import { costTracker, CostCapExceeded, DAILY_CRON_CAP_USD } from '@/pipeline/cost-cap'
 import { CITIES } from '@/pipeline/sources/cities'
-import type { RawEvent } from '@/pipeline/sources/types'
+import type { RawEvent, SourceFetcher } from '@/pipeline/sources/types'
 
 export const maxDuration = 300 // 5 minutes max for Vercel
 
@@ -25,16 +27,23 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
   return null
 }
 
-async function processFetcher(name: string, fetchFn: () => Promise<RawEvent[]>) {
-  const result = { source: name, fetched: 0, inserted: 0, filtered: 0, errors: 0 }
+async function processSource(name: string, source: SourceFetcher) {
+  const result = { source: name, fetched: 0, prefiltered: 0, inserted: 0, filtered: 0, errors: 0 }
 
   let events: RawEvent[] = []
   try {
-    events = await fetchFn()
+    events = await source.fetch({})
     result.fetched = events.length
   } catch {
     result.errors++
     return result
+  }
+
+  // COST PROTECTION — keyword pre-filter before any Claude call, matching the
+  // weekly orchestrator. Both sources here are open-catalogue (bulk: true).
+  if (source.bulk) {
+    events = events.filter(isPotentiallyRelevant)
+    result.prefiltered = result.fetched - events.length
   }
 
   // Geocode events missing coordinates
@@ -85,7 +94,8 @@ async function processFetcher(name: string, fetchFn: () => Promise<RawEvent[]>) 
 
       if (error) result.errors++
       else result.inserted++
-    } catch {
+    } catch (err) {
+      if (err instanceof CostCapExceeded) throw err
       result.errors++
     }
   }
@@ -100,17 +110,33 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // Warm instances are reused between days — see CostTracker.reset().
+  costTracker.reset(DAILY_CRON_CAP_USD)
+
   const results = []
-  results.push(await processFetcher('meetup-cities', () => meetupCities.fetch({})))
-  results.push(await processFetcher('eventbrite-cities', () => eventbriteCities.fetch({})))
+  let costCapped = false
+
+  try {
+    results.push(await processSource('meetup-cities', meetupCities))
+    results.push(await processSource('eventbrite-cities', eventbriteCities))
+  } catch (err) {
+    if (!(err instanceof CostCapExceeded)) throw err
+    costCapped = true
+    console.warn(`[city-pipeline] ${err.message} — halting run.`)
+  }
 
   const totals = {
     cities: CITIES.length,
     fetched: results.reduce((s, r) => s + r.fetched, 0),
+    prefiltered: results.reduce((s, r) => s + r.prefiltered, 0),
     inserted: results.reduce((s, r) => s + r.inserted, 0),
     filtered: results.reduce((s, r) => s + r.filtered, 0),
     errors: results.reduce((s, r) => s + r.errors, 0),
+    costUsd: Number(costTracker.totalUsd.toFixed(4)),
+    costCapped,
   }
+
+  console.log(`[city-pipeline] ${costTracker.summary()}`)
 
   return NextResponse.json({ ok: true, results, totals })
 }
