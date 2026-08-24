@@ -189,6 +189,30 @@ Regenerative practitioner network. Free listing, no bidding, no commission.
 - Event: `checkout.session.completed` only
 - Test with card `4242 4242 4242 4242` in Sandbox mode
 
+## ⚠ DB grants: check them on EVERY new table (bit us twice)
+
+Tables created here keep coming out **without CRUD grants**, so every API call
+against them fails with `permission denied` no matter what RLS says. RLS
+decides *which rows*; grants decide *who may try*. Both are needed.
+
+Fixed twice now: `guild_tables_grants_fix` (Guild tables) and
+`core_tables_grants_fix` (2026-08-24, seven core tables). The second one had
+been silently breaking three shipped features for months:
+
+| Table | What was broken |
+|---|---|
+| `profiles` | no `service_role` SELECT → **weekly digest found 0 subscribers every week** |
+| `email_digest_log` | no grants → digest send-log inserts failed |
+| `quest_reports` | no grants → "Report quest" button did nothing |
+| `pipeline_errors` | no grants → **pipeline error logging never recorded anything** |
+| `quest_attendance`, `quest_participants`, `connected_calendars` | unreadable/unwritable by service_role |
+
+`pipeline_errors` being unwritable is why the Eventbrite collapse ran unnoticed
+from 29 Jun to 10 Aug — the safety net couldn't write to its own table.
+
+**After creating any table**, run `npx tsx scripts/backup-db.ts` — it touches
+every table and fails loudly on a missing grant. Cheapest possible check.
+
 ### DB grants gotcha
 Guild tables were created without CRUD grants for `authenticated`/`service_role` — fixed via migration `guild_tables_grants_fix`. If you add new guild tables, remember to `GRANT SELECT, INSERT, UPDATE, DELETE ... TO authenticated; GRANT ALL ... TO service_role;` or RLS policies won't get a chance to run.
 
