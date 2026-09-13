@@ -76,11 +76,25 @@ export async function GET(request: NextRequest) {
 
       // 4. Get nearby quests for next 7 days
       const radiusKm = user.email_digest_radius_km ?? 25
-      const { data: quests } = await supabase.rpc('nearby_quests', {
+      // search_keyword is REQUIRED here even though it's null. There are two
+      // overloads of nearby_quests (3-arg and 4-arg) and PostgREST cannot
+      // choose between them from a 3-argument call — it returns "could not
+      // choose the best candidate function" and no rows. Every other caller
+      // (useNearbyEvents, quest-events) passes four, which is why the Quests
+      // tab works and this digest silently skipped every subscriber.
+      const { data: quests, error: questsError } = await supabase.rpc('nearby_quests', {
         user_lat: user.saved_lat,
         user_lng: user.saved_lng,
         radius_km: radiusKm,
+        search_keyword: null,
       })
+
+      if (questsError) {
+        console.error(`[weekly-digest] nearby_quests failed for ${user.id}:`, questsError.message)
+        results.failed++
+        results.errors.push(`nearby_quests(${user.id}): ${questsError.message}`)
+        continue
+      }
 
       // Filter to next 7 days only
       const nextWeek = new Date()
