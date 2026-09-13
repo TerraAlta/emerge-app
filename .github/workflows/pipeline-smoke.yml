@@ -1,0 +1,40 @@
+# One-click check that the scheduled pipeline has what it needs to run.
+#
+# Does one real Supabase read and one real Haiku call — about half a cent —
+# so a wrong or missing secret is caught NOW rather than as a silently dead
+# harvest on Sunday night. Run this after changing any secret.
+#
+#   gh workflow run "Pipeline smoke test" --repo TerraAlta/emerge-app
+
+name: Pipeline smoke test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.1'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Verify credentials and connectivity
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PIPELINE_MAX_USD: '1'
+        run: npx tsx scripts/run-network-slice.ts --check
+
+      - name: Verify the source partition
+        run: |
+          for i in 0 1 2 3; do
+            npx tsx scripts/run-network-slice.ts --slice $i/4 --list | head -1
+          done

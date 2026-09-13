@@ -36,7 +36,10 @@ if (existsSync(envPath)) {
 // ── Args ──
 const dryRun = process.argv.includes('--dry-run')
 const listOnly = process.argv.includes('--list')
-const sliceArg = process.argv[process.argv.indexOf('--slice') + 1] ?? '0/1'
+// indexOf returns -1 when --slice is absent, and argv[-1 + 1] is the node
+// binary path — which then parses as a nonsense slice. Guard explicitly.
+const sliceFlagAt = process.argv.indexOf('--slice')
+const sliceArg = sliceFlagAt !== -1 ? (process.argv[sliceFlagAt + 1] ?? '') : '0/1'
 const [idxRaw, totalRaw] = sliceArg.split('/')
 const index = Number(idxRaw)
 const total = Number(totalRaw)
@@ -62,6 +65,8 @@ if (missing.length) {
   process.exit(1)
 }
 
+const checkOnly = process.argv.includes('--check')
+
 // ── Budget: divide the weekly cap across the parallel slices ──
 // Each slice is a separate process with its own costTracker, so without this
 // four workers would each get the full cap and the run could cost 4x.
@@ -78,7 +83,34 @@ function stamp(msg: string) {
   console.log(`${new Date().toISOString()} [slice ${index + 1}/${total}] ${msg}`)
 }
 
+/**
+ * Prove the CI environment can actually do the job, for about a hundredth of
+ * a cent: one real Supabase read and one real Haiku call.
+ *
+ * Without this, a wrong secret only surfaces as a silently failed harvest on
+ * Sunday night — precisely the failure mode that left the pipeline dead for
+ * five weeks.
+ */
+async function runCheck() {
+  const { count, error } = await supabase.from('quests').select('*', { count: 'exact', head: true })
+  if (error) throw new Error(`supabase read failed: ${error.message}`)
+  console.log(`ok    supabase: service_role reads ${count} quests`)
+
+  const { scoreQuest } = await import('../src/pipeline/score-quest')
+  const scored = await scoreQuest({
+    title: 'Community seed swap and repair café',
+    description: 'Bring seeds and broken things. Free, all welcome.',
+    location: 'Lisbon',
+  })
+  if (!scored) throw new Error('anthropic: scoreQuest returned null (bad key, or no credit)')
+  console.log(`ok    anthropic: scored ${scored.ai_score} / ${scored.category}`)
+  console.log(`ok    this check cost $${costTracker.totalUsd.toFixed(5)}`)
+  console.log('CI environment is good — the Sunday run will have what it needs.')
+}
+
 async function main() {
+  if (checkOnly) return runCheck()
+
   const started = Date.now()
   stamp(`Starting — budget $${sliceCap.toFixed(2)} of $${weeklyCap.toFixed(2)} weekly${dryRun ? ' (DRY RUN)' : ''}`)
 
