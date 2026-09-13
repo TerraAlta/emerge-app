@@ -109,8 +109,37 @@ src/
 **Read `src/pipeline/soul-document.txt` before making any AI/scoring changes.**
 
 ## Pipeline (weekly quest scraping)
-- **launchd job** runs every Sunday 23:00: `com.emerge.weekly-pipeline.plist`
-- Script: `scripts/run-full-pipeline-v2.ts` (NEVER the v1 — it's DISABLED)
+
+**Runs on GitHub Actions since 2026-09-13 — NOT on the iMac any more.**
+
+- Workflow: `.github/workflows/weekly-pipeline.yml`, Sundays 22:00 UTC
+- Script: `scripts/run-network-slice.ts --slice i/4` (one process per slice)
+- 4 parallel slices because the sweep takes ~5.8h and a GitHub job is killed
+  at 6h. 224 sources, 56 per slice, partitioned round-robin (SOURCES is
+  ordered by region/value, so contiguous blocks would load one worker with
+  every slow bulk source).
+- Free: the repo is public, so Actions minutes cost nothing.
+- **The cost cap is divided by the slice count.** Four processes each holding
+  the full $8 cap would be $32/run. If you change the slice count, the
+  division in `run-network-slice.ts` handles it — don't bypass it.
+- Check it works before relying on it: `gh workflow run "Pipeline smoke test"`
+  — one Supabase read + one Haiku call, ~$0.005.
+- Inspect the partition for free: `npx tsx scripts/run-network-slice.ts --slice 0/4 --list`
+
+**The old launchd job is unloaded and disabled** (`launchctl unload -w`). The
+plist is still at `~/Library/LaunchAgents/com.emerge.weekly-pipeline.plist` if
+it's ever needed. Do NOT re-enable it while the GitHub workflow is active —
+both would harvest the same events and double the Claude spend.
+
+Why it moved: launchd silently skipped every run between 2026-08-10 and
+2026-09-13 because the iMac was off. Five weeks, no new quests, no error
+anywhere.
+
+**Eventbrite city scraping (old Phase 1) is deliberately not scheduled.** It
+was 11 of the old 17 hours and returned 12 events, because Eventbrite
+throttles us partway through a run. `scripts/run-full-pipeline-v2.ts` still
+does it (NEVER the v1 — it's DISABLED) and can be run by hand, but fix the
+throttling first — see the BLOCK SUSPECTED warning it now prints.
 - Pre-filter: 94% rejected before AI → keeps cost at ~$3-5/week
 - Daily Vercel crons: `city-pipeline`, `network-pipeline`, `sync-luma`, `stale-check`, `weekly-digest`
 
