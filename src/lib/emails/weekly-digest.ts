@@ -22,6 +22,38 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; label: string 
   make:      { bg: '#1F180E', text: '#6D4C2A', label: 'Make' },
 }
 
+/**
+ * Escape anything that came from outside before putting it in the HTML.
+ *
+ * Quest titles, addresses and news summaries are SCRAPED from public sites —
+ * anyone can create an Eventbrite event and put markup in its title. Without
+ * this, that markup renders inside an email sent from Pedro's own address,
+ * which is a tidy little phishing vector.
+ */
+function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/**
+ * Only let http(s) links through. A scraped `javascript:` or `data:` URL in an
+ * href is the same problem as above, one layer down.
+ */
+function safeUrl(url: unknown): string | null {
+  if (!url) return null
+  try {
+    const parsed = new URL(String(url))
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null
+    return escapeHtml(parsed.toString())
+  } catch {
+    return null
+  }
+}
+
 function formatDate(iso: string): string {
   const d = new Date(iso)
   return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
@@ -29,14 +61,16 @@ function formatDate(iso: string): string {
 
 function questCard(q: DigestQuest): string {
   const cat = CATEGORY_COLORS[q.category] ?? CATEGORY_COLORS.community
-  const link = q.source_url ? `<a href="${q.source_url}" style="color:#C8913A;text-decoration:none;">${q.title}</a>` : q.title
+  const title = escapeHtml(q.title)
+  const href = safeUrl(q.source_url)
+  const link = href ? `<a href="${href}" style="color:#C8913A;text-decoration:none;">${title}</a>` : title
   return `
     <tr><td style="padding:12px 0;border-bottom:1px solid #1E3A1A;">
       <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td>
         <span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${cat.bg};color:${cat.text};letter-spacing:0.05em;">${cat.label}</span>
         <p style="margin:6px 0 2px;font-size:15px;font-weight:500;color:#E8F2E0;line-height:1.3;">${link}</p>
-        <p style="margin:0;font-size:11px;color:rgba(232,242,224,0.5);">${formatDate(q.starts_at)} &middot; ${q.address} &middot; ${q.distance_km.toFixed(1)}km</p>
-        <p style="margin:4px 0 0;font-size:10px;color:#C8913A;">via ${q.source_name}</p>
+        <p style="margin:0;font-size:11px;color:rgba(232,242,224,0.5);">${formatDate(q.starts_at)} &middot; ${escapeHtml(q.address)} &middot; ${q.distance_km.toFixed(1)}km</p>
+        <p style="margin:4px 0 0;font-size:10px;color:#C8913A;">via ${escapeHtml(q.source_name)}</p>
       </td></tr></table>
     </td></tr>`
 }
@@ -50,15 +84,20 @@ export interface DigestNews {
 }
 
 function newsCard(n: DigestNews): string {
-  const title = (n.title || '').length > 90 ? (n.title || '').slice(0, 90) + '…' : n.title
-  const summary = (n.summary || '').length > 150 ? (n.summary || '').slice(0, 150) + '…' : n.summary
-  return `
-    <tr><td style="padding:12px 0;border-bottom:1px solid #1E3A1A;">
-      <a href="${n.source_url}" style="text-decoration:none;">
+  const rawTitle = n.title || ''
+  const rawSummary = n.summary || ''
+  // Truncate first, then escape — escaping first would let an entity like
+  // &amp; be cut in half and render as broken text.
+  const title = escapeHtml(rawTitle.length > 90 ? rawTitle.slice(0, 90) + '…' : rawTitle)
+  const summary = escapeHtml(rawSummary.length > 150 ? rawSummary.slice(0, 150) + '…' : rawSummary)
+  const href = safeUrl(n.source_url)
+  const body = `
         <p style="margin:0 0 4px;font-size:14px;font-weight:500;color:#E8F2E0;line-height:1.3;">${title}</p>
         <p style="margin:0 0 4px;font-size:11px;color:rgba(232,242,224,0.6);line-height:1.4;">${summary}</p>
-        <p style="margin:0;font-size:10px;color:#C8913A;">via ${n.source_name}</p>
-      </a>
+        <p style="margin:0;font-size:10px;color:#C8913A;">via ${escapeHtml(n.source_name)}</p>`
+  return `
+    <tr><td style="padding:12px 0;border-bottom:1px solid #1E3A1A;">
+      ${href ? `<a href="${href}" style="text-decoration:none;">${body}</a>` : body}
     </td></tr>`
 }
 
@@ -72,6 +111,10 @@ export function buildDigestHtml(opts: {
   const { firstName, city, quests, news, unsubscribeUrl } = opts
   const count = quests.length
   const newsCount = (news || []).length
+  // firstName and city come from user-editable profile fields.
+  const safeName = escapeHtml(firstName)
+  const safeCity = escapeHtml(city)
+  const safeUnsub = safeUrl(unsubscribeUrl) ?? 'https://emerge.terralta.org'
 
   const questRows = count > 0
     ? quests.map(questCard).join('\n')
@@ -81,8 +124,8 @@ export function buildDigestHtml(opts: {
       </td></tr>`
 
   const intro = count > 0
-    ? `${count} event${count > 1 ? 's' : ''} near ${city} this week — showing up is all it takes.`
-    : `Nothing near ${city} this week — but new events appear every day.`
+    ? `${count} event${count > 1 ? 's' : ''} near ${safeCity} this week — showing up is all it takes.`
+    : `Nothing near ${safeCity} this week — but new events appear every day.`
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -105,7 +148,7 @@ export function buildDigestHtml(opts: {
 
 <!-- Greeting -->
 <tr><td style="padding:24px 24px 0;">
-  <p style="margin:0;font-size:16px;color:#E8F2E0;">Good morning, ${firstName} &#x1F331;</p>
+  <p style="margin:0;font-size:16px;color:#E8F2E0;">Good morning, ${safeName} &#x1F331;</p>
   <p style="margin:8px 0 0;font-size:12px;color:rgba(232,242,224,0.5);line-height:1.5;">${intro}</p>
 </td></tr>
 
@@ -140,10 +183,14 @@ ${newsCount > 0 ? `
 
 <!-- Footer -->
 <tr><td style="padding:32px 24px 24px;text-align:center;">
+  <p style="margin:0 0 8px;font-size:10px;color:rgba(232,242,224,0.35);line-height:1.5;">
+    You're receiving this because you turned on weekly events
+    in your Emerge account. One click below stops it for good.
+  </p>
   <p style="margin:0;font-size:9px;color:rgba(232,242,224,0.25);">
     <a href="https://emerge.terralta.org" style="color:rgba(200,145,58,0.4);text-decoration:none;">emerge.terralta.org</a>
     &nbsp;&middot;&nbsp;
-    <a href="${unsubscribeUrl}" style="color:rgba(232,242,224,0.25);text-decoration:underline;">unsubscribe</a>
+    <a href="${safeUnsub}" style="color:rgba(232,242,224,0.25);text-decoration:underline;">unsubscribe</a>
   </p>
 </td></tr>
 
