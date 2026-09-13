@@ -1,0 +1,81 @@
+# Weekly network sweep — Phase 0 of the quest pipeline.
+#
+# Replaces the launchd job on Pedro's iMac, which silently missed runs whenever
+# the machine was off (no quests were added between 2026-08-10 and 2026-09-13
+# for exactly that reason).
+#
+# The full sweep (224 sources) takes ~5.8 hours and a GitHub Actions job is killed at 6, so
+# it runs as 4 parallel slices of ~1.5h each. The repo is public, so these
+# minutes are free.
+#
+# Eventbrite city scraping (old Phase 1) is deliberately NOT here: it took 11
+# of the 17 hours and returned 12 events, because Eventbrite throttles us
+# partway through. That needs fixing on its own before it's worth scheduling.
+
+name: Weekly pipeline
+
+on:
+  schedule:
+    # Sunday 22:00 UTC — matches the old launchd slot (23:00 Lisbon time).
+    # GitHub cron is always UTC and can start late under load; that's fine
+    # for a weekly harvest.
+    - cron: '0 22 * * 0'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Score but do not write to the database'
+        type: boolean
+        default: false
+
+concurrency:
+  # Never let a manual run overlap a scheduled one — two sweeps at once would
+  # double the Claude spend.
+  group: weekly-pipeline
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330 # 5.5h ceiling per slice; each should take ~1.5h
+    strategy:
+      fail-fast: false # one dead slice must not cancel the other three
+      matrix:
+        slice: [0, 1, 2, 3]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.1'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run slice ${{ matrix.slice }} of 4
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Whole-run budget. run-network-slice.ts divides this by the number
+          # of slices, so 4 workers share $8 rather than taking $8 each.
+          PIPELINE_MAX_USD: '8'
+        run: |
+          npx tsx scripts/run-network-slice.ts \
+            --slice ${{ matrix.slice }}/4 \
+            ${{ inputs.dry_run && '--dry-run' || '' }}
+
+  report:
+    needs: sweep
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summarise
+        run: |
+          echo "### Weekly pipeline: ${{ needs.sweep.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.sweep.result }}" != "success" ]; then
+            echo "One or more slices failed or hit the cost cap. Open the run and check each slice's final line." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "All 4 slices completed. Per-slice totals and spend are in each job log." >> $GITHUB_STEP_SUMMARY
+          fi

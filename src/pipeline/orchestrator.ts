@@ -565,6 +565,20 @@ interface OrchestratorOptions {
   dryRun?: boolean    // if true, skip Supabase insert
   supabase?: any      // Supabase client for inserts
   cacheOnly?: boolean // if true, skip scoring (cache raw events only)
+  /**
+   * Run only part of SOURCES, so the sweep can be split across parallel
+   * workers. `{ index: 0, total: 4 }` takes every 4th source starting at 0.
+   *
+   * Why round-robin and not contiguous blocks: SOURCES is ordered by region
+   * and value (federated platforms first), so contiguous blocks would give
+   * one worker all the slow bulk sources and another almost nothing. Striding
+   * spreads the heavy ones evenly.
+   *
+   * IMPORTANT: each worker is its own process with its own costTracker, so
+   * the caller MUST divide the budget — N workers on the full cap means N
+   * times the spend. See scripts/run-network-slice.ts.
+   */
+  slice?: { index: number; total: number }
 }
 
 /** Geocode an address string to lat/lng via Nominatim */
@@ -580,11 +594,30 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
   return null
 }
 
+/**
+ * Names of the sources a given slice would run — without fetching anything.
+ * Lets `run-network-slice.ts --list` prove the partition is correct without
+ * spending a cent on Claude.
+ */
+export function listSourceNames(slice?: { index: number; total: number }): string[] {
+  const picked = slice
+    ? SOURCES.filter((_, i) => i % slice.total === slice.index)
+    : SOURCES
+  return picked.map(s => s.name)
+}
+
 export async function runPipeline(opts: OrchestratorOptions = {}): Promise<OrchestratorResult[]> {
-  const { scoreThreshold = 50, dryRun = false, supabase, cacheOnly = false } = opts
+  const { scoreThreshold = 50, dryRun = false, supabase, cacheOnly = false, slice } = opts
   const results: OrchestratorResult[] = []
 
-  for (const source of SOURCES) {
+  const sources = slice
+    ? SOURCES.filter((_, i) => i % slice.total === slice.index)
+    : SOURCES
+  if (slice) {
+    console.log(`[orchestrator] slice ${slice.index + 1}/${slice.total}: ${sources.length} of ${SOURCES.length} sources`)
+  }
+
+  for (const source of sources) {
     const result: OrchestratorResult = {
       source: source.name,
       fetched: 0,
