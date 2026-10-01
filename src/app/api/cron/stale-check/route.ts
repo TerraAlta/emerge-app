@@ -9,7 +9,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const STALE_THRESHOLD_HOURS = 48
+// Quests now arrive once a week, from the Sunday GitHub Actions sweep (the
+// daily Vercel pipeline crons were removed — they could never finish inside
+// the 300s function limit). Eight days = one missed Sunday plus slack, so
+// this alarms on a real outage, not on every Tuesday.
+const STALE_THRESHOLD_HOURS = 8 * 24
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')

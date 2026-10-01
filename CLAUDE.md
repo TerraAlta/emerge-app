@@ -16,7 +16,7 @@ On every session start, before doing other work, glance at this list and remind 
 
 These are intentionally deferred until Emerge has enough real users that the extra cost/effort is justified. Don't do them now.
 
-- [ ] **Add Mobilizon + OpenAgenda to the daily Vercel `network-pipeline` cron.** Currently they only run once a week via the Sunday launchd job. Daily would cut event freshness lag from ~7 days to ~24h. Cost goes from ~€5/week to ~€10-15/week in Haiku scoring. **Revisit when:** users complain events look stale OR you hit 500+ active users. Low effort (~30min).
+- [ ] **Daily event freshness (Mobilizon + OpenAgenda more than once a week).** Today all quests arrive once a week from the Sunday GitHub Actions sweep. Do NOT do this by re-adding a Vercel cron: Vercel kills functions at 300s and the old daily `network-pipeline`/`city-pipeline` crons never finished (removed 2026-10-01). Add a second, small GitHub Actions schedule instead. Cost goes from ~€5/week to ~€10-15/week in Haiku scoring. **Revisit when:** users complain events look stale OR you hit 500+ active users. Low effort (~30min).
 - [ ] **Gancio federated scraper.** Small volume (~3-5K events/yr) but extremely aligned with autogestione/anarcho-ecology/squat communities in IT/DE/CH/ES. Same pattern as `mobilizon.ts`. Effort ~3h.
 - [ ] **Lu.ma curated calendar scraper.** Climate-tech, regen-finance, bioregionalism salons. Effort ~4h.
 - [ ] **Paid scraping service (Bright Data ~€11/mo)** to recover DICE/Humanitix/Billetto events. Only worth it if (a) app has revenue or donations covering it AND (b) those platforms still host regen content worth recovering.
@@ -141,7 +141,13 @@ throttles us partway through a run. `scripts/run-full-pipeline-v2.ts` still
 does it (NEVER the v1 — it's DISABLED) and can be run by hand, but fix the
 throttling first — see the BLOCK SUSPECTED warning it now prints.
 - Pre-filter: 94% rejected before AI → keeps cost at ~$3-5/week
-- Daily Vercel crons: `city-pipeline`, `network-pipeline`, `sync-luma`, `stale-check`, `weekly-digest`
+- Vercel crons: `sync-luma`, `stale-check`, `news-pipeline`, `guild-pitch-lifecycle` (daily), `weekly-digest` (Mondays)
+- **The daily `city-pipeline` and `network-pipeline` crons were removed on 2026-10-01.**
+  Their sources (local-networks, meetup, eventbrite, allevents) take 20–100 min,
+  Vercel stops a function at 300s, and from mid-Sept they inserted zero quests on
+  every weekday. The Sunday sweep already runs the same sources. The route files
+  remain and can still be hit by hand. `stale-check` now alarms after 8 days
+  without a new quest, not 48h, to match the weekly rhythm.
 
 ### Cost protection (CRITICAL — read before touching the pipeline)
 The pipeline must never blow past ~$5/week. Two guardrails enforce this:
