@@ -11,7 +11,7 @@ interface DigestSettingsProps {
 const RADIUS_OPTIONS = [2, 10, 25, 50]
 
 export default function DigestSettings({ userId, onClose }: DigestSettingsProps) {
-  const [enabled, setEnabled] = useState(true)
+  const [enabled, setEnabled] = useState(false)
   const [radius, setRadius] = useState(25)
   const [firstName, setFirstName] = useState('')
   const [initialFirstName, setInitialFirstName] = useState('')
@@ -27,7 +27,7 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
         .eq('id', userId)
         .single()
       if (data) {
-        setEnabled(data.email_digest_enabled ?? true)
+        setEnabled(data.email_digest_enabled ?? false)
         setRadius(data.email_digest_radius_km ?? 25)
         setFirstName(data.first_name ?? '')
         setInitialFirstName(data.first_name ?? '')
