@@ -81,6 +81,22 @@ export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
 
   // Get user location on mount
   useEffect(() => {
+    // A link can carry a location (e.g. from EarthPulse: ?lat=..&lng=..&place=..).
+    // Use it for this visit only — don't overwrite the user's saved location.
+    const params = new URLSearchParams(window.location.search)
+    const linkLat = parseFloat(params.get('lat') ?? '')
+    const linkLng = parseFloat(params.get('lng') ?? '')
+    if (Math.abs(linkLat) <= 90 && Math.abs(linkLng) <= 180) {
+      setLocation({ lat: linkLat, lng: linkLng })
+      const place = params.get('place')
+      reverseGeocode(linkLat, linkLng).then(({ name, countryCode: cc }) => {
+        setLocationName(place || name)
+        setCountryCode(cc)
+        setLocationLoading(false)
+      })
+      return
+    }
+
     const saved = getSavedLocation()
 
     if (!navigator.geolocation) {

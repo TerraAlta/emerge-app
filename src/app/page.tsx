@@ -529,7 +529,12 @@ function EventBoard({
     }
     return 25
   })
+  // A link can pre-fill the search (e.g. from EarthPulse: ?q=seed).
   const [keywordSearch, setKeywordSearch] = useState('')
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('q')
+    if (q) setKeywordSearch(q.slice(0, 60))
+  }, [])
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
   const [attendedCount, setAttendedCount] = useState(0)
   const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, setManualLocation } = useNearbyEvents({ radiusKm, searchKeyword: keywordSearch || null })
