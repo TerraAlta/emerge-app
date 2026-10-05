@@ -10,3 +10,10 @@ next-env.d.ts
 
 # Database backups — contain real user names and emails, never commit
 backups/
+
+# Local-only: decks, run logs, session state (repo is public)
+Emerge-PDC.pdf
+Emerge-PDC.pptx
+.claude/emerge-deck/
+logs/
+.planning/
