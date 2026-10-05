@@ -254,11 +254,16 @@ import { regenerarPt } from './sources/regenerar-pt'
 import { aldeiasXistoPt } from './sources/aldeias-xisto-pt'
 // City-based scrapers (Meetup + Eventbrite across 50 cities)
 import { meetupCities } from './sources/meetup-cities'
-import { eventbriteCities } from './sources/eventbrite-cities'
+// eventbrite-cities + eventbrite-cultural: DISABLED here 2026-10-01. Eventbrite's
+// CloudFront answers datacenter IPs (GitHub runners) with HTTP 405 + a bot
+// challenge on every request, so both returned 0 events every Sunday while
+// eating ~1.5h of a slice. Eventbrite now runs from Pedro's iMac instead:
+// scripts/run-city-slice.ts, scheduled by com.emerge.eventbrite-cities.plist.
+// import { eventbriteCities } from './sources/eventbrite-cities'
 import { localNetworks } from './sources/local-networks'
 import { eventbriteApi } from './sources/eventbrite-api'
 // Diaspora cultural feast sources
-import { eventbriteCultural } from './sources/eventbrite-cultural'
+// import { eventbriteCultural } from './sources/eventbrite-cultural' — disabled, see eventbrite-cities above
 import { alleventsCultural } from './sources/allevents-cultural'
 // Federated event platforms (ActivityPub / GraphQL, free, no auth)
 import { mobilizon } from './sources/mobilizon'
@@ -535,12 +540,12 @@ const SOURCES: SourceFetcher[] = [
   aldeiasXistoPt,
   // City-based scrapers
   meetupCities,
-  eventbriteCities,
+  // eventbriteCities — disabled, blocked from GitHub (see import block)
   eventbriteApi,
   localNetworks,
   // Diaspora cultural feast sources — slowest scrapers, run LAST so they
   // can't starve mobilizon/openagenda (which now run first).
-  eventbriteCultural,
+  // eventbriteCultural — disabled, blocked from GitHub (see import block)
   alleventsCultural,
   // Ticketing platforms: all disabled (see import block above)
 ]

@@ -77,7 +77,11 @@ export const alleventsCultural: SourceFetcher = {
   },
 }
 
-async function scrapeAlleventsCategory(
+/**
+ * Exported so a single city can be sampled without running the whole 220-city
+ * sweep — needed to see which real events the pre-filter is discarding.
+ */
+export async function scrapeAlleventsCategory(
   cityName: string,
   fallbackLat: number,
   fallbackLng: number,

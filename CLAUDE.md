@@ -52,7 +52,7 @@ Regenerative community quest app — discover permaculture/regenerative events b
 - Claude Haiku 4.5 for AI scoring (`claude-haiku-4-5-20251001` — **NEVER** Sonnet/Opus in this app)
 - Leaflet for maps
 - Resend for email digest
-- Vercel for hosting (auto-deploy on push to main)
+- Vercel for hosting — **NOT auto-deployed on push**; deploy manually with `vercel --prod` from a clean `git worktree` of HEAD (copy `.vercel/project.json` in), so uncommitted work in this folder never ships
 
 ## Node setup
 ```bash
@@ -115,7 +115,7 @@ src/
 - Workflow: `.github/workflows/weekly-pipeline.yml`, Sundays 22:00 UTC
 - Script: `scripts/run-network-slice.ts --slice i/4` (one process per slice)
 - 4 parallel slices because the sweep takes ~5.8h and a GitHub job is killed
-  at 6h. 224 sources, 56 per slice, partitioned round-robin (SOURCES is
+  at 6h. 222 sources, ~56 per slice, partitioned round-robin (SOURCES is
   ordered by region/value, so contiguous blocks would load one worker with
   every slow bulk source).
 - Free: the repo is public, so Actions minutes cost nothing.
@@ -135,11 +135,24 @@ Why it moved: launchd silently skipped every run between 2026-08-10 and
 2026-09-13 because the iMac was off. Five weeks, no new quests, no error
 anywhere.
 
-**Eventbrite city scraping (old Phase 1) is deliberately not scheduled.** It
-was 11 of the old 17 hours and returned 12 events, because Eventbrite
-throttles us partway through a run. `scripts/run-full-pipeline-v2.ts` still
-does it (NEVER the v1 — it's DISABLED) and can be run by hand, but fix the
-throttling first — see the BLOCK SUSPECTED warning it now prints.
+**Eventbrite runs on the iMac, not GitHub (since 2026-10-01).** Eventbrite's
+CloudFront refuses datacenter IPs: a probe from a GitHub runner got HTTP 405 +
+a bot challenge on 16/16 requests, from the first one. That's why
+`eventbrite-cities` and `eventbrite-cultural` returned 0 every Sunday — both
+are now commented out of `SOURCES` in `orchestrator.ts`. From a home
+connection the same searches work.
+- Job: `~/Library/LaunchAgents/com.emerge.eventbrite-cities.plist`, Sundays
+  19:00 local, runs `scripts/run-city-slice.ts --slice 0/1`. Log:
+  `~/emerge-eventbrite-cities.log`. This is a DIFFERENT label from the old
+  `com.emerge.weekly-pipeline` — that one stays disabled.
+- Only ~28 "priority" cities: a curated floor (Lisbon, Porto, London, Milan,
+  Amsterdam, Berlin) + every city within 75 km of a user's saved location. Grows
+  by itself as users sign up. 12 native-language keywords per city, ~4s
+  spacing, backoff on 429. ~340 requests, ~30 min, ~$0.50 cap $2
+  (`CITY_MAX_USD`). Skips events already stored before calling Haiku.
+- If the iMac is off that Sunday, only Eventbrite is skipped; nothing alarms.
+- Don't move it back to GitHub Actions or Vercel (AWS IPs) without a residential
+  proxy — it will silently return nothing again.
 - Pre-filter: 94% rejected before AI → keeps cost at ~$3-5/week
 - Vercel crons: `sync-luma`, `stale-check`, `news-pipeline`, `guild-pitch-lifecycle` (daily), `weekly-digest` (Mondays)
 - **The daily `city-pipeline` and `network-pipeline` crons were removed on 2026-10-01.**
