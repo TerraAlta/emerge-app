@@ -60,6 +60,9 @@ export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
   const [locationDenied, setLocationDenied] = useState(false)
   const [locationLoading, setLocationLoading] = useState(true)
   const [countryCode, setCountryCode] = useState<string>('')
+  // True when a keyword search found nothing nearby and we're showing the
+  // nearest events of any kind instead — the UI must say so.
+  const [keywordFallback, setKeywordFallback] = useState(false)
 
   // Reverse geocode to get city name and country code (Photon/Komoot — no rate limits)
   const reverseGeocode = useCallback(async (lat: number, lng: number): Promise<{ name: string; countryCode: string }> => {
@@ -191,6 +194,7 @@ export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
     }
 
     let results = (data ?? []) as NearbyQuest[]
+    let usedKeywordFallback = false
 
     // Fallback: if no quests found nearby, fetch nearest quests globally (up to 500km)
     if (results.length === 0 && radiusKm !== 'national') {
@@ -202,8 +206,10 @@ export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
       })
       if (fallback.data && fallback.data.length > 0) {
         results = (fallback.data as NearbyQuest[]).slice(0, 20)
+        usedKeywordFallback = Boolean(searchKeyword)
       }
     }
+    setKeywordFallback(usedKeywordFallback)
     if (category) {
       results = results.filter((q) => q.category === category)
     }
@@ -287,6 +293,7 @@ export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
     locationDenied,
     locationLoading,
     countryCode,
+    keywordFallback,
     setManualLocation,
     refetch: fetchQuests,
   }

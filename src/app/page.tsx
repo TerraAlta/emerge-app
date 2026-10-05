@@ -537,7 +537,7 @@ function EventBoard({
   }, [])
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
   const [attendedCount, setAttendedCount] = useState(0)
-  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, setManualLocation } = useNearbyEvents({ radiusKm, searchKeyword: keywordSearch || null })
+  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, keywordFallback, setManualLocation } = useNearbyEvents({ radiusKm, searchKeyword: keywordSearch || null })
 
   // Fetch quests attended count
   useEffect(() => {
@@ -936,6 +936,15 @@ function EventBoard({
             }}
           />
         </div>
+
+        {/* A search found nothing nearby — we're showing other nearby events instead */}
+        {keywordFallback && keywordSearch && !loading && (
+          <div className="px-4 pb-2">
+            <p className="text-[12px]" style={{ color: 'var(--color-amber)' }}>
+              No “{keywordSearch}” events near you yet — here’s what’s on nearby.
+            </p>
+          </div>
+        )}
 
         {/* National mode label */}
         {radiusKm === 'national' && countryCode && (
