@@ -4,7 +4,7 @@
  * The Flower of Permaculture — the animated entry point to the Quests section.
  *
  * A hand-drawn-feeling SVG flower: an Ethics & Principles centre surrounded by
- * 9 petals. Each petal is a tappable zone. Completed petals "bloom" (full
+ * 7 petals. Each petal is a tappable (and keyboard-focusable) zone. Completed petals "bloom" (full
  * colour + a soft amber glow); locked petals are greyed until their
  * prerequisites are done. The whole flower's aura grows with progress.
  *
@@ -12,7 +12,7 @@
  * a pure, testable view.
  */
 
-import { useState } from 'react'
+import { useState, type KeyboardEvent } from 'react'
 import {
   QUEST_PETAL_MAP, ETHICS_KEY, OUTER_PETALS, getPetalProgress, bloomFraction,
   type QuestProgress, type PetalStatus,
@@ -36,6 +36,16 @@ function pointAt(angleDeg: number, radius: number): [number, number] {
 
 /** Muted, desaturated version of a colour for locked petals. */
 const LOCKED_FILL = 'var(--color-pill-bg)'
+
+/** Spoken status for screen readers. */
+const STATUS_WORDS: Record<PetalStatus, string> = {
+  locked: 'locked', available: 'open', completed: 'bloomed',
+}
+
+/** Enter / Space activate a petal, like a real button. */
+function activateOnKey(e: KeyboardEvent, fn: () => void) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn() }
+}
 
 interface Props {
   progress: QuestProgress
@@ -67,8 +77,8 @@ export default function FlowerOfPermaculture({ progress, selectedKey, onSelectPe
     <svg
       viewBox="0 0 400 400"
       width="100%"
-      role="img"
-      aria-label="Flower of Permaculture — tap a petal to open its quests"
+      role="group"
+      aria-label="Flower of Permaculture — choose a petal to open its quests"
       style={{ display: 'block', maxWidth: 460, margin: '0 auto', overflow: 'visible' }}
     >
       <defs>
@@ -93,6 +103,9 @@ export default function FlowerOfPermaculture({ progress, selectedKey, onSelectPe
         .petal-g { transform-box: view-box; transform-origin: ${C}px ${C}px; animation: petalIn 620ms cubic-bezier(.22,1,.36,1) both; }
         .petal-tap { cursor: pointer; }
         .petal-tap:active { opacity: 0.85; }
+        .petal-tap:focus { outline: none; }
+        .petal-tap:focus-visible > path:first-child,
+        .petal-tap:focus-visible > circle:first-child { stroke: var(--color-amber); stroke-opacity: 1; stroke-width: 4px; }
         .bloom-overlay { animation: bloomPulse 3.6s ease-in-out infinite; pointer-events: none; }
         .aura { animation: auraBreathe 6s ease-in-out infinite; }
         @media (prefers-reduced-motion: reduce) {
@@ -134,7 +147,9 @@ export default function FlowerOfPermaculture({ progress, selectedKey, onSelectPe
               onMouseEnter={() => setHovered(petal.key)}
               onMouseLeave={() => setHovered(null)}
               role={clickable ? 'button' : undefined}
-              aria-label={`${petal.label} — ${status}`}
+              tabIndex={clickable ? 0 : undefined}
+              onKeyDown={clickable ? e => activateOnKey(e, () => onSelectPetal(petal.key)) : undefined}
+              aria-label={`${petal.label} — ${STATUS_WORDS[status]}`}
               style={{ filter: completed ? 'url(#petalBloom)' : undefined }}
             >
               <path
@@ -157,13 +172,14 @@ export default function FlowerOfPermaculture({ progress, selectedKey, onSelectPe
               x={ix} y={iy + 6}
               textAnchor="middle"
               fontSize="21"
+              aria-hidden="true"
               style={{ pointerEvents: 'none', opacity: status === 'locked' ? 0.45 : 1 }}
             >
               {status === 'locked' ? '🔒' : petal.icon}
             </text>
             {/* Completed check badge */}
             {completed && (
-              <text x={ix + 15} y={iy - 12} textAnchor="middle" fontSize="13" style={{ pointerEvents: 'none' }}>✓</text>
+              <text x={ix + 15} y={iy - 12} textAnchor="middle" fontSize="13" aria-hidden="true" style={{ pointerEvents: 'none' }}>✓</text>
             )}
           </g>
         )
@@ -181,7 +197,9 @@ export default function FlowerOfPermaculture({ progress, selectedKey, onSelectPe
             style={{ animationDelay: '0ms' }}
             onClick={() => onSelectPetal(ETHICS_KEY)}
             role="button"
-            aria-label={`${ethics.label} — ${status}`}
+            tabIndex={0}
+            onKeyDown={e => activateOnKey(e, () => onSelectPetal(ETHICS_KEY))}
+            aria-label={`${ethics.label} — ${STATUS_WORDS[status]}`}
           >
             <circle
               cx={C} cy={C} r={CORE_R + 6}
@@ -195,8 +213,8 @@ export default function FlowerOfPermaculture({ progress, selectedKey, onSelectPe
               fill="url(#coreGrad)"
               style={{ filter: completed ? 'url(#petalBloom)' : undefined }}
             />
-            <text x={C} y={C - 4} textAnchor="middle" fontSize="26" style={{ pointerEvents: 'none' }}>{ethics.icon}</text>
-            <text x={C} y={C + 18} textAnchor="middle" fontSize="10" fontWeight="600" fill="#3A2A10" style={{ pointerEvents: 'none' }}>
+            <text x={C} y={C - 4} textAnchor="middle" fontSize="26" aria-hidden="true" style={{ pointerEvents: 'none' }}>{ethics.icon}</text>
+            <text x={C} y={C + 18} textAnchor="middle" fontSize="10" fontWeight="600" fill="#3A2A10" aria-hidden="true" style={{ pointerEvents: 'none' }}>
               {ethics.short}
             </text>
           </g>

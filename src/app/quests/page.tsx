@@ -39,14 +39,17 @@ export default function QuestsPage() {
   const [petalKey, setPetalKey] = useState<string | null>(null)
   const [activeQuest, setActiveQuest] = useState<Quest | null>(null)
   const [zoomed, setZoomed] = useState(false)
+  const [offline, setOffline] = useState(false)
+  const [loadAttempt, setLoadAttempt] = useState(0)
 
   // Load content + progress on mount (auth-aware).
   useEffect(() => {
     let alive = true
     ;(async () => {
-      const quests = await fetchAllQuests()
+      const { quests, offline } = await fetchAllQuests()
       if (!alive) return
       setAllQuests(quests)
+      setOffline(offline)
 
       const { data } = await supabase.auth.getUser()
       const uid = data?.user?.id ?? null
@@ -64,7 +67,7 @@ export default function QuestsPage() {
       }
     })()
     return () => { alive = false }
-  }, [])
+  }, [loadAttempt])
 
   const progress = useMemo(() => deriveProgress(completed, allQuests), [completed, allQuests])
   const xp = useMemo(() => totalXp(completed, allQuests), [completed, allQuests])
@@ -198,6 +201,19 @@ export default function QuestsPage() {
             </>
           )}
         </div>
+
+        {offline && (
+          <div className="mx-4 mt-3 rounded-[14px] px-4 py-3 flex items-center gap-3" role="alert"
+            style={{ background: 'var(--color-amber-bg)', border: '0.5px solid var(--color-amber-border)' }}>
+            <p className="flex-1 text-[12px] leading-snug" style={{ color: 'var(--color-text-secondary)' }}>
+              We couldn&apos;t load the quests just now. Check your connection and try again.
+            </p>
+            <button onClick={() => setLoadAttempt(n => n + 1)} className="text-[12px] font-semibold shrink-0"
+              style={{ color: 'var(--color-amber)', background: 'none', border: 'none', cursor: 'pointer' }}>
+              Try again
+            </button>
+          </div>
+        )}
 
         {/* Flower */}
         <div className="flex-1 overflow-auto px-3 pt-2 pb-40" style={{ WebkitOverflowScrolling: 'touch' }}>

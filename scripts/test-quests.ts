@@ -74,8 +74,10 @@ async function main() {
 
   // Offline fallback (used if Supabase is down)
   ok('offline fallback content exists', QUEST_CONTENT.length > 0, `${QUEST_CONTENT.length} quests`)
-  const fbProg = deriveProgress(new Set(), QUEST_CONTENT)
-  ok('offline fallback: Foundations open (not a dead end)', fbProg.ethics.status === 'available' && questsForPetalIn(QUEST_CONTENT, 'ethics').length > 0)
+  // The fallback is deliberately minimal (no Foundations quests), so the page
+  // must say it's offline and offer a retry rather than show a dead-end flower.
+  const page = readFileSync(resolve(process.cwd(), 'src/app/quests/page.tsx'), 'utf8')
+  ok('offline: page shows a retry notice', /offline &&/.test(page) && /Try again/.test(page))
 
   console.log(`\n${pass} passed, ${fail} failed`)
   process.exit(fail ? 1 : 0)

@@ -541,6 +541,8 @@ function EventBoard({
 
   // Fetch quests attended count
   useEffect(() => {
+    // Signed out: nothing to count. Querying with an empty user_id is a 400.
+    if (!userId) { setAttendedCount(0); return }
     async function fetchAttended() {
       const { count } = await supabase
         .from('quest_participants')

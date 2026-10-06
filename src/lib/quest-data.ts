@@ -25,15 +25,20 @@ interface DbCard {
   order_index: number
 }
 
-/** Load every quest + its cards from Supabase, shaped as Quest[]. */
-export async function fetchAllQuests(): Promise<Quest[]> {
+/**
+ * Load every quest + its cards from Supabase, shaped as Quest[].
+ * `offline` is true when Supabase couldn't be reached and the small local
+ * fallback was returned instead — the page tells the learner and offers a
+ * retry, since the fallback has no Foundations quests to start from.
+ */
+export async function fetchAllQuests(): Promise<{ quests: Quest[]; offline: boolean }> {
   const [{ data: quests, error: qErr }, { data: cards, error: cErr }] = await Promise.all([
     supabase.from('learning_quests').select('*').order('order_index'),
     supabase.from('quest_cards').select('*').order('order_index'),
   ])
   if (qErr || cErr || !quests) {
     console.error('fetchAllQuests failed, using local fallback:', qErr || cErr)
-    return QUEST_CONTENT
+    return { quests: QUEST_CONTENT, offline: true }
   }
   const byQuest = new Map<string, QuestCard[]>()
   for (const c of (cards ?? []) as DbCard[]) {
@@ -41,7 +46,7 @@ export async function fetchAllQuests(): Promise<Quest[]> {
     list.push({ id: c.id, type: c.card_type, orderIndex: c.order_index, content: c.content })
     byQuest.set(c.quest_id, list)
   }
-  return (quests as DbQuest[]).map(q => ({
+  const shaped = (quests as DbQuest[]).map(q => ({
     id: q.id,
     petalKey: q.petal_id,
     title: q.title,
@@ -50,6 +55,7 @@ export async function fetchAllQuests(): Promise<Quest[]> {
     xpReward: q.xp_reward,
     cards: (byQuest.get(q.id) ?? []).sort((a, b) => a.orderIndex - b.orderIndex),
   }))
+  return { quests: shaped, offline: false }
 }
 
 /** The set of quest ids this user has completed. */

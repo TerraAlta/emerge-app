@@ -12,6 +12,13 @@ import { formatDate } from '@/lib/dateUtils'
 import { loadSavedLocation, fetchNearbyEventsForPetal, type NearbyEventLite } from '@/lib/quest-events'
 import { fetchPractitionersForPetal, type PractitionerLite } from '@/lib/quest-guild'
 
+/** "eventbrite.co.uk" from the event's link — readable, unlike internal
+ *  pipeline source names such as "eventbrite-priority". */
+function siteName(url: string | null): string | null {
+  if (!url) return null
+  try { return new URL(url).hostname.replace(/^www\./, '') } catch { return null }
+}
+
 interface Props {
   petal: QuestPetal
   quests: Quest[]
@@ -146,7 +153,7 @@ export default function PetalQuestList({ petal, quests, completed, onOpenQuest, 
                     >
                       <div className="text-[13px] font-medium leading-snug" style={{ color: 'var(--color-text)' }}>{ev.title}</div>
                       <div className="text-[12px] mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                        {formatDate(ev.starts_at)} · {ev.distance_km.toFixed(1)}km away{ev.source_name ? ` · via ${ev.source_name}` : ''}
+                        {formatDate(ev.starts_at)} · {ev.distance_km.toFixed(1)}km away{siteName(ev.source_url) ? ` · via ${siteName(ev.source_url)}` : ''}
                       </div>
                     </Tag>
                   )
