@@ -49,15 +49,16 @@ const EMAIL_ALERTS: Record<string, { subject: string; action: string }> = {
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-async function emailAdmin(reason: string, details: Record<string, unknown>): Promise<void> {
+/** Exported so /api/cron/stale-check?test=1 can prove the email path works. */
+export async function emailAdmin(reason: string, details: Record<string, unknown>): Promise<boolean> {
   const alert = EMAIL_ALERTS[reason]
   const to = process.env.NEXT_PUBLIC_ADMIN_EMAIL
-  if (!alert || !to || !isEmailConfigured()) return
+  if (!alert || !to || !isEmailConfigured()) return false
   const lastQuest = await getLastQuestTimestamp()
   const linkify = (t: string) => esc(t).replace(/(https:\/\/[^\s]+)/g, '<a href="$1">$1</a>')
-  await sendEmail({
+  const res = await sendEmail({
     to,
-    subject: `⚠️ Emerge: ${alert.subject}`,
+    subject: `⚠️ Emerge: ${details.test ? '[TEST] ' : ''}${alert.subject}`,
     html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;max-width:560px">
       <p><strong>${esc(alert.subject)}</strong></p>
       <p>${linkify(alert.action)}</p>
@@ -66,6 +67,7 @@ async function emailAdmin(reason: string, details: Record<string, unknown>): Pro
       <p style="color:#999;font-size:12px">At most one email per problem per hour. Sent by Emerge's pipeline monitor.</p>
     </div>`,
   })
+  return res.ok
 }
 
 /**

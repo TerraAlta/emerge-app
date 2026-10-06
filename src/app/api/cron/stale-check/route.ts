@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { notifyPipelineFailure } from '@/lib/pipeline-monitor'
+import { notifyPipelineFailure, emailAdmin } from '@/lib/pipeline-monitor'
 
 export const maxDuration = 10
 
@@ -19,6 +19,13 @@ export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // ?test=1 — send one sample alert email (nothing logged), to check the
+  // alarm actually reaches the inbox.
+  if (request.nextUrl.searchParams.get('test') === '1') {
+    const emailed = await emailAdmin('pipeline_stale', { test: true })
+    return NextResponse.json({ ok: true, test: true, emailed })
   }
 
   const { data } = await supabase
