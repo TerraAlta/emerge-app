@@ -6,7 +6,10 @@
 import crypto from 'crypto'
 
 function secret(): string {
-  return process.env.UNSUBSCRIBE_SECRET || process.env.INTERNAL_TRIGGER_KEY || ''
+  const s = process.env.UNSUBSCRIBE_SECRET || process.env.INTERNAL_TRIGGER_KEY
+  // An empty secret would make every link token forgeable.
+  if (!s) throw new Error('pitch-links: UNSUBSCRIBE_SECRET is not set')
+  return s
 }
 
 export function signConfirmToken(pitchId: string): string {

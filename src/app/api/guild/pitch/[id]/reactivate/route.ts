@@ -16,11 +16,17 @@ function getServiceClient() {
   )
 }
 
-async function reactivate(pitchId: string) {
+/**
+ * Re-publishes an EXPIRED pitch for another 180 days. Only expired pitches:
+ * reactivating from any other status (draft, pending_review, closed) let
+ * owners publish without review (2026-10-06 audit). Returns false if the
+ * pitch wasn't expired.
+ */
+async function reactivate(pitchId: string): Promise<boolean> {
   const supabase = getServiceClient()
   const now = new Date()
   const expires = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000)
-  await supabase
+  const { data } = await supabase
     .from('guild_pitches')
     .update({
       status: 'published',
@@ -29,6 +35,9 @@ async function reactivate(pitchId: string) {
       updated_at: now.toISOString(),
     })
     .eq('id', pitchId)
+    .eq('status', 'expired')
+    .select('id')
+  return (data?.length ?? 0) > 0
 }
 
 async function authedUser(request: NextRequest): Promise<string | null> {
@@ -53,7 +62,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     .from('guild_pitches').select('user_id').eq('id', params.id).single()
   if (!row || row.user_id !== userId) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  await reactivate(params.id)
+  if (!(await reactivate(params.id))) {
+    return NextResponse.json({ error: 'Only expired pitches can be reactivated' }, { status: 409 })
+  }
   return NextResponse.json({ ok: true })
 }
 
@@ -63,7 +74,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   if (!token || token !== signReactivateToken(params.id)) {
     return NextResponse.json({ error: 'Invalid token' }, { status: 400 })
   }
-  await reactivate(params.id)
+  const ok = await reactivate(params.id)
   const app = process.env.NEXT_PUBLIC_APP_URL || 'https://emerge.terralta.org'
-  return NextResponse.redirect(`${app}/guild/pitch/mine?reactivated=${params.id}`)
+  return NextResponse.redirect(`${app}/guild/pitch/mine${ok ? `?reactivated=${params.id}` : ''}`)
 }

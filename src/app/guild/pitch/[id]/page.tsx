@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
+import { safeHref } from '@/lib/safe-url'
 
 function ShareSection({ url, title, oneLineVision }: { url: string; title: string; oneLineVision: string }) {
   const [copied, setCopied] = useState(false)
@@ -259,9 +260,13 @@ export default function PitchPublicPage() {
     : 0
   const stale = daysSinceConfirm > 120
 
+  // Only real email addresses / http(s) links become a contact button —
+  // anything else (e.g. a javascript: URL) is not rendered.
   const contactHref = pitch.contact_method === 'email'
-    ? `mailto:${pitch.contact_value}?subject=About your Guild pitch: ${encodeURIComponent(pitch.title)}`
-    : pitch.contact_value
+    ? (/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(pitch.contact_value.trim())
+        ? `mailto:${pitch.contact_value.trim()}?subject=${encodeURIComponent(`About your Guild pitch: ${pitch.title}`)}`
+        : null)
+    : safeHref(pitch.contact_value)
 
   return (
     <div className="min-h-screen font-body flex justify-center" style={{ background: 'var(--color-bg)' }}>
@@ -381,7 +386,9 @@ export default function PitchPublicPage() {
               Inspiration & references
             </h2>
             <ul className="space-y-1.5">
-              {pitch.prep_context_urls.map((url, i) => {
+              {pitch.prep_context_urls.map((raw, i) => {
+                const url = safeHref(raw)
+                if (!url) return null
                 let host = url
                 try { host = new URL(url).hostname.replace(/^www\./, '') } catch {}
                 return (
@@ -454,7 +461,7 @@ export default function PitchPublicPage() {
 
         {/* CTAs */}
         <div className="flex flex-col gap-2 pt-4">
-          {pitch.contact_value && (
+          {contactHref && (
             <a
               href={contactHref}
               target={pitch.contact_method === 'external_link' ? '_blank' : undefined}

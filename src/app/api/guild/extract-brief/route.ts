@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { GUILD_MODEL, MAX_EXTRACTION_TOKENS, isDailyLimitReached, logApiUsage } from '@/lib/guild-costs'
+import { getRequestUserId, ownsRow, aiInputTooLarge } from '@/lib/request-user'
 
 let _ai: Anthropic | null = null
 function getAI() {
@@ -61,7 +62,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { userId, projectId, transcript, prep_context_text } = await request.json()
+    const userId = await getRequestUserId(request)
+    if (!userId) return NextResponse.json({ error: 'Please sign in to continue' }, { status: 401 })
+    const { projectId, transcript, prep_context_text } = await request.json()
+    if (projectId && !(await ownsRow('guild_projects', projectId, 'client_user_id', userId))) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    }
+    if (aiInputTooLarge(transcript, prep_context_text)) {
+      return NextResponse.json({ error: 'This conversation is too long to process' }, { status: 413 })
+    }
     const prepContext = typeof prep_context_text === 'string' ? prep_context_text.slice(0, 15000) : ''
 
     if (!userId || !projectId || !Array.isArray(transcript)) {

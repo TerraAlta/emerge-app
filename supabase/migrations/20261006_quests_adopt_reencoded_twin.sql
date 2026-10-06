@@ -46,6 +46,9 @@ BEGIN
     FROM public.quests
    WHERE starts_at = NEW.starts_at
      AND source_name IS NOT DISTINCT FROM NEW.source_name
+     -- Same link too (added after the security audit): a look-alike event
+     -- submitted from another URL can never take over a real one.
+     AND source_url IS NOT DISTINCT FROM NEW.source_url
      AND title <> NEW.title
      AND public.quests_title_skeleton(title) = skel
    LIMIT 1;

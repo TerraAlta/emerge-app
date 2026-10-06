@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { authHeaders } from '@/lib/auth-headers'
 
 type Status = 'idle' | 'connecting' | 'done' | 'error'
 
@@ -17,7 +18,7 @@ export default function ConnectLuma({ userId, onBack }: { userId: string; onBack
     try {
       const res = await fetch('/api/connect-luma', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ api_key: apiKey.trim(), user_id: userId }),
       })
       const data = await res.json()

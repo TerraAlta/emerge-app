@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { sanitizeTitle, sanitizeText, validateCoordinates } from '@/lib/sanitize'
+import { authHeaders } from '@/lib/auth-headers'
 
 const PinMap = dynamic(() => import('./PinMap'), {
   ssr: false,
@@ -102,7 +103,7 @@ export default function PostEvent({ userId, onBack, onSuccess }: Props) {
     try {
       const res = await fetch('/api/submit-event', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ url: url.trim() }),
       })
       const data = await res.json()

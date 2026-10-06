@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
+import { safeHref } from '@/lib/safe-url'
 
 interface NewsItem {
   id: string
@@ -347,7 +348,7 @@ export default function NewsScreen() {
               style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
             >
               <a
-                href={item.source_url}
+                href={safeHref(item.source_url) ?? undefined}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => handleRead(item)}
@@ -438,7 +439,7 @@ export default function NewsScreen() {
                   {estimateReadingTime(item.summary || item.title)}
                 </span>
                 <a
-                  href={item.source_url}
+                  href={safeHref(item.source_url) ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => handleRead(item)}

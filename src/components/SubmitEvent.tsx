@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { authHeaders } from '@/lib/auth-headers'
 
 type Status = 'idle' | 'fetching' | 'scoring' | 'done' | 'error'
 type Result = { approved?: boolean; queued?: boolean; score?: number; reason?: string; title?: string; error?: string }
@@ -22,7 +23,7 @@ export default function SubmitEvent({ onBack }: { onBack: () => void }) {
     try {
       const res = await fetch('/api/submit-event', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ url: url.trim() }),
       })
       const data = await res.json()

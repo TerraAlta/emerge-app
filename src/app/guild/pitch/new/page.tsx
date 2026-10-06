@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import GuildChatScreen from '@/components/GuildChatScreen'
 import UrlPrepStep from '@/components/UrlPrepStep'
 import PitchEditForm, { type PitchDraft } from '@/components/PitchEditForm'
+import { authHeaders } from '@/lib/auth-headers'
 
 type Step = 'intro' | 'fork' | 'url_prep' | 'interview' | 'extracting' | 'review' | 'publishing' | 'done'
 interface Message { role: 'user' | 'assistant'; content: string }
@@ -177,7 +178,7 @@ export default function GuildPitchNewPage() {
     try {
       const res = await fetch('/api/guild/pitch/extract', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           userId,
           pitchId,

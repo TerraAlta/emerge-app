@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import SharePopup from './SharePopup'
 import { formatDateTime } from '@/lib/dateUtils'
+import { safeHref } from '@/lib/safe-url'
 
 const DetailMap = dynamic(() => import('./DetailMap'), {
   ssr: false,
@@ -316,9 +317,9 @@ export default function EventDetail({
 
           {/* Action buttons — view source + get directions */}
           <div className="flex gap-2 mb-2.5">
-            {quest.source_url && (
+            {safeHref(quest.source_url) && (
               <a
-                href={quest.source_url}
+                href={safeHref(quest.source_url)!}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium active:scale-95 transition-transform"

@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { GUILD_MODEL, MAX_INTERVIEW_TOKENS, isDailyLimitReached, logApiUsage } from '@/lib/guild-costs'
+import { getRequestUserId, ownsRow, aiInputTooLarge } from '@/lib/request-user'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
 
 let _ai: Anthropic | null = null
@@ -74,7 +75,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { userId, petals, transcript, prep_context_text } = await request.json()
+    const userId = await getRequestUserId(request)
+    if (!userId) return NextResponse.json({ error: 'Please sign in to continue' }, { status: 401 })
+    const { petals, transcript, prep_context_text } = await request.json()
     const prepContext = typeof prep_context_text === 'string' ? prep_context_text.slice(0, 15000) : ''
 
     if (!userId || !petals?.length || !Array.isArray(transcript)) {

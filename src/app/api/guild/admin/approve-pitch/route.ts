@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
   if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 })
 
   // Kick off practitioner matching
-  const origin = request.headers.get('origin') || getAppUrl()
+  const origin = getAppUrl() // never the request's Origin header: it's attacker-controlled and this URL receives INTERNAL_TRIGGER_KEY / is the Stripe redirect
   triggerMatching(pitchId, origin)
 
   // Email pitch owner

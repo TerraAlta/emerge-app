@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { FLOWER_PETALS, CLIMATE_ZONES, PROJECT_SCALES } from '@/lib/flower-petals'
 import GuildChatScreen from '@/components/GuildChatScreen'
 import UrlPrepStep from '@/components/UrlPrepStep'
+import { authHeaders } from '@/lib/auth-headers'
 
 type Step = 'intro' | 'basic' | 'fork' | 'url_prep' | 'interview' | 'review' | 'done'
 
@@ -288,7 +289,7 @@ export default function GuildJoinPage() {
     try {
       const res = await fetch('/api/guild/extract', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ userId, practitionerId, transcript: finalTranscript, prep_context_text: prepContextText }),
       })
       if (!res.ok) {

@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { GUILD_MODEL, MAX_INTERVIEW_TOKENS, isDailyLimitReached, logApiUsage } from '@/lib/guild-costs'
+import { getRequestUserId, ownsRow, aiInputTooLarge } from '@/lib/request-user'
 
 let _ai: Anthropic | null = null
 function getAI() {
@@ -72,7 +73,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { userId, transcript, prep_context_text } = await request.json()
+    const userId = await getRequestUserId(request)
+    if (!userId) return NextResponse.json({ error: 'Please sign in to continue' }, { status: 401 })
+    const { transcript, prep_context_text } = await request.json()
     if (!userId || !Array.isArray(transcript)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }

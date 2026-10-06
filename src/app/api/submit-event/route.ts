@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import * as cheerio from 'cheerio'
 import { isCreditError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
 import { buildScoringPrompt } from '@/lib/scoring-prompt'
+import { getRequestUserId } from '@/lib/request-user'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -140,6 +141,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Too many submissions. Try again in an hour.' }, { status: 429 })
     }
 
+    // Signed-in users only — the API was callable anonymously while the UI
+    // asked for sign-in (2026-10-06 audit).
+    const userId = await getRequestUserId(request)
+    if (!userId) {
+      return NextResponse.json({ error: 'Please sign in to submit an event' }, { status: 401 })
+    }
+
     const { url } = await request.json()
     if (!url || typeof url !== 'string') {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 })
@@ -225,8 +233,11 @@ export async function POST(request: NextRequest) {
           ai_reasoning: scored.reason,
           image_url: event.image_url,
           max_participants: null,
+          created_by: userId,
         },
-        { onConflict: 'title,starts_at' }
+        // Never overwrite an existing event: a submitted page with the same
+        // title + start as a real event used to replace its link.
+        { onConflict: 'title,starts_at', ignoreDuplicates: true }
       )
 
       if (dbError) {

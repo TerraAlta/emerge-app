@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getRequestUserId } from '@/lib/request-user'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { isCreditError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
@@ -65,7 +66,12 @@ async function scoreEvent(title: string, description: string, location: string) 
 
 export async function POST(request: NextRequest) {
   try {
-    const { api_key, user_id } = await request.json()
+    // The calendar belongs to the signed-in user — never a user_id from the body.
+    const user_id = await getRequestUserId(request)
+    if (!user_id) {
+      return NextResponse.json({ error: 'Please sign in to connect a calendar' }, { status: 401 })
+    }
+    const { api_key } = await request.json()
 
     if (!api_key || typeof api_key !== 'string') {
       return NextResponse.json({ error: 'API key is required' }, { status: 400 })
@@ -83,7 +89,7 @@ export async function POST(request: NextRequest) {
     const calendarName = events[0]?.event?.host?.name ?? 'Luma Organiser'
     const { error: insertError } = await supabase.from('connected_calendars').upsert(
       {
-        user_id: user_id ?? null,
+        user_id,
         platform: 'luma',
         api_key_encrypted: encrypt(api_key),
         organiser_name: calendarName,
@@ -133,7 +139,8 @@ export async function POST(request: NextRequest) {
             image_url: ev.cover_url ?? null,
             max_participants: ev.guest_limit ?? null,
           },
-          { onConflict: 'title,starts_at' }
+          // Never overwrite an existing event with the same title + start.
+          { onConflict: 'title,starts_at', ignoreDuplicates: true }
         )
         inserted++
       } catch {

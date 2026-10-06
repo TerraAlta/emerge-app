@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Update failed' }, { status: 500 })
     }
 
-    const origin = request.headers.get('origin') || getAppUrl()
+    const origin = getAppUrl() // never the request's Origin header: it's attacker-controlled and this URL receives INTERNAL_TRIGGER_KEY / is the Stripe redirect
     triggerScoping(projectId, origin)
   }
 

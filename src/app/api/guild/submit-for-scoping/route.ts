@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     if (projectErr || !project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
-    if (userId && project.client_user_id !== userId) {
+    if (!userId || project.client_user_id !== userId) {
       return NextResponse.json({ error: 'Not authorised' }, { status: 403 })
     }
     if (project.status !== 'intake') {
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Could not submit project' }, { status: 500 })
     }
 
-    const origin = request.headers.get('origin') || getAppUrl()
+    const origin = getAppUrl() // never the request's Origin header: it's attacker-controlled and this URL receives INTERNAL_TRIGGER_KEY / is the Stripe redirect
     triggerScoping(projectId, origin)
 
     return NextResponse.json({ ok: true })

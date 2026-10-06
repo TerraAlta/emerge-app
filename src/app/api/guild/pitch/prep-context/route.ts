@@ -8,11 +8,15 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { ingestUrls } from '@/lib/url-ingest'
+import { getRequestUserId } from '@/lib/request-user'
 
 export const maxDuration = 20
 
 export async function POST(request: NextRequest) {
   try {
+    if (!(await getRequestUserId(request))) {
+      return NextResponse.json({ error: 'Please sign in to continue' }, { status: 401 })
+    }
     const { urls } = await request.json()
     if (!Array.isArray(urls)) {
       return NextResponse.json({ error: 'urls must be an array' }, { status: 400 })

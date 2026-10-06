@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // If no explicit user token, fall back to matching via service client — this is safe because
     // the project_id is a UUID and the client only knows it via RLS-gated read.
     // But we still enforce: if userId is present, it must match.
-    if (userId && project.client_user_id !== userId) {
+    if (!userId || project.client_user_id !== userId) {
       return NextResponse.json({ error: 'Not authorised' }, { status: 403 })
     }
 
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Project already paid' }, { status: 400 })
     }
 
-    const origin = request.headers.get('origin') || getAppUrl()
+    const origin = getAppUrl() // never the request's Origin header: it's attacker-controlled and this URL receives INTERNAL_TRIGGER_KEY / is the Stripe redirect
 
     const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({

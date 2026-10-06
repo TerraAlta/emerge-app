@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { FLOWER_PETALS, AVAILABILITY_OPTIONS } from '@/lib/flower-petals'
+import { safeHref } from '@/lib/safe-url'
 
 export interface Practitioner {
   id: string
@@ -169,10 +170,10 @@ export default function PractitionerCard({ practitioner: p }: Props) {
             <div>
               <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--color-text-muted)' }}>Links</p>
               <div className="flex flex-wrap gap-1.5">
-                {p.portfolio_urls.map((u, i) => (
+                {p.portfolio_urls.map((u, i) => safeHref(u.url) && (
                   <a
                     key={i}
-                    href={u.url}
+                    href={safeHref(u.url)!}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="rounded-full px-2.5 py-1 text-[11px]"

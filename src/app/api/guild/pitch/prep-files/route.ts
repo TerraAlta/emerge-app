@@ -8,6 +8,7 @@
  * Returns: { results: FileIngestResult[], combinedText: string }
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { getRequestUserId } from '@/lib/request-user'
 import { ingestFiles } from '@/lib/file-ingest'
 
 export const runtime = 'nodejs'
@@ -15,6 +16,9 @@ export const maxDuration = 30
 
 export async function POST(request: NextRequest) {
   try {
+    if (!(await getRequestUserId(request))) {
+      return NextResponse.json({ error: 'Please sign in to continue' }, { status: 401 })
+    }
     const form = await request.formData()
     const files: File[] = []
     for (const [key, value] of form.entries()) {

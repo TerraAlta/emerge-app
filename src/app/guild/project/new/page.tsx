@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import GuildChatScreen from '@/components/GuildChatScreen'
 import UrlPrepStep from '@/components/UrlPrepStep'
 import ManualBriefForm from '@/components/ManualBriefForm'
+import { authHeaders } from '@/lib/auth-headers'
 
 type Step = 'intro' | 'basic' | 'fork' | 'url_prep' | 'intake' | 'extracting' | 'manual_form' | 'preview'
 
@@ -140,7 +141,7 @@ export default function GuildProjectNewPage() {
     try {
       const res = await fetch('/api/guild/extract-brief', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ userId, projectId, transcript, prep_context_text: prepContextText }),
       })
       if (!res.ok) {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { authHeaders } from '@/lib/auth-headers'
 
 export interface PrepResult {
   urls: string[]
@@ -78,7 +79,7 @@ export default function UrlPrepStep({
       const urlPromise: Promise<any> = cleanedUrls.length > 0
         ? readJsonSafe(fetch('/api/guild/pitch/prep-context', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: await authHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ urls: cleanedUrls }),
           }))
         : Promise.resolve({ results: [], combinedText: '' })
@@ -87,7 +88,7 @@ export default function UrlPrepStep({
       if (files.length > 0) {
         const form = new FormData()
         files.forEach((f, i) => form.append(`file${i + 1}`, f))
-        filePromise = readJsonSafe(fetch('/api/guild/pitch/prep-files', { method: 'POST', body: form }))
+        filePromise = readJsonSafe(fetch('/api/guild/pitch/prep-files', { method: 'POST', headers: await authHeaders(), body: form }))
       }
 
       const [urlData, fileData] = await Promise.all([urlPromise, filePromise])

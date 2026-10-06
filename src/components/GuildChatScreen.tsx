@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { authHeaders } from '@/lib/auth-headers'
 
 export interface ChatMessage {
   role: 'user' | 'assistant'
@@ -63,7 +64,7 @@ export default function GuildChatScreen({
   async function post(transcript: ChatMessage[]) {
     const res = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ userId, transcript, ...(extraBody || {}) }),
     })
     if (!res.ok) {
