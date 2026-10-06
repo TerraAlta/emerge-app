@@ -318,7 +318,7 @@ const SOURCES: SourceFetcher[] = [
   transitionDe,
   foodsharingDe,
   solawiDe,
-  zukunftsorteDe,
+  // zukunftsorteDe — disabled 2026-10-06: network events are online Zoom meetups only (domain moved to zukunftsorte.land)
   siebenLindenDe,
   permacultuurNl,
   // herenborenNl — disabled 2026-10-06: no central agenda (refers to each farm's site); rate-limits
@@ -340,7 +340,7 @@ const SOURCES: SourceFetcher[] = [
   riveIt,
   // transitionIt — disabled 2026-10-06: Transition Italia dormant since 2018
   // damanhurIt — disabled 2026-10-06: calendar moved to damanhur.community, behind a Cloudflare check (not bypassed)
-  incroyablesFr,
+  // incroyablesFr — disabled 2026-10-06: no agenda on the site (/agenda, /evenements 404); none on Mobilizon
   transitionFr,
   terredeliensFr,
   amapFr,
@@ -399,8 +399,8 @@ const SOURCES: SourceFetcher[] = [
   cltEu,
   // Zero Waste
   zeroWasteEu,
-  zeroWasteFr,
-  zeroWasteDe,
+  // zeroWasteFr — disabled 2026-10-06: no agenda; API needs login; the map is a directory, not events
+  // zeroWasteDe — disabled 2026-10-06: calendar is password-protected and internal
   zeroWasteBe,
   rezeroEs,
   recyclingNetwerkBe,
@@ -412,7 +412,7 @@ const SOURCES: SourceFetcher[] = [
   zeroWasteDayGlobal,
   // Theatre of the Oppressed
   stopLondonUk,
-  kuringaDe,
+  // kuringaDe — disabled 2026-10-06: calendar is one hand-written post, last date Sep 2026; domain moved to kuringa.de
   itoGlobal,
   tonycUsa,
   // Birth & Midwifery Circles
@@ -442,7 +442,7 @@ const SOURCES: SourceFetcher[] = [
   phillyOrchardUsa,
   portlandFruitUsa,
   // Community Kitchens
-  discoSoupeFr,
+  // discoSoupeFr — disabled 2026-10-06: static one-page site with a toolkit only; no agenda
   schnippeldiskoDe,
   // foodcycleUk — disabled 2026-10-06: lists weekly venues, not dated events
   // realJunkFoodUk — disabled 2026-10-06: domain now redirects to a gambling site — do NOT re-enable this URL
@@ -489,13 +489,13 @@ const SOURCES: SourceFetcher[] = [
   financiteBe,
   // France (new)
   miramapFr,
-  semencesFr,
+  // semencesFr — disabled 2026-10-06: news only; no agenda page
   compaillonsFr,
   enercoopFr,
   repaircafeFr,
   passerellecoFr,
-  monnaiesLocalesFr,
-  alternatibaFr,
+  // monnaiesLocalesFr — disabled 2026-10-06: monnaieslocales.fr is a parked domain; network's last gathering 2022
+  // alternatibaFr — disabled 2026-10-06: no events data; local groups are a directory map; fetedespossibles.fr gone
   // UK (new)
   tcvUk,
   woodlandTrustUk,

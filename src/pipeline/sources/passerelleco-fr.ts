@@ -1,81 +1,147 @@
 /**
- * Passerelle Eco — passerelleco.com
- * Eco-village and community project listings magazine.
+ * Passerelle Eco — passerelleco.info / ecovillageglobal.fr
+ * Eco-village network magazine. Its classifieds site ecovillageglobal.fr has
+ * an "Agenda des événements proposés" (spip.php?page=agenda): ads that carry
+ * an event date — participatory building sites (chantiers participatifs),
+ * stages, discovery stays, gatherings at écolieux.
+ *
+ * (passerelleco.com is dead; passerelleco.info itself only has articles.)
+ *
+ * List items carry <time datetime> (UTC midnight of the local start day) plus
+ * a French range text ("Du 14 au 18 octobre", "Du 28 octobre au 1er novembre")
+ * which we parse for the end day. The agenda also lists long-running offers
+ * and housing searches; we keep only items starting in the future and lasting
+ * ≤ 31 days, and drop "recherche/cherche" ads and housing/carpool rubrics.
+ * No times are given: we assume 09:00–18:00 local.
+ * Coordinates come from the site's own GIS JSON for each ad (one request per
+ * kept item); fallback is the ad's département via Nominatim.
  */
+import { load } from 'cheerio'
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
-import { extractFrenchDate, geocodeFrBe } from './french-utils'
+import { getText, parisIso, frMonth, geocodeFr, inFrance, isOnline } from './fr2-common'
 
-const URLS = [
-  'https://www.passerelleco.com/agenda/',
-  'https://www.passerelleco.com/spip.php?rubrique3',
-]
-const HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' }
+const SRC = 'passerelleco-fr'
+const BASE = 'https://ecovillageglobal.fr'
+const LIST = `${BASE}/spip.php?page=agenda`
+const MAX_PAGES = 10
+const MAX_EVENTS = 200
+const MAX_DAYS = 31
 
-export const passerellecoFr: SourceFetcher = {
-  name: 'passerelleco-fr',
-  async fetch() {
-    for (const base of URLS) {
-      try {
-        const origin = new URL(base).origin
-        // 1. Try Tribe Events Calendar WP API
-        try {
-          const api = await fetch(`${origin}/wp-json/tribe/events/v1/events`, {
-            headers: HEADERS, signal: AbortSignal.timeout(10000),
-          })
-          if (api.ok) {
-            const data = await api.json()
-            const evts = (data.events ?? []) as any[]
-            return evts.filter((e: any) => e.title && e.start_date).map((e: any): RawEvent => {
-              const geo = geocodeFrBe(e.venue?.city ?? e.venue?.address ?? '') ?? { lat: 48.8566, lng: 2.3522 }
-              return {
-                source: 'passerelleco-fr', source_id: `passerelleco-${hashStr(e.title + e.start_date)}`,
-                source_url: e.url ?? base, title: stripHtml(e.title),
-                description: stripHtml(e.description ?? '').slice(0, 500),
-                organizer: 'Passerelle Eco', location_name: e.venue?.venue ?? 'France',
-                ...geo, starts_at: new Date(e.start_date).toISOString(),
-                ends_at: e.end_date ? new Date(e.end_date).toISOString() : null,
-                cost: e.cost ?? 'See event page',
-              }
-            })
-          }
-        } catch { /* fall through */ }
-
-        // 2. HTML fetch -> JSON-LD -> scrape
-        const res = await fetch(base, { headers: HEADERS, signal: AbortSignal.timeout(10000) })
-        if (!res.ok) continue
-        const html = await res.text()
-        const jsonLd = extractJsonLd(html, 'passerelleco-fr')
-        if (jsonLd.length > 0) return jsonLd
-        return scrapeHtml(html, base)
-      } catch { continue }
-    }
-    console.warn('[passerelleco-fr] all URLs failed')
-    return []
-  },
+interface Item {
+  id: string
+  title: string
+  startDay: { y: number; m: number; d: number }
+  endDay: { y: number; m: number; d: number }
+  rubrique: string
+  dept: string
+  author: string
+  intro: string
 }
 
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const pat = /<(?:article|div|li)[^>]*class="[^"]*(?:event|agenda|annonce|rencontre|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let m
-  while ((m = pat.exec(html)) !== null) {
-    const block = m[1]
-    const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!t) continue
-    const title = stripHtml(t[2]).trim()
-    if (!title || title.length < 5) continue
-    const link = t[1] ? new URL(t[1], baseUrl).toString() : baseUrl
-    const startsAt = extractFrenchDate(block)
-    const loc = block.match(/(?:class="[^"]*(?:lieu|location|city)[^"]*"[^>]*>)([\s\S]*?)<\//i)
-    const locName = loc ? stripHtml(loc[1]).trim() : 'France'
-    const geo = geocodeFrBe(locName) ?? { lat: 48.8566, lng: 2.3522 }
-    events.push({
-      source: 'passerelleco-fr', source_id: `passerelleco-${hashStr(title)}`,
-      source_url: link, title, description: `Eco-village / community project event. See ${link}`,
-      organizer: 'Passerelle Eco', location_name: locName, ...geo,
-      starts_at: startsAt, cost: 'See event page',
+/** UTC instant → Paris calendar day */
+function parisDay(iso: string): { y: number; m: number; d: number } | null {
+  const t = new Date(iso)
+  if (isNaN(t.getTime())) return null
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })
+      .formatToParts(t).map((x) => [x.type, x.value]),
+  )
+  return { y: +p.year, m: +p.month, d: +p.day }
+}
+
+/** "Du 14 au 18 octobre" / "Du 28 octobre au 1er novembre" / "Du 1er sept au 30 juin 2027" → end day */
+function endDay(text: string, start: { y: number; m: number; d: number }): { y: number; m: number; d: number } {
+  const m = text.match(/\bau\s+(\d{1,2})(?:er)?(?:\s+([a-zéèûô]+))?(?:\s+(\d{4}))?/i)
+  if (!m) return start
+  const d = parseInt(m[1], 10)
+  const mo = m[2] ? frMonth(m[2]) ?? start.m : start.m
+  let y = m[3] ? parseInt(m[3], 10) : start.y
+  if (!m[3] && Date.UTC(y, mo - 1, d) < Date.UTC(start.y, start.m - 1, start.d)) y++
+  return { y, m: mo, d }
+}
+
+function parseList(html: string): { items: Item[]; hasNext: boolean } {
+  const $ = load(html)
+  const items: Item[] = []
+  $('article.entry.annonce').each((_, el) => {
+    const a = $(el)
+    const href = a.find('a.resume').attr('href') ?? ''
+    const idm = href.match(/^\/(\d+)$/)
+    const title = a.find('h3').first().text().replace(/\s+/g, ' ').trim()
+    const time = a.find('.date_evenement time')
+    const dt = time.attr('datetime')
+    if (!idm || !title || !dt) return
+    const startDay = parisDay(dt)
+    if (!startDay || startDay.y < 2000) return // "Jusqu'au …" ads have a 1999 placeholder
+    const rangeText = time.text().replace(/\s+/g, ' ').trim()
+    items.push({
+      id: idm[1],
+      title,
+      startDay,
+      endDay: endDay(rangeText, startDay),
+      rubrique: a.find('li.rubrique').attr('title') ?? '',
+      dept: a.find('li.lieu a').first().text().replace(/\s+/g, ' ').trim(),
+      author: a.find('li.auteur').text().replace(/\s+/g, ' ').trim(),
+      intro: a.find('.introduction').text().replace(/\s+/g, ' ').replace(/\(…\)\s*$/, '…').trim(),
     })
-  }
-  return events
+  })
+  return { items, hasNext: /debut_annonces=\d+/.test(html) }
+}
+
+async function adCoords(id: string): Promise<{ lat: number; lng: number } | null> {
+  const txt = await getText(`${BASE}/spip.php?page=gis_json&objets=annonce&limit=1&id_annonce=${id}`)
+  if (!txt) return null
+  try {
+    const c = JSON.parse(txt)?.features?.[0]?.geometry?.coordinates
+    if (Array.isArray(c) && inFrance(+c[1], +c[0])) return { lat: +c[1], lng: +c[0] }
+  } catch { /* fall through */ }
+  return null
+}
+
+export const passerellecoFr: SourceFetcher = {
+  name: SRC,
+  async fetch() {
+    const byId = new Map<string, Item>()
+    for (let p = 0; p < MAX_PAGES; p++) {
+      const html = await getText(p === 0 ? LIST : `${LIST}&debut_annonces=${p * 5}`)
+      if (!html) break
+      const { items } = parseList(html)
+      if (!items.length) break
+      let added = 0
+      for (const it of items) if (!byId.has(it.id)) { byId.set(it.id, it); added++ }
+      if (!added) break
+    }
+
+    const events: RawEvent[] = []
+    for (const it of byId.values()) {
+      if (events.length >= MAX_EVENTS) break
+      const { startDay: s, endDay: e } = it
+      const starts = parisIso(s.y, s.m, s.d, 9, 0)
+      if (new Date(starts).getTime() < Date.now()) continue
+      const days = (Date.UTC(e.y, e.m - 1, e.d) - Date.UTC(s.y, s.m - 1, s.d)) / 86400000
+      if (days < 0 || days > MAX_DAYS) continue
+      if (/(^|\s)(re)?ch?erche|^rechet|^lieu de vie|^projet/i.test(it.title)) continue
+      if (/location|covoiturage|voitures/i.test(it.rubrique)) continue
+      if (isOnline(`${it.title} ${it.intro}`)) continue
+
+      const geo = (await adCoords(it.id)) ?? (it.dept ? await geocodeFr(`${it.dept}, France`) : null)
+      if (!geo) continue
+
+      events.push({
+        source: SRC,
+        source_id: `passerelleco-${it.id}`,
+        source_url: `${BASE}/${it.id}`,
+        title: it.title,
+        description: (it.intro || it.title).slice(0, 500),
+        organizer: it.author.replace(/^\((.*)\)$/, '$1') || 'Passerelle Eco / Écovillage Global',
+        location_name: it.dept ? `${it.dept}, France` : 'France',
+        lat: geo.lat,
+        lng: geo.lng,
+        starts_at: starts,
+        ends_at: parisIso(e.y, e.m, e.d, 18, 0),
+        cost: 'See event page',
+      })
+    }
+    return events
+  },
 }

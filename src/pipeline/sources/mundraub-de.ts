@@ -1,97 +1,126 @@
 /**
- * Mundraub Germany — mundraub.org
- * Community foraging map + events. Has an API for map markers.
- * Events are at mundraub.org/community or /blog.
+ * Mundraub — mundraub.org
+ * Germany's community foraging map. Besides the (undated) map of fruit trees,
+ * users publish "Aktionen": harvest actions, planting/care days, foraging
+ * tours, apple festivals… each with a date, an address and coordinates.
+ *
+ * There is no public listing page, but every action is in the Drupal
+ * sitemap (https://mundraub.org/sitemap.xml?page=1, /aktionen/<slug> with
+ * <lastmod>). We take the most recently created/edited actions and read each
+ * detail page:
+ *   - date:   .field-action-date <time datetime="…Z"> (UTC)
+ *   - place:  .field-action-address (road / plz / city)
+ *   - coords: <Point><coordinates>lng,lat</coordinates></Point>
+ *   - type:   .field-action-category .tag (Ernteaktion, Pflanzen & Pflegen, …)
+ * Map markers (trees) are places, not events, and are NOT emitted.
+ * Requests: 1 sitemap + ≤ 25 detail pages, sequential.
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { haversine, stripHtml, hashStr } from './utils'
+import { stripHtml, decodeEntities } from './utils'
 
-const API_URL = 'https://mundraub.org/api/node?type=fruitmap'
-const EVENTS_URL = 'https://mundraub.org/community'
+const SRC = 'mundraub-de'
+const BASE = 'https://mundraub.org'
+const SITEMAP = `${BASE}/sitemap.xml?page=1`
+const UA = 'Emerge-App/1.0 (https://emerge.terralta.org)'
+const MAX_DETAIL = 25
+const RECENT_DAYS = 75
 
-export const mundraubDe: SourceFetcher = {
-  name: 'mundraub-de',
-  async fetch() {
-    const events: RawEvent[] = []
-
-    // Try their community/events page
-    try {
-      const res = await fetch(EVENTS_URL, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-      })
-      if (res.ok) {
-        const html = await res.text()
-        events.push(...scrapeEvents(html))
-      }
-    } catch (err) {
-      console.warn('[mundraub-de] events scrape failed:', (err as Error).message)
-    }
-
-    // Try the foraging map API — fetch all fruit trees (global bounds)
-    try {
-      const res = await fetch(
-        `https://mundraub.org/cluster/node?bbox=-180,-90,180,90&zoom=4&cat=2,4,5,6,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33`,
-        { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)' } }
-      )
-      if (res.ok) {
-        const data = await res.json()
-        if (data.features) {
-          const nearby = data.features
-            .slice(0, 10)
-
-          for (const f of nearby) {
-            const [fLng, fLat] = f.geometry.coordinates
-            const props = f.properties || {}
-            events.push({
-              source: 'mundraub-de',
-              source_id: `mundraub-${props.nid || hashStr(JSON.stringify(f.geometry))}`,
-              source_url: props.nid ? `https://mundraub.org/node/${props.nid}` : 'https://mundraub.org',
-              title: `Foraging spot — ${props.type_title || 'Fruit tree'}`,
-              description: `Community-mapped foraging location. ${props.type_title || 'Fruit tree'} available for harvesting. Part of the Mundraub community foraging network.`,
-              organizer: 'Mundraub community',
-              location_name: 'See map',
-              lat: fLat,
-              lng: fLng,
-              starts_at: new Date().toISOString(), // ongoing
-              cost: 'Free',
-            })
-          }
-        }
-      }
-    } catch (err) {
-      console.warn('[mundraub-de] API failed:', (err as Error).message)
-    }
-
-    return events
-  },
+async function getText(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': UA, Accept: 'text/html,application/xml;q=0.9,*/*;q=0.8' },
+      signal: AbortSignal.timeout(20000),
+    })
+    if (!res.ok) return null
+    return await res.text()
+  } catch {
+    return null
+  }
 }
 
-function scrapeEvents(html: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const blockPattern = /<(?:article|div)[^>]*class="[^"]*(?:event|community|action)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div)>/gi
-  let match
-
-  while ((match = blockPattern.exec(html)) !== null) {
-    const block = match[1]
-    const titleMatch = block.match(/<h[23][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[23]>/i)
-    if (!titleMatch) continue
-
-    const title = stripHtml(titleMatch[2]).trim()
-    if (!title || title.length < 5) continue
-
-    events.push({
-      source: 'mundraub-de',
-      source_id: `mundraub-evt-${hashStr(title)}`,
-      source_url: titleMatch[1] ? new URL(titleMatch[1], 'https://mundraub.org').toString() : EVENTS_URL,
-      title,
-      description: 'Mundraub community event. See link for details.',
-      organizer: 'Mundraub',
-      location_name: 'Germany',
-      lat: 0, lng: 0,
-      starts_at: new Date().toISOString(),
-      cost: 'Free',
-    })
+/** Actions in the sitemap, newest lastmod first. */
+function actionUrls(xml: string): { url: string; lastmod: number }[] {
+  const out: { url: string; lastmod: number }[] = []
+  const rx = /<loc>\s*([^<\s]*\/aktionen\/[^<\s]+)\s*<\/loc>\s*(?:<lastmod>\s*([^<\s]+)\s*<\/lastmod>)?/g
+  let m: RegExpExecArray | null
+  while ((m = rx.exec(xml)) !== null) {
+    const lm = m[2] ? Date.parse(m[2]) : NaN
+    out.push({ url: decodeEntities(m[1]), lastmod: Number.isFinite(lm) ? lm : 0 })
   }
+  return out.sort((a, b) => b.lastmod - a.lastmod)
+}
 
-  return events
+function parseAction(html: string, url: string): RawEvent | null {
+  const dateBlock = html.match(/field-action-date[\s\S]*?<\/div>\s*<\/div>/)?.[0] ?? ''
+  const times = [...dateBlock.matchAll(/<time datetime="([^"]+)"/g)].map((t) => Date.parse(t[1]))
+    .filter((t) => Number.isFinite(t))
+  if (!times.length) return null
+  const start = times[0]
+  const end = times.length > 1 && times[1] > start ? times[1] : null
+
+  const coords = html.match(/(?:<|&lt;)coordinates(?:>|&gt;)\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/)
+  if (!coords) return null
+  const lng = parseFloat(coords[1])
+  const lat = parseFloat(coords[2])
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) return null
+
+  const title = stripHtml(
+    html.match(/<article[^>]*action-full[\s\S]*?<h2[^>]*>([\s\S]*?)<\/h2>/)?.[1] ??
+      html.match(/<meta property="og:title" content="([^"]*)"/)?.[1] ??
+      '',
+  ).trim()
+  if (!title) return null
+
+  const category = stripHtml(html.match(/field-action-category[\s\S]*?<div class="tag">([\s\S]*?)<\/div>/)?.[1] ?? '').trim()
+  const body = stripHtml((html.match(/<div class="field body[\s\S]*?<div class="content[^"]*">([\s\S]*?)<\/div>\s*<\/div>/)?.[1] ?? '').replace(/<\/p>|<br\s*\/?>/gi, ' '))
+  if (/\b(online|webinar|zoom)\b/i.test(title)) return null
+
+  const ai = html.indexOf('field-action-address')
+  const addrBlock = ai >= 0 ? html.slice(ai, ai + 2000) : ''
+  const part = (cls: string) => stripHtml(addrBlock.match(new RegExp(`class="address ${cls}[^"]*">([\\s\\S]*?)<\\/div>`))?.[1] ?? '').trim()
+  const road = part('road')
+  const plz = part('plz')
+  const city = part('city')
+  const locationName = [road, [plz, city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || 'Deutschland'
+
+  const nid = html.match(/data-history-node-id="(\d+)"/)?.[1]
+  const img = html.match(/<div class="field field-image[\s\S]*?\ssrc="([^"]+)"/)?.[1]
+
+  return {
+    source: SRC,
+    source_id: `mundraub-action-${nid ?? url.split('/').pop()}`,
+    source_url: url,
+    title: category && !/sonstige/i.test(category) ? `${title} (${decodeEntities(category)})` : title,
+    description: (body || `${category || 'Aktion'} der mundraub-Community.`).slice(0, 1500),
+    organizer: 'mundraub-Community',
+    location_name: locationName,
+    lat,
+    lng,
+    starts_at: new Date(start).toISOString(),
+    ends_at: end ? new Date(end).toISOString() : null,
+    cost: 'Free',
+    image_url: img ? new URL(decodeEntities(img), BASE).toString() : null,
+  }
+}
+
+export const mundraubDe: SourceFetcher = {
+  name: SRC,
+  async fetch() {
+    const xml = await getText(SITEMAP)
+    if (!xml) {
+      console.warn(`[${SRC}] sitemap unavailable`)
+      return []
+    }
+    const cutoff = Date.now() - RECENT_DAYS * 86400e3
+    const candidates = actionUrls(xml).filter((a) => a.lastmod >= cutoff).slice(0, MAX_DETAIL)
+
+    const out: RawEvent[] = []
+    for (const c of candidates) {
+      const html = await getText(c.url)
+      if (!html) continue
+      const ev = parseAction(html, c.url)
+      if (ev) out.push(ev)
+    }
+    return out
+  },
 }

@@ -1,82 +1,90 @@
 /**
- * Réseau Français de Permaculture — permaculture.fr / bfrp.org
- * French permaculture network events.
+ * Réseau français de permaculture — Brin de Paille (brindepaille.permaculture.fr)
+ *
+ * permaculture.fr is now a static portal pointing to the association Brin de
+ * Paille, whose "Agenda" page (/agenda-carte/) embeds a Google Calendar
+ * combining the network's public calendars. Each one has a public iCal feed:
+ *   https://calendar.google.com/calendar/ical/<id>%40group.calendar.google.com/public/basic.ics
+ *   - 7p7itav5ple7iof5uje600mf7g  "Réseau PMC" (courses/events by member orgs)
+ *   - kgqc39d66ph8l935stmv6b1dqg  "Formations PMC" (permaculture design courses)
+ *   - 36i7lisbrp38sbed69268opblg  "Formations thématiques"
+ *   - 7dirnbkjmcvpormn8ai4kojc94  "Chantiers participatifs"
+ * (a fifth id in the embed returns 404). Four requests. Times are UTC ("Z")
+ * or Europe/Paris; all-day events start at 00:00 Paris. Recurring masters
+ * (RRULE) are skipped — the feeds use explicit dated entries. Online events
+ * are skipped; LOCATION is geocoded (cached). bfrp.org (the old URL) is now a
+ * placeholder site unrelated to permaculture.
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
-import { extractFrenchDate, geocodeFrBe } from './french-utils'
+import { stripHtml, hashStr } from './utils'
+import { getText, parseIcs, geocodeFrFirst, ONLINE_RE } from './fr-common'
 
-const URLS = [
-  'https://www.permaculture.fr/agenda/',
-  'https://www.bfrp.org/evenements/',
+const SRC = 'permaculture-fr'
+const AGENDA = 'https://brindepaille.permaculture.fr/agenda-carte/'
+const CALENDARS: Array<[string, string]> = [
+  ['7p7itav5ple7iof5uje600mf7g', 'Réseau PMC'],
+  ['kgqc39d66ph8l935stmv6b1dqg', 'Formations PMC'],
+  ['36i7lisbrp38sbed69268opblg', 'Formations thématiques'],
+  ['7dirnbkjmcvpormn8ai4kojc94', 'Chantiers participatifs'],
 ]
-const HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' }
+const MAX_EVENTS = 200
 
-export const permacultureFr: SourceFetcher = {
-  name: 'permaculture-fr',
-  async fetch() {
-    for (const base of URLS) {
-      try {
-        const origin = new URL(base).origin
-        // 1. Try Tribe Events Calendar WP API
-        try {
-          const api = await fetch(`${origin}/wp-json/tribe/events/v1/events`, {
-            headers: HEADERS, signal: AbortSignal.timeout(10000),
-          })
-          if (api.ok) {
-            const data = await api.json()
-            const evts = (data.events ?? []) as any[]
-            return evts.filter((e: any) => e.title && e.start_date).map((e: any): RawEvent => {
-              const geo = geocodeFrBe(e.venue?.city ?? e.venue?.address ?? '') ?? { lat: 0, lng: 0 }
-              return {
-                source: 'permaculture-fr', source_id: `perm-fr-${hashStr(e.title + e.start_date)}`,
-                source_url: e.url ?? base, title: stripHtml(e.title),
-                description: stripHtml(e.description ?? '').slice(0, 500),
-                organizer: 'Réseau Français de Permaculture',
-                location_name: e.venue?.venue ?? 'France', ...geo,
-                starts_at: new Date(e.start_date).toISOString(),
-                ends_at: e.end_date ? new Date(e.end_date).toISOString() : null,
-                cost: e.cost ?? 'See event page',
-              }
-            })
-          }
-        } catch { /* fall through */ }
-
-        // 2. HTML fetch → JSON-LD → scrape
-        const res = await fetch(base, { headers: HEADERS, signal: AbortSignal.timeout(10000) })
-        if (!res.ok) continue
-        const html = await res.text()
-        const jsonLd = extractJsonLd(html, 'permaculture-fr')
-        if (jsonLd.length > 0) return jsonLd
-        return scrapeHtml(html, base)
-      } catch { continue }
-    }
-    console.warn('[permaculture-fr] all URLs failed')
-    return []
-  },
+function firstLink(html: string): string | null {
+  const m = html.match(/https?:\/\/[^\s"'<>]+/g) ?? []
+  const u = m.find((x) => !/google\.com|goo\.gl|gstatic/.test(x))
+  return u ? u.replace(/[).,;]+$/, '') : null
 }
 
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const pat = /<(?:article|div|li)[^>]*class="[^"]*(?:event|evenement|stage|formation|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let m
-  while ((m = pat.exec(html)) !== null) {
-    const block = m[1]
-    const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!t) continue
-    const title = stripHtml(t[2]).trim()
-    if (!title || title.length < 5) continue
-    const link = t[1] ? new URL(t[1], baseUrl).toString() : baseUrl
-    const startsAt = extractFrenchDate(block)
-    const loc = block.match(/(?:class="[^"]*(?:lieu|location|city)[^"]*"[^>]*>)([\s\S]*?)<\//i)
-    const locName = loc ? stripHtml(loc[1]).trim() : 'France'
-    const geo = geocodeFrBe(locName) ?? { lat: 0, lng: 0 }
-    events.push({
-      source: 'permaculture-fr', source_id: `perm-fr-${hashStr(title)}`,
-      source_url: link, title, description: `Permaculture event. See ${link}`,
-      organizer: 'Réseau Français de Permaculture', location_name: locName, ...geo,
-      starts_at: startsAt, cost: 'See event page',
-    })
-  }
-  return events
+export const permacultureFr: SourceFetcher = {
+  name: SRC,
+  async fetch() {
+    const now = Date.now()
+    const events: RawEvent[] = []
+    const seen = new Set<string>()
+
+    for (const [id, calName] of CALENDARS) {
+      const ics = await getText(`https://calendar.google.com/calendar/ical/${id}%40group.calendar.google.com/public/basic.ics`)
+      if (!ics || !ics.includes('BEGIN:VCALENDAR')) continue
+      const upcoming = parseIcs(ics)
+        .filter((e) => !e.rrule && e.status !== 'CANCELLED' && new Date(e.start).getTime() > now)
+        .sort((a, b) => a.start.localeCompare(b.start))
+
+      for (const ev of upcoming) {
+        if (events.length >= MAX_EVENTS) break
+        const key = `${ev.summary}|${ev.start}`
+        if (seen.has(ev.uid) || seen.has(key)) continue
+        seen.add(ev.uid)
+        seen.add(key)
+        if (!ev.location || ONLINE_RE.test(`${ev.summary} ${ev.location}`)) continue
+
+        // "Céret, 66400 Céret, France" / "Ferme X, 12 chemin Y, 34120 Tourbes, France"
+        const loc = ev.location.replace(/,?\s*France\s*$/i, '').trim()
+        const parts = loc.split(',').map((s) => s.trim()).filter(Boolean)
+        const geo = await geocodeFrFirst([
+          loc,
+          parts.slice(1).join(', '),
+          loc.match(/\b\d{5}\s+[^,]+/)?.[0] ?? '',
+          parts[parts.length - 1] ?? '',
+        ].filter(Boolean))
+        if (!geo) continue
+
+        const descr = stripHtml(ev.description.replace(/<[^>]+>/g, ' '))
+        events.push({
+          source: SRC,
+          source_id: `permafr-${hashStr(ev.uid)}`,
+          source_url: firstLink(ev.description) ?? AGENDA,
+          title: ev.summary.replace(/\s+/g, ' ').trim(),
+          description: (descr || ev.summary).slice(0, 500),
+          organizer: `Réseau de permaculture — ${calName}`,
+          location_name: loc.slice(0, 200),
+          lat: geo.lat,
+          lng: geo.lng,
+          starts_at: ev.start,
+          ends_at: ev.end,
+          cost: 'Voir l’événement',
+        })
+      }
+    }
+    return events
+  },
 }

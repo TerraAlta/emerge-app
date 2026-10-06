@@ -1,82 +1,71 @@
 /**
- * Réseau Transition — reseautransition.be / entransition.fr
- * Transition network events (France & Belgium).
+ * Réseau Transition — reseautransition.be (Transition network, Wallonia &
+ * Brussels; also lists cross-border events such as the international
+ * Transition meeting in Mouscron).
+ *
+ * The site runs WordPress + Events Manager, which publishes an iCalendar
+ * feed of upcoming events at /events.ics (TZID=Europe/Brussels, same
+ * CET/CEST rules as Paris). One request. The feed's X-APPLE geo is always
+ * 0,0, so LOCATION ("Venue, street, town, province, postcode, Belgique") is
+ * geocoded (cached). Online events are skipped.
+ *
+ * entransition.fr (Transition France) has no structured agenda — its
+ * "agenda" is a handful of blog posts that relay the same events — so it is
+ * not read.
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
-import { extractFrenchDate, geocodeFrBe } from './french-utils'
+import { stripHtml } from './utils'
+import { getText, parseIcs, geocodeFrFirst, ONLINE_RE } from './fr-common'
 
-const URLS = [
-  'https://www.reseautransition.be/agenda/',
-  'https://www.entransition.fr/agenda/',
-]
-const HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' }
+const SRC = 'transition-fr'
+const FEED = 'https://www.reseautransition.be/events.ics'
+const AGENDA = 'https://www.reseautransition.be/agenda/'
+const MAX_EVENTS = 200
 
 export const transitionFr: SourceFetcher = {
-  name: 'transition-fr',
+  name: SRC,
   async fetch() {
-    for (const base of URLS) {
-      try {
-        const origin = new URL(base).origin
-        // 1. Try Tribe Events Calendar WP API
-        try {
-          const api = await fetch(`${origin}/wp-json/tribe/events/v1/events`, {
-            headers: HEADERS, signal: AbortSignal.timeout(10000),
-          })
-          if (api.ok) {
-            const data = await api.json()
-            const evts = (data.events ?? []) as any[]
-            return evts.filter((e: any) => e.title && e.start_date).map((e: any): RawEvent => {
-              const geo = geocodeFrBe(e.venue?.city ?? e.venue?.address ?? '') ?? { lat: 0, lng: 0 }
-              return {
-                source: 'transition-fr', source_id: `transition-${hashStr(e.title + e.start_date)}`,
-                source_url: e.url ?? base, title: stripHtml(e.title),
-                description: stripHtml(e.description ?? '').slice(0, 500),
-                organizer: 'Réseau Transition',
-                location_name: e.venue?.venue ?? 'France / Belgium', ...geo,
-                starts_at: new Date(e.start_date).toISOString(),
-                ends_at: e.end_date ? new Date(e.end_date).toISOString() : null,
-                cost: e.cost ?? 'See event page',
-              }
-            })
-          }
-        } catch { /* fall through */ }
-
-        // 2. HTML fetch → JSON-LD → scrape
-        const res = await fetch(base, { headers: HEADERS, signal: AbortSignal.timeout(10000) })
-        if (!res.ok) continue
-        const html = await res.text()
-        const jsonLd = extractJsonLd(html, 'transition-fr')
-        if (jsonLd.length > 0) return jsonLd
-        return scrapeHtml(html, base)
-      } catch { continue }
+    const ics = await getText(FEED)
+    if (!ics || !ics.includes('BEGIN:VCALENDAR')) {
+      console.warn('[transition-fr] events.ics unavailable')
+      return []
     }
-    console.warn('[transition-fr] all URLs failed')
-    return []
-  },
-}
+    const now = Date.now()
+    const events: RawEvent[] = []
+    for (const ev of parseIcs(ics)) {
+      if (events.length >= MAX_EVENTS) break
+      if (ev.status === 'CANCELLED' || new Date(ev.start).getTime() < now) continue
+      if (!ev.location || ONLINE_RE.test(`${ev.summary} ${ev.location}`)) continue
 
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const pat = /<(?:article|div|li)[^>]*class="[^"]*(?:event|agenda|initiative|transition|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let m
-  while ((m = pat.exec(html)) !== null) {
-    const block = m[1]
-    const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!t) continue
-    const title = stripHtml(t[2]).trim()
-    if (!title || title.length < 5) continue
-    const link = t[1] ? new URL(t[1], baseUrl).toString() : baseUrl
-    const startsAt = extractFrenchDate(block)
-    const loc = block.match(/(?:class="[^"]*(?:lieu|location|city)[^"]*"[^>]*>)([\s\S]*?)<\//i)
-    const locName = loc ? stripHtml(loc[1]).trim() : 'France / Belgium'
-    const geo = geocodeFrBe(locName) ?? { lat: 0, lng: 0 }
-    events.push({
-      source: 'transition-fr', source_id: `transition-${hashStr(title)}`,
-      source_url: link, title, description: `Transition network event. See ${link}`,
-      organizer: 'Réseau Transition', location_name: locName, ...geo,
-      starts_at: startsAt, cost: 'See event page',
-    })
-  }
-  return events
+      // "Hulplanche, Rue de Rhisnes 82, Émines, Province de Namur, 5080, Belgique"
+      const parts = ev.location.split(',').map((s) => s.trim())
+        .filter((s) => s && !/^(belgique|belgium|france)$/i.test(s) && !/^province\b/i.test(s))
+      const postcode = parts.find((p) => /^\d{4,5}$/.test(p)) ?? ''
+      const noPc = parts.filter((p) => p !== postcode)
+      const town = noPc[noPc.length - 1] ?? ''
+      const geo = await geocodeFrFirst([
+        noPc.slice(1).join(', ') + (postcode ? ` ${postcode}` : ''),
+        `${postcode} ${town}`.trim(),
+        town,
+      ].filter(Boolean))
+      if (!geo) continue
+
+      const idm = ev.uid.match(/^(\d+)@/)
+      events.push({
+        source: SRC,
+        source_id: `transition-be-${idm ? idm[1] : ev.uid}`,
+        source_url: ev.url || AGENDA,
+        title: ev.summary,
+        description: (stripHtml(ev.description) || ev.summary).slice(0, 500),
+        organizer: 'Réseau Transition',
+        location_name: parts.join(', ').slice(0, 200),
+        lat: geo.lat,
+        lng: geo.lng,
+        starts_at: ev.start,
+        ends_at: ev.end,
+        cost: 'Voir l’événement',
+      })
+    }
+    return events
+  },
 }

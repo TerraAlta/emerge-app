@@ -1,67 +1,102 @@
-/** Schnippeldisko Germany — schnippeldisko.de — community surplus food cooking */
+/**
+ * Schnippeldisko (Disco Soup) Germany — community cooking with rescued
+ * vegetables and music, run by Slow Food Youth Deutschland and local
+ * Slow Food groups.
+ *
+ * The old schnippeldisko.de domain is dead ("no Host found"). The events are
+ * now published in Slow Food Deutschland's calendar (Plone), whose REST API
+ * is public:
+ *   https://www.slowfood.de/@search?portal_type=slwf.website.event
+ *     &SearchableText=Schnippeldisko&end.query=<now>&end.range=min
+ *     &metadata_fields=_all
+ * start/end are real UTC; each event carries geolocation, city and postcode.
+ * We keep events whose title mentions Schnippeldisko / Disco Soup.
+ * One or two requests.
+ */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml } from './utils'
 
-const URLS = ['https://schnippeldisko.de/events/', 'https://schnippeldisko.de/veranstaltungen/', 'https://www.schnippeldisko.de/events/']
-
-function parseDE(s: string): string {
-  const m: Record<string,string> = {januar:'01',februar:'02','märz':'03',april:'04',mai:'05',juni:'06',juli:'07',august:'08',september:'09',oktober:'10',november:'11',dezember:'12'}
-  const c = s.toLowerCase().replace(/\./g,'').trim()
-  for (const [k,v] of Object.entries(m)) { if (c.includes(k)) { const d = c.match(/(\d{1,2})\s/); const y = c.match(/(\d{4})/); if(d&&y) return new Date(`${y[1]}-${v}-${d[1].padStart(2,'0')}`).toISOString() } }
-  const p = new Date(s); return isNaN(p.getTime()) ? new Date().toISOString() : p.toISOString()
-}
+const SRC = 'schnippeldisko-de'
+const API = 'https://www.slowfood.de/@search'
+const UA = 'Emerge-App/1.0 (https://emerge.terralta.org)'
+const TERMS = ['Schnippeldisko', 'Disco Soup']
+const TITLE_RX = /schnippel\s*-?\s*disko|disco\s*-?\s*soup/i
 
 export const schnippeldiskoDe: SourceFetcher = {
-  name: 'schnippeldisko-de',
+  name: SRC,
   async fetch() {
-    try {
-      const r = await fetch('https://schnippeldisko.de/wp-json/tribe/events/v1/events?per_page=30', {
-        headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
+    const nowIso = new Date().toISOString().slice(0, 19) + 'Z'
+    const out: RawEvent[] = []
+    const seen = new Set<string>()
+
+    for (const term of TERMS) {
+      const qs = new URLSearchParams({
+        portal_type: 'slwf.website.event',
+        SearchableText: term,
+        'end.query': nowIso,
+        'end.range': 'min',
+        sort_on: 'start',
+        b_size: '100',
+        metadata_fields: '_all',
       })
-      if (r.ok) {
-        const d = await r.json()
-        if (d.events?.length) return d.events.map((e: any) => ({
-          source: 'schnippeldisko-de', source_id: `sd-t${e.id}`,
-          source_url: e.url ?? null, title: stripHtml(e.title ?? ''),
-          description: stripHtml(e.description ?? '').slice(0, 500),
-          organizer: 'Schnippeldisko',
-          location_name: e.venue?.venue ?? 'Germany',
-          lat: parseFloat(e.venue?.geo_lat ?? '52.5200'), lng: parseFloat(e.venue?.geo_lng ?? '13.4050'),
-          starts_at: new Date(e.start_date).toISOString(), cost: e.cost ?? 'Free',
-        }))
-      }
-    } catch {}
-    for (const url of URLS) {
+      let data: any
       try {
-        const r = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
+        const res = await fetch(`${API}?${qs}`, {
+          headers: { 'User-Agent': UA, Accept: 'application/json' },
+          signal: AbortSignal.timeout(20000),
         })
-        if (!r.ok) continue
-        const html = await r.text()
-        const ld = extractJsonLd(html, 'schnippeldisko-de')
-        if (ld.length > 0) return ld
-        const out: RawEvent[] = []
-        const rx = /<(?:article|div|li)[^>]*class="[^"]*(?:event|veranstaltung|kochen|schnippel|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-        let m
-        while ((m = rx.exec(html)) !== null) {
-          const t = m[1].match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-          if (!t) continue
-          const title = stripHtml(t[2]).trim()
-          if (!title || title.length < 5 || /^(menu|nav|search)/i.test(title)) continue
-          const dm = m[1].match(/(?:datetime="([^"]*)")|(\d{1,2}\.?\s+\w+\s+\d{4})/i)
-          const starts = dm ? parseDE(dm[1] || dm[2]) : new Date().toISOString()
-          out.push({
-            source: 'schnippeldisko-de', source_id: `sd-${hashStr(title)}`,
-            source_url: t[1] ? new URL(t[1], url).toString() : url, title,
-            description: 'Schnippeldisko community cooking event.',
-            organizer: 'Schnippeldisko', location_name: 'Germany',
-            lat: 52.5200, lng: 13.4050, starts_at: starts, cost: 'Free',
-          })
+        if (!res.ok) {
+          console.warn(`[${SRC}] HTTP ${res.status}`)
+          continue
         }
-        if (out.length > 0) return out
-      } catch { continue }
+        data = await res.json()
+      } catch (err) {
+        console.warn(`[${SRC}] search failed:`, (err as Error).message)
+        continue
+      }
+
+      for (const it of Array.isArray(data?.items) ? data.items : []) {
+        const title = stripHtml(String(it.title ?? it.Title ?? '')).trim()
+        if (!title || !TITLE_RX.test(title)) continue
+        if (/abgesagt|cancel/i.test(title)) continue
+        if (/\bonline\b|webinar|zoom/i.test(title)) continue
+        const uid = String(it.UID ?? it['@id'] ?? '')
+        if (!uid || seen.has(uid)) continue
+
+        const start = Date.parse(it.start ?? '')
+        if (!Number.isFinite(start)) continue
+        const end = Date.parse(it.end ?? '')
+
+        const lat = Number(it.latitude ?? it.geolocation?.[0])
+        const lng = Number(it.longitude ?? it.geolocation?.[1])
+        if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) continue
+        // Groups sometimes publish the same event twice (different UIDs)
+        const twin = `${title.replace(/[^\p{L}\p{N}]+/gu, '').toLowerCase()}|${start}`
+        if (seen.has(twin)) continue
+        seen.add(uid)
+        seen.add(twin)
+
+        const city = (Array.isArray(it.city) ? it.city : [it.city]).filter(Boolean).join(', ')
+        const location = [it.location, [it.postcode, city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
+
+        out.push({
+          source: SRC,
+          source_id: `sd-sf-${uid}`,
+          source_url: it['@id'] ?? it.getURL ?? 'https://www.slowfood.de/kalender',
+          title,
+          description:
+            stripHtml(String(it.description ?? it.Description ?? '')).slice(0, 1500) ||
+            'Schnippeldisko: gemeinsam gerettetes Gemüse schnippeln und kochen, mit Musik — gegen Lebensmittelverschwendung.',
+          organizer: 'Slow Food Deutschland / Slow Food Youth',
+          location_name: location || 'Deutschland',
+          lat,
+          lng,
+          starts_at: new Date(start).toISOString(),
+          ends_at: Number.isFinite(end) && end > start ? new Date(end).toISOString() : null,
+          cost: 'Free',
+        })
+      }
     }
-    return []
+    return out
   },
 }
