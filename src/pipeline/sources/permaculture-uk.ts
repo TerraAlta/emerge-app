@@ -1,190 +1,158 @@
 /**
- * Permaculture Association UK — permaculture.org.uk/events
- * Tries RSS feed, then The Events Calendar REST API (common WP plugin),
- * then HTML scrape.
+ * Permaculture Association UK — https://www.permaculture.org.uk/events
+ *
+ * The site is Drupal (no Events Calendar API, no ICS). The /events page lists
+ * event cards with a machine-readable <time datetime="YYYY-MM-DD"> start, an
+ * optional end, a town, and an "onlinetag-1" marker for online events. Each
+ * in-person event's detail page carries a full postal address, which we
+ * geocode (postcodes.io for UK postcodes, Nominatim otherwise).
+ *
+ * Only the date is published on the list (times live in free text), so
+ * starts_at is the start date at 10:00 UK time.
  */
+import { load } from 'cheerio'
 import type { RawEvent, SourceFetcher } from './types'
 import { stripHtml, hashStr } from './utils'
 
+const SRC = 'permaculture-uk'
 const BASE = 'https://www.permaculture.org.uk'
+const LIST_URL = `${BASE}/events`
+const UA = 'Mozilla/5.0 (compatible; Emerge-App/1.0)'
+const TIMEOUT = 20000
+const MAX_DETAIL = 15
+// Permaculture Association office, Leeds — used only if geocoding fails for a UK venue
+const HQ = { lat: 53.7997, lng: -1.5492 }
 
 export const permacultureUk: SourceFetcher = {
-  name: 'permaculture-uk',
+  name: SRC,
   async fetch() {
-    // Strategy 1: The Events Calendar REST API (very common WP plugin)
-    const apiEvents = await tryEventsCalendarApi()
-    if (apiEvents.length > 0) return apiEvents
+    const html = await get(LIST_URL)
+    if (!html) return []
+    const $ = load(html)
 
-    // Strategy 2: RSS feed
-    const rssEvents = await tryRss()
-    if (rssEvents.length > 0) return rssEvents
+    type Card = { url: string; title: string; start: string; end: string | null; town: string; image: string | null }
+    const cards: Card[] = []
+    $('.card--eventcourse').each((_, el) => {
+      const card = $(el)
+      // onlinetag-1 = online event; skip
+      if (card.find('.onlinetag-1').length > 0) return
+      const a = card.find('.card-title a').first()
+      const href = a.attr('href')
+      const title = stripHtml(a.text())
+      const times = card.find('time[datetime]')
+      const start = times.eq(0).attr('datetime') ?? ''
+      if (!href || !title || !/^\d{4}-\d{2}-\d{2}/.test(start)) return
+      const end = times.length > 1 ? times.eq(times.length - 1).attr('datetime') ?? null : null
+      // Town is the text after the <br> in the card-text paragraph
+      const p = card.find('p.card-text').first().clone()
+      p.find('time').remove()
+      const town = stripHtml(p.text().replace(/^[\s-]+/, '')).replace(/^[-–\s]+/, '')
+      const img = card.find('img').first().attr('src')
+      cards.push({
+        url: href.startsWith('http') ? href : `${BASE}${href}`,
+        title, start, end, town,
+        image: img ? (img.startsWith('http') ? img : `${BASE}${img}`) : null,
+      })
+    })
 
-    // Strategy 3: HTML scrape of /events page
-    return scrapeEventsPage()
+    const now = Date.now()
+    const events: RawEvent[] = []
+    let details = 0
+    for (const c of cards) {
+      const startsAt = ukDate(c.start, 10)
+      if (!startsAt) continue
+      const endsAt = c.end ? ukDate(c.end, 17) : null
+      // Skip events already over (multi-day ones that started in the past but end later are kept)
+      if (new Date(endsAt ?? startsAt).getTime() < now) continue
+      if (details >= MAX_DETAIL) break
+      details++
+
+      const detail = await get(c.url)
+      let address = ''
+      let summary = ''
+      if (detail) {
+        const $d = load(detail)
+        address = stripHtml($d('.field--name-field-postal-address').text().replace(/Address of venue/i, ''))
+        summary = stripHtml(($d('.field--name-field-event-summary').html() ?? '').replace(/<br\s*\/?>|<\/(?:p|div|li|h\d)>/gi, ' ')).replace(/^Event summary\s*/i, '')
+      }
+      if (/\bonline\b|zoom/i.test(address) && !/\d/.test(address)) continue
+
+      const where = address || c.town
+      if (!where) continue
+      const geo = await geocode(where, c.town)
+      if (!geo) continue
+
+      events.push({
+        source: SRC,
+        source_id: `pa-uk-${hashStr(c.url + c.start)}`,
+        source_url: c.url,
+        title: c.title,
+        description: summary.slice(0, 500) || `Permaculture event in ${c.town || 'the UK'}.`,
+        organizer: 'Permaculture Association',
+        location_name: where,
+        lat: geo.lat,
+        lng: geo.lng,
+        starts_at: startsAt,
+        ends_at: endsAt,
+        cost: 'See event page',
+        image_url: c.image,
+      })
+    }
+    return events
   },
 }
 
-async function tryEventsCalendarApi(): Promise<RawEvent[]> {
-  // The Events Calendar plugin exposes /wp-json/tribe/events/v1/events
-  const urls = [
-    `${BASE}/wp-json/tribe/events/v1/events?per_page=20&start_date=now`,
-    `${BASE}/wp-json/tribe/events/v1/events`,
-  ]
-
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, {
-        headers: { 'User-Agent': 'Emerge-App/1.0', Accept: 'application/json' },
-      })
-      if (!res.ok) continue
-      const data = await res.json()
-      const events = data.events ?? []
-      if (events.length === 0) continue
-
-      return events.map((e: any) => ({
-        source: 'permaculture-uk',
-        source_id: `pa-uk-${e.id}`,
-        source_url: e.url ?? `${BASE}/events`,
-        title: stripHtml(e.title ?? ''),
-        description: stripHtml(e.description ?? '').slice(0, 500),
-        organizer: e.organizer?.[0]?.organizer ?? 'Permaculture Association',
-        location_name: e.venue?.venue ?? e.venue?.city ?? 'UK',
-        lat: parseFloat(e.venue?.geo_lat ?? '0'),
-        lng: parseFloat(e.venue?.geo_lng ?? '0'),
-        starts_at: e.utc_start_date ? new Date(e.utc_start_date).toISOString() : new Date(e.start_date).toISOString(),
-        ends_at: e.utc_end_date ? new Date(e.utc_end_date).toISOString() : null,
-        cost: e.cost ?? 'See event page',
-        image_url: e.image?.url ?? null,
-      }))
-    } catch { continue }
-  }
-  return []
-}
-
-async function tryRss(): Promise<RawEvent[]> {
-  const rssUrls = [
-    `${BASE}/events/list/?ical=1`,
-    `${BASE}/feed/?post_type=tribe_events`,
-    `${BASE}/events/feed/`,
-  ]
-
-  for (const url of rssUrls) {
-    try {
-      const res = await fetch(url, {
-        headers: { 'User-Agent': 'Emerge-App/1.0', Accept: 'application/rss+xml, text/xml, text/calendar' },
-      })
-      if (!res.ok) continue
-      const text = await res.text()
-
-      // Try iCal format
-      if (text.includes('BEGIN:VEVENT')) return parseIcal(text)
-      // Try RSS
-      if (text.includes('<item>')) return parseRss(text)
-    } catch { continue }
-  }
-  return []
-}
-
-function parseIcal(ical: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const blocks = ical.split('BEGIN:VEVENT')
-
-  for (const block of blocks.slice(1)) {
-    const get = (key: string) => {
-      const m = block.match(new RegExp(`${key}[^:]*:(.*)`, 'i'))
-      return m ? m[1].trim().replace(/\\n/g, ' ').replace(/\\\\/g, '') : ''
-    }
-
-    const title = get('SUMMARY')
-    if (!title) continue
-
-    const dtStart = get('DTSTART')
-    let startsAt: string
-    try {
-      // iCal dates: 20260322T100000Z or 20260322
-      const cleaned = dtStart.replace(/(\d{4})(\d{2})(\d{2})T?(\d{2})?(\d{2})?(\d{2})?Z?/, '$1-$2-$3T$4:$5:$6Z')
-      startsAt = new Date(cleaned).toISOString()
-    } catch {
-      startsAt = new Date().toISOString()
-    }
-
-    events.push({
-      source: 'permaculture-uk',
-      source_id: `pa-uk-${hashStr(title + dtStart)}`,
-      source_url: get('URL') || `${BASE}/events`,
-      title,
-      description: get('DESCRIPTION').slice(0, 500),
-      organizer: 'Permaculture Association UK',
-      location_name: get('LOCATION') || 'UK',
-      lat: 0, lng: 0,
-      starts_at: startsAt,
-      cost: 'See event page',
-    })
-  }
-
-  return events
-}
-
-function parseRss(xml: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const items = xml.match(/<item>([\s\S]*?)<\/item>/gi) ?? []
-
-  for (const item of items) {
-    const tag = (t: string) => {
-      const m = item.match(new RegExp(`<${t}[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/${t}>`, 'i'))
-      return m ? m[1].trim() : ''
-    }
-
-    const title = stripHtml(tag('title'))
-    if (!title || title.length < 5) continue
-
-    events.push({
-      source: 'permaculture-uk',
-      source_id: `pa-uk-${hashStr(title)}`,
-      source_url: tag('link') || `${BASE}/events`,
-      title,
-      description: stripHtml(tag('description')).slice(0, 500),
-      organizer: 'Permaculture Association UK',
-      location_name: 'UK',
-      lat: 0, lng: 0,
-      starts_at: tag('pubDate') ? new Date(tag('pubDate')).toISOString() : new Date().toISOString(),
-      cost: 'See event page',
-    })
-  }
-
-  return events
-}
-
-async function scrapeEventsPage(): Promise<RawEvent[]> {
+async function get(url: string): Promise<string | null> {
   try {
-    const res = await fetch(`${BASE}/events/`, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
+    const res = await fetch(url, {
+      headers: { 'User-Agent': UA, Accept: 'text/html' },
+      signal: AbortSignal.timeout(TIMEOUT),
     })
-    if (!res.ok) return []
-    const html = await res.text()
-    const events: RawEvent[] = []
+    return res.ok ? await res.text() : null
+  } catch {
+    return null
+  }
+}
 
-    // The Events Calendar uses tribe-events-list, tribe-event-url etc.
-    const pattern = /<(?:article|div|h[23])[^>]*class="[^"]*tribe[^"]*"[^>]*>[\s\S]*?<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi
-    let match
-    while ((match = pattern.exec(html)) !== null) {
-      const title = stripHtml(match[2]).trim()
-      if (!title || title.length < 8 || title.toLowerCase().includes('search') || title.toLowerCase().includes('navigation')) continue
+/** YYYY-MM-DD at a given hour, UK local time (BST Apr–Oct approximated by month). */
+function ukDate(ymd: string, hour: number): string | null {
+  const m = ymd.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return null
+  const [y, mo, d] = [+m[1], +m[2], +m[3]]
+  const bst = mo >= 4 && mo <= 10
+  const dt = new Date(Date.UTC(y, mo - 1, d, hour - (bst ? 1 : 0)))
+  return isNaN(dt.getTime()) ? null : dt.toISOString()
+}
 
-      events.push({
-        source: 'permaculture-uk',
-        source_id: `pa-uk-${hashStr(title)}`,
-        source_url: match[1].startsWith('http') ? match[1] : `${BASE}${match[1]}`,
-        title,
-        description: 'UK permaculture event. See link for full details.',
-        organizer: 'Permaculture Association UK',
-        location_name: 'UK',
-        lat: 0, lng: 0,
-        starts_at: new Date().toISOString(),
-        cost: 'See event page',
+const UK_POSTCODE = /\b([A-Z]{1,2}\d[A-Z\d]?)\s*(\d[A-Z]{2})\b/i
+
+async function geocode(address: string, town: string): Promise<{ lat: number; lng: number } | null> {
+  const pc = address.match(UK_POSTCODE)
+  if (pc) {
+    try {
+      const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(pc[1] + pc[2])}`, {
+        headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(TIMEOUT),
       })
-    }
-
-    return events
-  } catch { return [] }
+      if (res.ok) {
+        const d = await res.json()
+        if (d.result?.latitude && d.result?.longitude) return { lat: d.result.latitude, lng: d.result.longitude }
+      }
+    } catch { /* fall through */ }
+  }
+  for (const q of [address, town].filter(Boolean)) {
+    await new Promise(r => setTimeout(r, 1100)) // Nominatim: max 1 req/s
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
+        { headers: { 'User-Agent': UA, 'Accept-Language': 'en' }, signal: AbortSignal.timeout(TIMEOUT) },
+      )
+      if (res.ok) {
+        const d = await res.json()
+        if (d[0]) return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) }
+      }
+    } catch { /* next */ }
+  }
+  // UK venue we couldn't place: use the Association's office rather than dropping it
+  if (/united kingdom|england|scotland|wales|\bUK\b/i.test(address)) return HQ
+  return null
 }

@@ -1,107 +1,100 @@
 /**
- * Permablitz UK — permablitz.net
- * Community garden transformation events.
- * Small org, likely a simple WordPress or static site.
+ * Permablitz London — permablitzlondon.com
+ * Community garden transformation days, permaculture workshops and skill-shares
+ * around London.
+ *
+ * (permablitz.net, which this file used to scrape, is Permablitz *Melbourne*.)
+ * The London site is Squarespace: its events collection serves JSON at
+ * `/permablitzes-events?format=json` with `upcoming[]` items carrying epoch-ms
+ * start/end and a location block with coordinates.
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml, hashStr } from './utils'
 
-const URLS = [
-  'https://www.permablitz.net/events/',
-  'https://www.permablitz.net/upcoming-blitzes/',
-  'https://permablitz.net/',
-  'https://www.permablitz.co.uk/',
-  'https://www.permablitzlondon.com/events/',
-  'https://www.permablitzlondon.com/',
+const SRC = 'permablitz-uk'
+const BASE = 'https://www.permablitzlondon.com'
+const COLLECTION_URL = `${BASE}/permablitzes-events?format=json`
+const UA = 'Mozilla/5.0 (compatible; Emerge-App/1.0)'
+
+// Squarespace stamps this pin (Cecil Sharp House) on events whose organiser
+// never moved the map marker, so it is only trusted for Cecil Sharp House itself.
+const DEFAULT_PIN = { lat: 51.5381546, lng: -0.1493065 }
+const KNOWN_VENUES: Array<[RegExp, number, number]> = [
+  [/cecil sharp/i, 51.5382, -0.1493],
+  [/kentish town city farm/i, 51.5524, -0.1490],
+  [/whittington park/i, 51.5636, -0.1356],
+  [/brockwell park/i, 51.4508, -0.1066],
 ]
+const LONDON = { lat: 51.5074, lng: -0.1278 }
 
-export const permablitzUk: SourceFetcher = {
-  name: 'permablitz-uk',
-  async fetch() {
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(8000),
-        })
-        if (!res.ok) continue
-        const html = await res.text()
-
-        // JSON-LD
-        const jsonLd = extractJsonLd(html, 'permablitz-uk')
-        if (jsonLd.length > 0) return jsonLd
-
-        // The Events Calendar API
-        const tribeBase = url.replace(/\/events\/?$/, '').replace(/\/$/, '')
-        try {
-          const apiRes = await fetch(`${tribeBase}/wp-json/tribe/events/v1/events?per_page=10`, {
-            headers: { 'User-Agent': 'Emerge-App/1.0', Accept: 'application/json' },
-            signal: AbortSignal.timeout(5000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              return data.events.map((e: any) => ({
-                source: 'permablitz-uk',
-                source_id: `pb-${e.id}`,
-                source_url: e.url ?? url,
-                title: stripHtml(e.title ?? ''),
-                description: stripHtml(e.description ?? '').slice(0, 500),
-                organizer: e.organizer?.[0]?.organizer ?? 'Permablitz',
-                location_name: e.venue?.venue ?? 'UK',
-                lat: parseFloat(e.venue?.geo_lat ?? '0'),
-                lng: parseFloat(e.venue?.geo_lng ?? '0'),
-                starts_at: new Date(e.start_date).toISOString(),
-                cost: 'Free (community event)',
-              }))
-            }
-          }
-        } catch { /* continue to HTML scrape */ }
-
-        // HTML scrape
-        const events = scrapeHtml(html, url)
-        if (events.length > 0) return events
-      } catch { continue }
-    }
-
-    console.warn('[permablitz-uk] all URLs failed')
-    return []
-  },
+function placeFor(loc: any, title: string): { lat: number; lng: number } {
+  const text = `${loc?.addressTitle ?? ''} ${loc?.addressLine1 ?? ''} ${title}`
+  for (const [rx, lat, lng] of KNOWN_VENUES) if (rx.test(text)) return { lat, lng }
+  const lat = Number(loc?.markerLat ?? loc?.mapLat)
+  const lng = Number(loc?.markerLng ?? loc?.mapLng)
+  const isDefault = Math.abs(lat - DEFAULT_PIN.lat) < 1e-5 && Math.abs(lng - DEFAULT_PIN.lng) < 1e-5
+  if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && !isDefault) return { lat, lng }
+  return LONDON
 }
 
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const pattern = /<(?:article|div|li)[^>]*class="[^"]*(?:event|blitz|tribe|post)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let match
+/** Squarespace bodies embed <style> blocks and butt block elements together. */
+function cleanBody(html: string): string {
+  return stripHtml(
+    html
+      .replace(/<(style|script)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+      .replace(/<\/(p|div|h[1-6]|li|ul|ol)>|<br\s*\/?>/gi, ' '),
+  )
+}
 
-  while ((match = pattern.exec(html)) !== null) {
-    const block = match[1]
-    const titleMatch = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!titleMatch) continue
-
-    const title = stripHtml(titleMatch[2]).trim()
-    if (!title || title.length < 5) continue
-
-    const dateMatch = block.match(/datetime="([^"]*)"/) || block.match(/(\d{1,2}\s+\w+\s+\d{4})/)
-    let startsAt = new Date().toISOString()
-    if (dateMatch) {
-      const parsed = new Date(dateMatch[1])
-      if (!isNaN(parsed.getTime())) startsAt = parsed.toISOString()
+export const permablitzUk: SourceFetcher = {
+  name: SRC,
+  async fetch() {
+    let data: any
+    try {
+      const res = await fetch(COLLECTION_URL, {
+        headers: { 'User-Agent': UA, Accept: 'application/json' },
+        signal: AbortSignal.timeout(20000),
+      })
+      if (!res.ok) { console.warn(`[${SRC}] ${res.status}`); return [] }
+      data = await res.json()
+    } catch (err) {
+      console.warn(`[${SRC}] failed:`, (err as Error).message)
+      return []
     }
 
-    events.push({
-      source: 'permablitz-uk',
-      source_id: `pb-${hashStr(title)}`,
-      source_url: titleMatch[1] ? new URL(titleMatch[1], baseUrl).toString() : baseUrl,
-      title: `Permablitz — ${title}`,
-      description: 'Community garden transformation day. Free food, good company, and a garden transformed in one day.',
-      organizer: 'Permablitz',
-      location_name: 'UK',
-      lat: 0, lng: 0,
-      starts_at: startsAt,
-      cost: 'Free',
-    })
-  }
+    const items: any[] = Array.isArray(data?.upcoming) ? data.upcoming : []
+    const events: RawEvent[] = []
+    for (const it of items) {
+      const title = stripHtml(String(it?.title ?? ''))
+      const start = Number(it?.startDate)
+      if (!title || !Number.isFinite(start) || start <= 0) continue
+      const end = Number(it?.endDate)
 
-  return events
+      const loc = it.location ?? {}
+      const addrParts = [loc.addressTitle, loc.addressLine1, loc.addressLine2]
+        .map((s: unknown) => stripHtml(String(s ?? '')).replace(/[,\s]+$/, ''))
+        .filter(Boolean)
+      if (/\bonline\b|\bzoom\b/i.test(`${title} ${addrParts.join(' ')}`) && !addrParts.length) continue
+      const { lat, lng } = placeFor(loc, title)
+
+      const desc = cleanBody(String(it.excerpt || it.body || '')).slice(0, 500)
+      events.push({
+        source: SRC,
+        source_id: `pb-${it.id ?? hashStr(title + start)}`,
+        source_url: it.fullUrl ? new URL(it.fullUrl, BASE).toString() : `${BASE}/permablitzes-events`,
+        title,
+        description: desc || 'Permablitz London community gardening day — learn permaculture by doing, share food and skills.',
+        organizer: 'Permablitz London',
+        location_name: addrParts.join(', ') || 'London',
+        lat,
+        lng,
+        // Squarespace adds stray milliseconds to the epoch; round to the minute
+        starts_at: new Date(Math.round(start / 60000) * 60000).toISOString(),
+        ends_at: Number.isFinite(end) && end > start ? new Date(Math.round(end / 60000) * 60000).toISOString() : null,
+        cost: 'See event page',
+        image_url: typeof it.assetUrl === 'string' ? it.assetUrl : null,
+      })
+    }
+    return events
+  },
 }

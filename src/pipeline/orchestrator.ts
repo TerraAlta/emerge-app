@@ -306,14 +306,14 @@ const SOURCES: SourceFetcher[] = [
   permacultureUk,
   colibrisFr,
   mundraubDe,
-  incredibleEdibleUk,
+  // incredibleEdibleUk — disabled 2026-10-06: no events on the site — 'find a group' is an undated directory
   permaculturaEs,
   permacultureFr,
   transitieNl,
-  nationalTrustUk,
+  // nationalTrustUk — disabled 2026-10-06: event search is behind Radware bot protection (not bypassed)
   permablitzUk,
   landworkersUk,
-  rewildingUk,
+  // rewildingUk — disabled 2026-10-06: no events section; only recorded member webinars
   permakulturDe,
   transitionDe,
   foodsharingDe,
@@ -404,7 +404,7 @@ const SOURCES: SourceFetcher[] = [
   zeroWasteBe,
   rezeroEs,
   recyclingNetwerkBe,
-  hubbubUk,
+  // hubbubUk — disabled 2026-10-06: whole site returns a Cloudflare challenge (403)
   zeroWasteUsa,
   olioGlobal,
   // zeroWastePt — disabled 2026-10-06: zerowaste.pt doesn't respond
@@ -416,7 +416,7 @@ const SOURCES: SourceFetcher[] = [
   itoGlobal,
   tonycUsa,
   // Birth & Midwifery Circles
-  positiveBirthUk,
+  // positiveBirthUk — disabled 2026-10-06: groups network closed in 2021; only online courses remain
   birthcircleGlobal,
   // Participatory Music & Arts
   naturalVoiceUk,
@@ -438,17 +438,17 @@ const SOURCES: SourceFetcher[] = [
   ukArtSpaces,
   // Community Orchards
   orchardProjectUk,
-  appleDayUk,
+  // appleDayUk — disabled 2026-10-06: Common Ground archived Apple Day; no event listings
   phillyOrchardUsa,
   portlandFruitUsa,
   // Community Kitchens
   discoSoupeFr,
   schnippeldiskoDe,
-  foodcycleUk,
-  realJunkFoodUk,
+  // foodcycleUk — disabled 2026-10-06: lists weekly venues, not dated events
+  // realJunkFoodUk — disabled 2026-10-06: domain now redirects to a gambling site — do NOT re-enable this URL
   // UK (Oxford)
   orfcUk,
-  cultivateOxfordUk,
+  // cultivateOxfordUk — disabled 2026-10-06: cultivateoxford.org is a parked domain
   // USA (new)
   permacultureActionUsa,
   biodynamicsUsa,
@@ -500,14 +500,14 @@ const SOURCES: SourceFetcher[] = [
   tcvUk,
   woodlandTrustUk,
   growingCommunitiesUk,
-  biodynamicUk,
+  // biodynamicUk — disabled 2026-10-06: whole site behind a reCAPTCHA bot check
   cohousingUk,
   schumacherUk,
   catUk,
-  goodGriefUk,
+  // goodGriefUk — disabled 2026-10-06: Cloudflare challenge on every page; US org, mostly online
   wenUk,
   weallGlobal,
-  cltUk,
+  // cltUk — disabled 2026-10-06: events API works but ~all are member Zoom webinars (1 in-person in 2 years)
   // Netherlands (new)
   toekomstboerenNl,
   agroecologyNl,
