@@ -309,7 +309,7 @@ const SOURCES: SourceFetcher[] = [
   // incredibleEdibleUk — disabled 2026-10-06: no events on the site — 'find a group' is an undated directory
   permaculturaEs,
   permacultureFr,
-  transitieNl,
+  // transitieNl — disabled 2026-10-06: Transition Towns NL agenda is empty; old transities.nl domain is for sale
   // nationalTrustUk — disabled 2026-10-06: event search is behind Radware bot protection (not bypassed)
   permablitzUk,
   landworkersUk,
@@ -321,16 +321,16 @@ const SOURCES: SourceFetcher[] = [
   zukunftsorteDe,
   siebenLindenDe,
   permacultuurNl,
-  herenborenNl,
+  // herenborenNl — disabled 2026-10-06: no central agenda (refers to each farm's site); rate-limits
   voedselbosNl,
   repaircafeNl,
   ficNa,
-  priUsa,
-  transitionUs,
+  // priUsa — disabled 2026-10-06: permaculturenews.org returns a 'under maintenance' page everywhere — re-check later
+  // transitionUs — disabled 2026-10-06: transitionus.org is now a GoDaddy parking page
   transitionCa,
   rodaleUsa,
-  wwoofUsa,
-  wwoofCa,
+  // wwoofUsa — disabled 2026-10-06: login-gated farm-host app; host listings aren't dated events
+  // wwoofCa — disabled 2026-10-06: same app as wwoofUsa; no dated events
   ercNa,
   transitionEs,
   ecoaldeasEs,
@@ -338,8 +338,8 @@ const SOURCES: SourceFetcher[] = [
   huertosEs,
   permaculturaIt,
   riveIt,
-  transitionIt,
-  damanhurIt,
+  // transitionIt — disabled 2026-10-06: Transition Italia dormant since 2018
+  // damanhurIt — disabled 2026-10-06: calendar moved to damanhur.community, behind a Cloudflare check (not bypassed)
   incroyablesFr,
   transitionFr,
   terredeliensFr,
@@ -363,11 +363,11 @@ const SOURCES: SourceFetcher[] = [
   eupnGlobal,
   permacultureGlobal,
   regenInternational,
-  ercGlobal,
+  // ercGlobal — disabled 2026-10-06: same organisation as ercNa, which now reads its real (worldwide) list
   workawayGlobal,
   helpxGlobal,
   wwoofGlobal,
-  ficGlobal,
+  // ficGlobal — disabled 2026-10-06: same organisation as ficNa, which now reads its real event posts
   genGathering,
   edeGlobal,
   priGlobal,
@@ -450,11 +450,11 @@ const SOURCES: SourceFetcher[] = [
   orfcUk,
   // cultivateOxfordUk — disabled 2026-10-06: cultivateoxford.org is a parked domain
   // USA (new)
-  permacultureActionUsa,
+  // permacultureActionUsa — disabled 2026-10-06: rewritten to its real events API, but no events since 2023
   biodynamicsUsa,
-  agrarianTrustUsa,
-  slowMoneyUsa,
-  goodGriefUsa,
+  // agrarianTrustUsa — disabled 2026-10-06: Webflow rebuild has no events; only webinar recordings
+  // slowMoneyUsa — disabled 2026-10-06: events page only shows past highlights
+  // goodGriefUsa — disabled 2026-10-06: Cloudflare challenge on every page (not bypassed)
   // Canada (new)
   ourEcovillageCa,
   pinaCa,
@@ -470,11 +470,11 @@ const SOURCES: SourceFetcher[] = [
   biovisionCh,
   agroecologyWorksCh,
   // Italy (new)
-  aiabIt,
+  // aiabIt — disabled 2026-10-06: news only; no events or agenda
   slowfoodIt,
-  cohousingIt,
+  // cohousingIt — disabled 2026-10-06: cohousing.it no longer resolves
   gasIt,
-  campagnaAmicaIt,
+  // campagnaAmicaIt — disabled 2026-10-06: market list has no dates; data endpoint needs a login
   // Spain (new)
   seaeEs,
   agriRegenEs,
@@ -510,12 +510,12 @@ const SOURCES: SourceFetcher[] = [
   // cltUk — disabled 2026-10-06: events API works but ~all are member Zoom webinars (1 in-person in 2 years)
   // Netherlands (new)
   toekomstboerenNl,
-  agroecologyNl,
+  // agroecologyNl — disabled 2026-10-06: rewritten to agroecologie.nl's events API, but no upcoming events
   ivnNl,
   hierOpgewektNl,
   biodynamischNl,
-  donutAmsterdamNl,
-  commonlandNl,
+  // donutAmsterdamNl — disabled 2026-10-06: activities page lists none — re-check later
+  // commonlandNl — disabled 2026-10-06: events page is a broken shortcode; no event data
   // Germany (new)
   permakulturAkademieDe,
   permakulturLwDe,
@@ -551,6 +551,8 @@ const SOURCES: SourceFetcher[] = [
 export interface OrchestratorResult {
   source: string
   fetched: number
+  /** Already in quests (same title + start) — skipped, no AI call. */
+  alreadyStored: number
   scored: number
   inserted: number
   filtered: number
@@ -582,6 +584,41 @@ interface OrchestratorOptions {
    * times the spend. See scripts/run-network-slice.ts.
    */
   slice?: { index: number; total: number }
+}
+
+export function eventKey(title: string, startsAt: string): string {
+  return `${title}|${Date.parse(startsAt)}`
+}
+
+/**
+ * title|start keys of this batch's events that are already stored. One query
+ * per source (by source_name and date range), paged — not one per event.
+ * Returns null on any error, so a failed lookup just means "score everything".
+ */
+export async function storedKeys(supabase: any, events: RawEvent[]): Promise<Set<string> | null> {
+  const sources = [...new Set(events.map(e => e.source))]
+  const times = events.map(e => Date.parse(e.starts_at)).filter(Number.isFinite)
+  if (times.length === 0) return new Set()
+  const from = new Date(Math.min(...times)).toISOString()
+  const to = new Date(Math.max(...times)).toISOString()
+  const keys = new Set<string>()
+  const PAGE = 1000
+  for (let offset = 0; ; offset += PAGE) {
+    const { data, error } = await supabase
+      .from('quests')
+      .select('title, starts_at')
+      .in('source_name', sources)
+      .gte('starts_at', from)
+      .lte('starts_at', to)
+      .range(offset, offset + PAGE - 1)
+    if (error) {
+      console.warn('[orchestrator] stored-event lookup failed, scoring everything:', error.message)
+      return null
+    }
+    for (const row of data ?? []) keys.add(eventKey(row.title, row.starts_at))
+    if (!data || data.length < PAGE) break
+  }
+  return keys
 }
 
 /** Geocode an address string to lat/lng via Nominatim */
@@ -624,6 +661,7 @@ export async function runPipeline(opts: OrchestratorOptions = {}): Promise<Orche
     const result: OrchestratorResult = {
       source: source.name,
       fetched: 0,
+      alreadyStored: 0,
       scored: 0,
       inserted: 0,
       filtered: 0,
@@ -651,6 +689,19 @@ export async function runPipeline(opts: OrchestratorOptions = {}): Promise<Orche
     if (noDate > 0) {
       result.filtered += noDate
       console.log(`[${source.name}] Start-date guard: ${noDate} of ${beforeGuard} dropped (no real upcoming date)`)
+    }
+
+    // 1c. Skip events saved on an earlier run (same title + start time —
+    // the quests unique key) so each event is scored once, not every Sunday.
+    // A changed title (e.g. accents now decoded) doesn't match and is scored
+    // again; the quests_adopt_reencoded_twin trigger then updates the old row.
+    if (supabase && !dryRun && events.length > 0) {
+      const stored = await storedKeys(supabase, events)
+      if (stored) {
+        const before = events.length
+        events = events.filter(e => !stored.has(eventKey(e.title, e.starts_at)))
+        result.alreadyStored = before - events.length
+      }
     }
 
     // 2. Geocode events with missing coordinates

@@ -122,17 +122,17 @@ async function main() {
     slice: { index, total },
   })
 
-  let fetched = 0, inserted = 0, filtered = 0, errors = 0
+  let fetched = 0, stored = 0, inserted = 0, filtered = 0, errors = 0
   for (const r of results) {
-    fetched += r.fetched; inserted += r.inserted
+    fetched += r.fetched; stored += r.alreadyStored; inserted += r.inserted
     filtered += r.filtered; errors += r.errors
     if (r.fetched > 0) {
-      stamp(`  ${r.source}: ${r.fetched} fetched → ${r.inserted} inserted, ${r.filtered} filtered`)
+      stamp(`  ${r.source}: ${r.fetched} fetched → ${r.alreadyStored} already stored, ${r.inserted} inserted, ${r.filtered} filtered`)
     }
   }
 
   const mins = ((Date.now() - started) / 60000).toFixed(1)
-  stamp(`Done in ${mins}m — ${results.length} sources, ${fetched} fetched, ${inserted} inserted, ${filtered} filtered, ${errors} errors`)
+  stamp(`Done in ${mins}m — ${results.length} sources, ${fetched} fetched, ${stored} already stored (not re-scored), ${inserted} inserted, ${filtered} filtered, ${errors} errors`)
   stamp(costTracker.summary())
 
   // Surfaced so a slice that quietly fetched nothing is visible in the run

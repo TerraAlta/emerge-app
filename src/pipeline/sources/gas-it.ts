@@ -1,89 +1,91 @@
 /**
- * Rete GAS — Gruppi di Acquisto Solidale
- * Solidarity purchasing groups — community food buying cooperatives.
+ * GAS — Gruppi di Acquisto Solidale / Rete Italiana Economia Solidale
+ * economiasolidale.net is the national portal of the GAS and DES networks
+ * (RIES, Tavolo RES). Its "Calendario" page (Astro + FullCalendar) loads
+ * every appointment from one JSON file:
+ *   /eventi.json → [{ id, title, start: "YYYY-MM-DD", end, url: "/content/…" }]
+ * For upcoming entries we read the detail page (≤ 25), which states
+ * "Data: …" and "Luogo: <town>" (e.g. "Luogo: Torino"); online appointments
+ * are skipped, the town is geocoded via Nominatim.
+ *
+ * The feed has dates only (no times): we assume 10:00 Europe/Rome.
+ * (The old retegas.org site is an abandoned CMS now stuffed with hotel spam
+ * links, with no events.)
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml, hashStr } from './utils'
+import { getText, romeIso, geocodeFirst } from './italy-common'
 
-const URLS = [
-  'https://www.retegas.org/eventi/',
-  'https://www.retegas.org/agenda/',
-]
-const DEFAULT_LAT = 41.9028
-const DEFAULT_LNG = 12.4964
+const SRC = 'gas-it'
+const BASE = 'https://economiasolidale.net'
+const MAX_DETAIL = 25
+const MAX_EVENTS = 200
 
-function parseIT(s: string): string {
-  const m: Record<string,string> = {gennaio:'01',febbraio:'02',marzo:'03',aprile:'04',maggio:'05',giugno:'06',luglio:'07',agosto:'08',settembre:'09',ottobre:'10',novembre:'11',dicembre:'12'}
-  const c = s.toLowerCase().trim()
-  for (const [k,v] of Object.entries(m)) { if (c.includes(k)) { const d = c.match(/(\d{1,2})\s/); const y = c.match(/(\d{4})/); if(d&&y) return new Date(`${y[1]}-${v}-${d[1].padStart(2,'0')}`).toISOString() } }
-  const p = new Date(s); return isNaN(p.getTime()) ? new Date().toISOString() : p.toISOString()
+function ymd(s: unknown): [number, number, number] | null {
+  if (typeof s !== 'string') return null
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  return m ? [+m[1], +m[2], +m[3]] : null
 }
 
 export const gasIt: SourceFetcher = {
-  name: 'gas-it',
+  name: SRC,
   async fetch() {
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
-        })
-        if (!res.ok) continue
-        const html = await res.text()
+    const json = await getText(`${BASE}/eventi.json`)
+    if (!json) return []
+    let items: any[]
+    try { items = JSON.parse(json) } catch { return [] }
+    if (!Array.isArray(items)) return []
 
-        const jsonLd = extractJsonLd(html, 'gas-it')
-        if (jsonLd.length > 0) return jsonLd
+    const today = new Date().toISOString().slice(0, 10)
+    const upcoming = items
+      .filter((e) => typeof e?.start === 'string' && e.start.slice(0, 10) >= today && e.title && e.url)
+      .sort((a, b) => a.start.localeCompare(b.start))
+      .slice(0, MAX_DETAIL)
 
-        const base = new URL(url).origin
-        try {
-          const apiRes = await fetch(`${base}/wp-json/tribe/events/v1/events?per_page=20`, {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              return data.events.map((e: any) => ({
-                source: 'gas-it', source_id: `gas-${e.id}`,
-                source_url: e.url ?? url, title: stripHtml(e.title ?? ''),
-                description: stripHtml(e.description ?? '').slice(0, 500),
-                organizer: e.organizer?.[0]?.organizer ?? 'Rete GAS',
-                location_name: e.venue?.venue ?? e.venue?.city ?? 'Italia',
-                lat: parseFloat(e.venue?.geo_lat ?? '0') || DEFAULT_LAT,
-                lng: parseFloat(e.venue?.geo_lng ?? '0') || DEFAULT_LNG,
-                starts_at: new Date(e.start_date).toISOString(),
-                ends_at: e.end_date ? new Date(e.end_date).toISOString() : null,
-                cost: e.cost ?? 'Vedi evento',
-              } satisfies RawEvent))
-            }
-          }
-        } catch {}
+    const events: RawEvent[] = []
+    for (const e of upcoming) {
+      if (events.length >= MAX_EVENTS) break
+      const start = ymd(e.start)
+      if (!start) continue
+      const startsAt = romeIso(start[0], start[1], start[2], 10, 0)
+      if (new Date(startsAt).getTime() < Date.now()) continue
 
-        const events = scrapeHtml(html, url)
-        if (events.length > 0) return events
-      } catch { continue }
+      const url = new URL(e.url, BASE).toString()
+      const html = await getText(url)
+      if (!html) continue
+      const field = (label: string): string => {
+        const m = html.match(new RegExp(`field__label">${label}:</div>\\s*<div class="field__items">([\\s\\S]*?)</div>\\s*</div>`))
+        return m ? stripHtml(m[1].replace(/<\/div>/g, ', ')).replace(/[,\s]+$/, '') : ''
+      }
+      const luogo = field('Luogo')
+      const dove = stripHtml(html.match(/Dove:[\s\S]{0,400}?<a[^>]*>([^<]+)<\/a>/)?.[1] ?? '')
+      const firstP = html.match(/field__label">Luogo:[\s\S]*?<p>([\s\S]*?)<\/p>/)?.[1] ?? ''
+      const place = luogo || dove
+      const title = stripHtml(String(e.title))
+      if (!place || /\b(online|on-line|webinar|zoom|streaming)\b/i.test(`${place} ${title}`)) continue
+
+      const geo = await geocodeFirst([place, place.split(/[,(]/)[0].trim()].filter(Boolean))
+      if (!geo) continue
+
+      const body = stripHtml(firstP)
+      const end = ymd(e.end)
+      const endsAt = end && end.join('-') !== start.join('-') ? romeIso(end[0], end[1], end[2], 18, 0) : null
+
+      events.push({
+        source: SRC,
+        source_id: `gas-it-${e.id ?? hashStr(url)}`,
+        source_url: url,
+        title,
+        description: (body || title).slice(0, 500),
+        organizer: 'Rete Italiana Economia Solidale (GAS/DES)',
+        location_name: place.slice(0, 200),
+        lat: geo.lat,
+        lng: geo.lng,
+        starts_at: startsAt,
+        ends_at: endsAt,
+        cost: 'Vedi evento',
+      })
     }
-    return []
+    return events
   },
-}
-
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const pattern = /<(?:article|div|li)[^>]*class="[^"]*(?:event|evento|incontro|assemblea|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let match
-  while ((match = pattern.exec(html)) !== null) {
-    const block = match[1]
-    const titleMatch = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!titleMatch) continue
-    const title = stripHtml(titleMatch[2]).trim()
-    if (!title || title.length < 5) continue
-    events.push({
-      source: 'gas-it', source_id: `gas-${hashStr(title)}`,
-      source_url: titleMatch[1] ? new URL(titleMatch[1], baseUrl).toString() : baseUrl,
-      title, description: 'Evento Rete GAS. Vedi link per dettagli.',
-      organizer: 'Rete GAS \u2014 Gruppi di Acquisto Solidale',
-      location_name: 'Italia', lat: DEFAULT_LAT, lng: DEFAULT_LNG,
-      starts_at: parseIT(block), cost: 'Vedi evento',
-    })
-  }
-  return events
 }
