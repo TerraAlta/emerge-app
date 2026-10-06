@@ -52,11 +52,12 @@ function decodeEntity(_m: string, body: string): string {
  * being duplicated.
  */
 export function stripHtml(s: string): string {
-  return s
-    .replace(/<[^>]*>/g, '')
-    .replace(/&(#[0-9]+|#[xX][0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]*);/g, decodeEntity)
-    .replace(/\s+/g, ' ')
-    .trim()
+  return decodeEntities(s.replace(/<[^>]*>/g, '')).replace(/\s+/g, ' ').trim()
+}
+
+/** Decode HTML entities in one pass (shared with the news cleaner). */
+export function decodeEntities(s: string): string {
+  return s.replace(/&(#[0-9]+|#[xX][0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]*);/g, decodeEntity)
 }
 
 export function hashStr(s: string): string {

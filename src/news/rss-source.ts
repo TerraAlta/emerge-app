@@ -6,6 +6,7 @@
  */
 import Parser from 'rss-parser'
 import type { NewsSourceFetcher, RawNewsItem, FlowerPetalKey } from './types'
+import { decodeEntities } from '../pipeline/sources/utils'
 
 const UA = 'Mozilla/5.0 (compatible; Emerge-News/1.0; +https://emerge.terralta.org)'
 const MAX_ITEMS_PER_SOURCE = 25   // cap to control scoring costs
@@ -43,14 +44,10 @@ function getParser(): Parser {
 
 function stripHtml(s: string | undefined | null): string {
   if (!s) return ''
-  return s
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+  // Tags become spaces (keeps words in adjacent <p>s apart); then every
+  // entity is decoded — this used to handle only &amp; &lt; &gt; &quot; &#39;,
+  // so &#8217; &hellip; &eacute; etc. were stored as literal text.
+  return decodeEntities(s.replace(/<[^>]+>/g, ' '))
     .replace(/\s+/g, ' ')
     .trim()
 }
