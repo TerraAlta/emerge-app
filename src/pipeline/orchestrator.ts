@@ -261,6 +261,7 @@ import { meetupCities } from './sources/meetup-cities'
 // scripts/run-city-slice.ts, scheduled by com.emerge.eventbrite-cities.plist.
 // import { eventbriteCities } from './sources/eventbrite-cities'
 import { localNetworks } from './sources/local-networks'
+import { hasUsableStart } from './start-guard'
 import { eventbriteApi } from './sources/eventbrite-api'
 // Diaspora cultural feast sources
 // import { eventbriteCultural } from './sources/eventbrite-cultural' — disabled, see eventbrite-cities above
@@ -640,6 +641,16 @@ export async function runPipeline(opts: OrchestratorOptions = {}): Promise<Orche
       result.errors++
       results.push(result)
       continue
+    }
+
+    // 1b. Drop events without a real upcoming date (scrapers that fall back
+    // to "now", past events) before geocoding or scoring. See start-guard.ts.
+    const beforeGuard = events.length
+    events = events.filter(e => hasUsableStart(e))
+    const noDate = beforeGuard - events.length
+    if (noDate > 0) {
+      result.filtered += noDate
+      console.log(`[${source.name}] Start-date guard: ${noDate} of ${beforeGuard} dropped (no real upcoming date)`)
     }
 
     // 2. Geocode events with missing coordinates

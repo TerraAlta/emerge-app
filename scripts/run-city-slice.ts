@@ -35,6 +35,7 @@ import { getKeywordsForCity } from '../src/pipeline/sources/keyword-selector'
 import { extractJsonLd } from '../src/pipeline/sources/utils'
 import { isPotentiallyRelevant } from '../src/pipeline/pre-filter'
 import { scoreQuest } from '../src/pipeline/score-quest'
+import { hasUsableStart } from '../src/pipeline/start-guard'
 import { costTracker, CostCapExceeded } from '../src/pipeline/cost-cap'
 
 // ── Env ──
@@ -196,7 +197,7 @@ async function main() {
   console.log(`${tag} cities: ${mine.map(c => c.name).join(', ')}`)
 
   const seen = new Set<string>()
-  let raw = 0, relevant = 0, inserted = 0, duplicates = 0, filtered = 0, errors = 0
+  let raw = 0, relevant = 0, inserted = 0, duplicates = 0, filtered = 0, noDate = 0, errors = 0
 
   for (const city of mine) {
     let cityRaw = 0
@@ -209,6 +210,7 @@ async function main() {
         if (seen.has(key)) continue
         seen.add(key)
         raw++; cityRaw++
+        if (!hasUsableStart(ev)) { noDate++; continue } // see start-guard.ts
         // Eventbrite is an open catalogue — pre-filter before any Claude call.
         if (isPotentiallyRelevant(ev)) candidates.push({ ...ev, _city: city })
       }
@@ -262,7 +264,7 @@ async function main() {
   }
 
   const mins = ((Date.now() - started) / 60000).toFixed(1)
-  console.log(`${tag} done in ${mins}m — ${raw} raw, ${relevant} relevant, ${inserted} inserted, ${duplicates} already stored, ${filtered} below threshold, ${errors} errors`)
+  console.log(`${tag} done in ${mins}m — ${raw} raw, ${relevant} relevant, ${inserted} inserted, ${duplicates} already stored, ${filtered} below threshold, ${noDate} without a real upcoming date, ${errors} errors`)
   console.log(`${tag} requests: ${stats.requests} (${stats.ok} ok, ${stats.rateLimited} rate-limited, ${stats.otherFail} failed, ${stats.retriesSpent} backoffs)`)
   console.log(`${tag} ${costTracker.summary()}`)
 
