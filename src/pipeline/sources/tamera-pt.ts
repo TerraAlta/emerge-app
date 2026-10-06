@@ -1,88 +1,105 @@
-/** Tamera — peace research ecovillage (330 residents), Alentejo, Portugal. */
+/**
+ * Tamera — tamera.org/event-calendar — peace research & healing biotope,
+ * Relíquias, Odemira (Alentejo). Seminars, hands-on garden/solar weeks,
+ * open afternoons.
+ *
+ * The calendar is server-rendered, one block per month:
+ *   <div id='month-October-2026' class='calendar-month'> …
+ *     <div class='calendar-event noprereq seminar'>
+ *       <div class='event-date'>07 Oct - 13 Oct:</div>
+ *       <div class='event-title'><a href='/learn/…'>Title</a></div>
+ * The month block gives the year; ongoing and online items are skipped.
+ */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml, hashStr } from './utils'
 
-const URLS = ['https://www.tamera.org/events/', 'https://www.tamera.org/upcoming-events/']
+const URL_CAL = 'https://www.tamera.org/event-calendar/'
+const BASE = 'https://www.tamera.org'
 const SRC = 'tamera-pt'
 const ORG = 'Tamera'
-const DEFAULT_LAT = 37.5833
-const DEFAULT_LNG = -8.5167
+const LAT = 37.716
+const LNG = -8.517
 
-const PT_MONTHS: Record<string, number> = {
-  janeiro: 0, fevereiro: 1, março: 2, abril: 3, maio: 4, junho: 5,
-  julho: 6, agosto: 7, setembro: 8, outubro: 9, novembro: 10, dezembro: 11,
+const MONTHS: Record<string, number> = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
 }
 
-function extractPtDate(html: string): string {
-  const dt = html.match(/datetime="([^"]*)"/)
-  if (dt) { const d = new Date(dt[1]); if (!isNaN(d.getTime())) return d.toISOString() }
-  const m = html.match(/(\d{1,2})\s+(?:de\s+)?(janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s+(?:de\s+)?(\d{4})/i)
-  if (m) { const mo = PT_MONTHS[m[2].toLowerCase()]; if (mo !== undefined) return new Date(parseInt(m[3]), mo, parseInt(m[1])).toISOString() }
-  const dd = html.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/)
-  if (dd) return new Date(parseInt(dd[3]), parseInt(dd[2]) - 1, parseInt(dd[1])).toISOString()
-  return new Date().toISOString()
+function dayMonth(s: string): { d: number; m: number } | null {
+  const x = s.trim().match(/^(\d{1,2})\s+([A-Za-z]{3})/)
+  if (!x) return null
+  const m = MONTHS[x[2].toLowerCase()]
+  return m === undefined ? null : { d: parseInt(x[1], 10), m }
+}
+
+/** Dates are listed under a month heading; one far from that month belongs to the next/previous year. */
+function toDate(dm: { d: number; m: number }, blockYear: number, blockMonth: number): Date {
+  const year = dm.m > blockMonth + 6 ? blockYear - 1 : dm.m < blockMonth - 6 ? blockYear + 1 : blockYear
+  return new Date(Date.UTC(year, dm.m, dm.d, 9))
 }
 
 export const tameraPt: SourceFetcher = {
   name: SRC,
   async fetch() {
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
-        })
-        if (!res.ok) continue
-        const html = await res.text()
-
-        const jsonLd = extractJsonLd(html, SRC)
-        if (jsonLd.length > 0) return jsonLd
-
-        try {
-          const base = new URL(url).origin
-          const apiRes = await fetch(`${base}/wp-json/tribe/events/v1/events?per_page=20`, {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              return data.events.map((e: any) => ({
-                source: SRC, source_id: `tam-${e.id}`, source_url: e.url ?? url,
-                title: stripHtml(e.title ?? ''), description: stripHtml(e.description ?? '').slice(0, 500),
-                organizer: e.organizer?.[0]?.organizer ?? ORG,
-                location_name: e.venue?.venue ?? 'Tamera, Odemira, Alentejo',
-                lat: parseFloat(e.venue?.geo_lat ?? '0') || DEFAULT_LAT,
-                lng: parseFloat(e.venue?.geo_lng ?? '0') || DEFAULT_LNG,
-                starts_at: new Date(e.start_date).toISOString(), cost: e.cost ?? 'See event',
-              }))
-            }
-          }
-        } catch {}
-
-        return scrapeHtml(html, url)
-      } catch { continue }
+    let html: string
+    try {
+      const res = await fetch(URL_CAL, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
+        signal: AbortSignal.timeout(20000),
+      })
+      if (!res.ok) return []
+      html = await res.text()
+    } catch {
+      return []
     }
-    return []
-  },
-}
 
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const pat = /<(?:article|div|li)[^>]*class="[^"]*(?:event|course|workshop|program|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let m
-  while ((m = pat.exec(html)) !== null) {
-    const block = m[1]
-    const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!t) continue
-    const title = stripHtml(t[2]).trim()
-    if (!title || title.length < 5) continue
-    events.push({
-      source: SRC, source_id: `tam-${hashStr(title)}`,
-      source_url: t[1] ? new URL(t[1], baseUrl).toString() : baseUrl, title,
-      description: 'Tamera event. See link for details.', organizer: ORG,
-      location_name: 'Tamera, Odemira, Alentejo', lat: DEFAULT_LAT, lng: DEFAULT_LNG,
-      starts_at: extractPtDate(block), cost: 'See event',
-    })
-  }
-  return events
+    const now = Date.now()
+    const seen = new Set<string>()
+    const events: RawEvent[] = []
+    const monthRe = /<div id='month-([A-Za-z]+)-(\d{4})' class='calendar-month'>([\s\S]*?)<!--<\/monthdiv/g
+    let mb
+    while ((mb = monthRe.exec(html)) !== null) {
+      const blockMonth = MONTHS[mb[1].slice(0, 3).toLowerCase()]
+      const blockYear = parseInt(mb[2], 10)
+      if (blockMonth === undefined) continue
+
+      const evRe = /<div class='calendar-event ([^']*)'>\s*<div class='event-date'>([^<]*)<\/div>\s*<div class='event-title'><a href='([^']*)'>([\s\S]*?)<\/a>/g
+      let e
+      while ((e = evRe.exec(mb[3])) !== null) {
+        const [, classes, dateText, href, rawTitle] = e
+        const [startText, endText] = dateText.replace(/:\s*$/, '').split(' - ')
+        const start = dayMonth(startText ?? '')
+        if (!start) continue // "Ongoing:" and similar
+        const startDate = toDate(start, blockYear, blockMonth)
+        const end = endText ? dayMonth(endText) : null
+        const endDate = end ? toDate(end, startDate.getUTCFullYear(), start.m) : null
+        if (startDate.getTime() < now) continue
+
+        const title = stripHtml(rawTitle).trim()
+        if (/\bonline\b/.test(classes) || /^online/i.test(title)) continue // Emerge is in-person
+        const url = href.startsWith('http') ? href : BASE + href
+        const key = url + startDate.toISOString()
+        if (!title || seen.has(key)) continue
+        seen.add(key)
+
+        const kind = /work-?study/.test(classes) ? 'Hands-on / work-study'
+          : /dayvisit/.test(classes) ? 'Day visit' : 'Seminar'
+        events.push({
+          source: SRC,
+          source_id: `${SRC}-${hashStr(key)}`,
+          source_url: url,
+          title,
+          description: `${kind} at Tamera, a peace research and healing biotope in the Alentejo working on water retention landscapes, solar technology and community.`,
+          organizer: ORG,
+          location_name: 'Tamera, Relíquias, Odemira',
+          lat: LAT,
+          lng: LNG,
+          starts_at: startDate.toISOString(),
+          ends_at: endDate && endDate >= startDate ? endDate.toISOString() : null,
+          cost: 'See event page',
+        })
+      }
+    }
+    return events
+  },
 }

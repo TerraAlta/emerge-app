@@ -406,7 +406,7 @@ const SOURCES: SourceFetcher[] = [
   hubbubUk,
   zeroWasteUsa,
   olioGlobal,
-  zeroWastePt,
+  // zeroWastePt — disabled 2026-10-06: zerowaste.pt doesn't respond
   puschCh,
   zeroWasteDayGlobal,
   // Theatre of the Oppressed
@@ -430,8 +430,8 @@ const SOURCES: SourceFetcher[] = [
   nlArtSpaces,
   frArtSpaces,
   deArtSpaces,
-  agendaCulturalPt,
-  ptArtSpaces,
+  // agendaCulturalPt, ptArtSpaces — disabled 2026-10-06: Agenda Cultural Lisboa
+  // doesn't respond; LX Factory / Alkantara event pages are 404
   efdssUk,
   balfolkUk,
   ukArtSpaces,
@@ -523,20 +523,17 @@ const SOURCES: SourceFetcher[] = [
   energiegenossenschaftenDe,
   degrowthDe,
   syndikatDe,
-  // Portugal
-  gaiaPt,
-  redeConvergirPt,
+  // Portugal — tamera, terra-alta and aldeias-xisto rewritten 2026-10-06 against
+  // the real pages. The rest returned 0 events and are disabled until someone
+  // finds a working events page for them:
+  //   gaiaPt (site returns empty pages), redeConvergirPt + convergenciaPt
+  //   (calendar abandoned since 2019), regenerarPt (agenda is a JS-only embed),
+  //   lugarDaTerraPt, aldeiaDoValePt, coopernicoPt, transicaoPt (no events
+  //   page — 404), fablabLisboaPt (domain now redirects to lisboa.pt),
+  //   biovillaPt (site is now a JS-only app)
   tameraPt,
   terraAltaPt,
   freixoMeioPt,
-  lugarDaTerraPt,
-  aldeiaDoValePt,
-  coopernicoPt,
-  fablabLisboaPt,
-  transicaoPt,
-  convergenciaPt,
-  biovillaPt,
-  regenerarPt,
   aldeiasXistoPt,
   // City-based scrapers
   meetupCities,

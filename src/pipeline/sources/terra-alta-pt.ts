@@ -1,91 +1,85 @@
 /**
- * Terra Alta — terralta.org/eventos
- * Regenerative community and permaculture events in central Portugal.
+ * Terra Alta — terralta.org — permaculture education centre in Ulgueira,
+ * Colares (Sintra). Runs 10-day Permaculture Design Courses (PDCs).
+ *
+ * The site is Wix. /permaculture-courses links every course page
+ * (/event-info/<slug>), and each of those carries a schema.org Event in
+ * JSON-LD with real dates and venue — that's what we read.
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml, hashStr } from './utils'
 
-const URLS = ['https://terralta.org/eventos', 'https://terralta.org/events']
+const LIST_URL = 'https://www.terralta.org/permaculture-courses'
 const SRC = 'terra-alta-pt'
 const ORG = 'Terra Alta'
-const DEFAULT_LAT = 40.0
-const DEFAULT_LNG = -8.0
+// Ulgueira, Colares — the site's own GeoCoordinates
+const LAT = 38.7833
+const LNG = -9.3833
+const MAX_PAGES = 20
 
-const PT_MONTHS: Record<string, number> = {
-  janeiro: 0, fevereiro: 1, março: 2, abril: 3, maio: 4, junho: 5,
-  julho: 6, agosto: 7, setembro: 8, outubro: 9, novembro: 10, dezembro: 11,
+async function get(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
+      signal: AbortSignal.timeout(20000),
+    })
+    return res.ok ? await res.text() : null
+  } catch {
+    return null
+  }
 }
 
-function extractPtDate(html: string): string {
-  const dt = html.match(/datetime="([^"]*)"/)
-  if (dt) { const d = new Date(dt[1]); if (!isNaN(d.getTime())) return d.toISOString() }
-  const m = html.match(/(\d{1,2})\s+(?:de\s+)?(janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s+(?:de\s+)?(\d{4})/i)
-  if (m) { const mo = PT_MONTHS[m[2].toLowerCase()]; if (mo !== undefined) return new Date(parseInt(m[3]), mo, parseInt(m[1])).toISOString() }
-  const dd = html.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/)
-  if (dd) return new Date(parseInt(dd[3]), parseInt(dd[2]) - 1, parseInt(dd[1])).toISOString()
-  return new Date().toISOString()
+function jsonLdEvents(html: string): any[] {
+  const out: any[] = []
+  for (const m of html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)) {
+    try {
+      const data = JSON.parse(m[1])
+      for (const item of Array.isArray(data) ? data : data['@graph'] ?? [data]) {
+        if (item?.['@type'] === 'Event' && item.name && item.startDate) out.push(item)
+      }
+    } catch {
+      /* skip malformed block */
+    }
+  }
+  return out
 }
 
 export const terraAltaPt: SourceFetcher = {
   name: SRC,
   async fetch() {
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
+    const list = await get(LIST_URL)
+    if (!list) return []
+    const pages = [...new Set(list.match(/https:\/\/www\.terralta\.org\/event-info\/[a-z0-9-]+/g) ?? [])]
+
+    const now = Date.now()
+    const events: RawEvent[] = []
+    for (const url of pages.slice(0, MAX_PAGES)) {
+      const html = await get(url)
+      if (!html) continue
+      for (const e of jsonLdEvents(html)) {
+        const start = new Date(e.startDate)
+        if (isNaN(start.getTime()) || start.getTime() < now) continue
+        const end = e.endDate ? new Date(e.endDate) : null
+        const loc = e.location ?? {}
+        events.push({
+          source: SRC,
+          source_id: `${SRC}-${hashStr(url + start.toISOString())}`,
+          source_url: url,
+          title: stripHtml(e.name).replace(/\s*\/\/\s*/g, ' — ').replace(/\s+/g, ' ').trim(),
+          description: stripHtml(e.description ?? '')
+            .replace(/&gt;/g, '>').replace(/&#0?10;/g, ' ').replace(/\s+/g, ' ')
+            .slice(0, 500) || 'A 10-day Permaculture Design Course at Terra Alta, Sintra.',
+          organizer: ORG,
+          location_name: [loc.name, typeof loc.address === 'string' ? loc.address : null].filter(Boolean).join(', ') || 'Terra Alta, Sintra',
+          lat: LAT,
+          lng: LNG,
+          starts_at: start.toISOString(),
+          ends_at: end && !isNaN(end.getTime()) ? end.toISOString() : null,
+          cost: 'See event page',
+          image_url: typeof e.image === 'string' ? e.image : e.image?.url ?? null,
         })
-        if (!res.ok) continue
-        const html = await res.text()
-
-        const jsonLd = extractJsonLd(html, SRC)
-        if (jsonLd.length > 0) return jsonLd
-
-        try {
-          const base = new URL(url).origin
-          const apiRes = await fetch(`${base}/wp-json/tribe/events/v1/events?per_page=20`, {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              return data.events.map((e: any) => ({
-                source: SRC, source_id: `ta-${e.id}`, source_url: e.url ?? url,
-                title: stripHtml(e.title ?? ''), description: stripHtml(e.description ?? '').slice(0, 500),
-                organizer: e.organizer?.[0]?.organizer ?? ORG,
-                location_name: e.venue?.venue ?? e.venue?.city ?? 'Portugal',
-                lat: parseFloat(e.venue?.geo_lat ?? '0') || DEFAULT_LAT,
-                lng: parseFloat(e.venue?.geo_lng ?? '0') || DEFAULT_LNG,
-                starts_at: new Date(e.start_date).toISOString(), cost: e.cost ?? 'Ver evento',
-              }))
-            }
-          }
-        } catch {}
-
-        return scrapeHtml(html, url)
-      } catch { continue }
+      }
     }
-    return []
+    return events
   },
-}
-
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const pat = /<(?:article|div|li)[^>]*class="[^"]*(?:event|evento|curso|workshop|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let m
-  while ((m = pat.exec(html)) !== null) {
-    const block = m[1]
-    const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!t) continue
-    const title = stripHtml(t[2]).trim()
-    if (!title || title.length < 5) continue
-    events.push({
-      source: SRC, source_id: `ta-${hashStr(title)}`,
-      source_url: t[1] ? new URL(t[1], baseUrl).toString() : baseUrl, title,
-      description: 'Evento Terra Alta. Ver link para detalhes.', organizer: ORG,
-      location_name: 'Portugal', lat: DEFAULT_LAT, lng: DEFAULT_LNG,
-      starts_at: extractPtDate(block), cost: 'Ver evento',
-    })
-  }
-  return events
 }
