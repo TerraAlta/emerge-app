@@ -1,85 +1,119 @@
 /**
- * European Permaculture Network — permaculture-network.eu/courses-events
- * Drupal site with event listings. Scrapes HTML for event data.
+ * European Permaculture Network — permaculture-network.eu
+ * Community-submitted permaculture courses (PIC, PDC, teacher trainings),
+ * workshops, festivals and convergences across Europe.
+ *
+ * Drupal site. The listing /permaculture-courses-events links each current
+ * event as /events/<yyyy-mm>-<slug>. Each detail page has
+ *   - JSON-LD Event with eventAttendanceMode (Online events are skipped) and
+ *     a PostalAddress (street, postcode, locality, country);
+ *   - the date field: <div class="f--name-field-datum"><time datetime="…Z">
+ *     08.10.2026 - 16:30</time> - <time …>08.11.2026 - 18:00</time>.
+ * Timed dates use the stored UTC instant from the datetime="…Z" attribute
+ * (the JSON-LD offsets are mislabelled); date-only ones become 10:00 local
+ * in the venue country's zone. Venues are geocoded (Nominatim).
  */
+import * as cheerio from 'cheerio'
 import type { RawEvent, SourceFetcher } from './types'
-import { haversine, stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml, hashStr } from './utils'
+import { getText, geocodeEuFirst, tzForCountry, zonedIso, COUNTRY_CC } from './eu-common'
 
-const URLS = [
-  'https://permaculture-network.eu/courses-events/',
-  'https://permaculture-network.eu/events/',
-]
+const SRC = 'eupn'
+const BASE = 'https://permaculture-network.eu'
+const LISTINGS = [`${BASE}/permaculture-courses-events`, `${BASE}/courses-events`]
+const MAX_DETAILS = 30
 
-export const eupn: SourceFetcher = {
-  name: 'eupn',
-  async fetch() {
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-        })
-        if (!res.ok) continue
-        const html = await res.text()
-
-        // Try JSON-LD first
-        const jsonLd = extractJsonLd(html, 'eupn')
-        if (jsonLd.length > 0) return jsonLd
-
-        // Scrape HTML — look for event cards/rows
-        return scrapeHtml(html, url)
-      } catch (err) {
-        console.warn(`[eupn] ${url} failed:`, (err as Error).message)
-      }
-    }
-    return []
-  },
+function parseShown(s: string): { y: number; mo: number; d: number; h?: number; mi?: number } | null {
+  const m = s.match(/(\d{2})\.(\d{2})\.(\d{4})(?:\s*-\s*(\d{1,2}):(\d{2}))?/)
+  if (!m) return null
+  return { y: +m[3], mo: +m[2], d: +m[1], h: m[4] ? +m[4] : undefined, mi: m[5] ? +m[5] : undefined }
 }
 
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-
-  // Common patterns: <article>, <div class="event">, <h2><a href="...">Title</a></h2>
-  const blockPattern = /<(?:article|div|li)[^>]*class="[^"]*(?:event|course|listing|node)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let match
-  while ((match = blockPattern.exec(html)) !== null) {
-    const block = match[1]
-    const titleMatch = block.match(/<h[23][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[23]>/i)
-    if (!titleMatch) continue
-
-    const title = stripHtml(titleMatch[2]).trim()
-    if (!title || title.length < 5) continue
-
-    const link = titleMatch[1] ? new URL(titleMatch[1], baseUrl).toString() : baseUrl
-
-    // Extract date
-    const dateMatch = block.match(/(?:datetime="([^"]*)")|(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s+\d{4})/i)
-    let startsAt = new Date().toISOString()
-    if (dateMatch) {
-      const parsed = new Date(dateMatch[1] || dateMatch[2])
-      if (!isNaN(parsed.getTime())) startsAt = parsed.toISOString()
+export const eupn: SourceFetcher = {
+  name: SRC,
+  async fetch() {
+    const links: string[] = []
+    for (const url of LISTINGS) {
+      const html = await getText(url)
+      if (!html) continue
+      for (const m of html.matchAll(/href="(\/events\/(\d{4})-(\d{2})-[^"?#]+)"/g)) {
+        const path = m[1]
+        // Slug carries the start month: skip ones that clearly ended long ago
+        const ym = +m[2] * 12 + +m[3]
+        const now = new Date()
+        if (ym < now.getUTCFullYear() * 12 + now.getUTCMonth() + 1 - 6) continue
+        if (!links.includes(path)) links.push(path)
+      }
     }
 
-    // Extract location
-    const locMatch = block.match(/(?:class="[^"]*location[^"]*"[^>]*>)([\s\S]*?)<\//i)
-    const location = locMatch ? stripHtml(locMatch[1]).trim() : ''
+    const events: RawEvent[] = []
+    for (const path of links.slice(0, MAX_DETAILS)) {
+      const url = BASE + path
+      const html = await getText(url)
+      if (!html) continue
+      const $ = cheerio.load(html)
 
-    // Extract description
-    const descMatch = block.match(/(?:class="[^"]*(?:summary|excerpt|body|desc)[^"]*"[^>]*>)([\s\S]*?)<\//i)
-    const description = descMatch ? stripHtml(descMatch[1]).trim() : ''
+      let ld: any = null
+      $('script[type="application/ld+json"]').each((_, el) => {
+        try {
+          const d = JSON.parse($(el).text())
+          if (d?.['@type'] === 'Event') ld = d
+        } catch { /* ignore */ }
+      })
+      if (!ld || /Online/i.test(ld.eventAttendanceMode ?? '') || ld.location?.['@type'] === 'VirtualLocation') continue
+      const addr = ld.location?.address ?? {}
+      const country = String(addr.addressCountry ?? $('.address .country').first().text()).trim()
+      const locality = String(addr.addressLocality ?? '').trim()
+      if (!country && !locality) continue
+      const tz = tzForCountry(country) ?? 'Europe/Berlin'
 
-    events.push({
-      source: 'eupn',
-      source_id: `eupn-${hashStr(title + startsAt)}`,
-      source_url: link,
-      title,
-      description: description || 'European permaculture event. See link for details.',
-      organizer: 'European Permaculture Network',
-      location_name: location || 'Europe',
-      lat: 0, lng: 0,
-      starts_at: startsAt,
-      cost: 'See event page',
-    })
-  }
+      // Timed: trust the stored UTC instant (datetime="…Z"). Date-only: 10:00 / 18:00 local.
+      const times = $('.f--name-field-datum time')
+      const at = (i: number, defH: number): string | null => {
+        const shown = parseShown(times.eq(i).text())
+        if (!shown) return null
+        const utc = times.eq(i).attr('datetime') ?? ''
+        if (shown.h !== undefined && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?Z$/.test(utc)) return new Date(utc).toISOString()
+        return zonedIso(tz, shown.y, shown.mo, shown.d, shown.h ?? defH, shown.mi ?? 0)
+      }
+      const starts = at(0, 10)
+      if (!starts) continue
+      let ends = at(1, 18)
+      if (ends && ends <= starts) ends = null
+      if (new Date(ends ?? starts).getTime() < Date.now()) continue
 
-  return events
+      const org = stripHtml($('.address .organization').first().text())
+      const street = String(addr.streetAddress ?? '').trim()
+      const postal = String(addr.postalCode ?? '').trim()
+      const cc = COUNTRY_CC[country.toLowerCase()]
+      const geo = await geocodeEuFirst([
+        [street, `${postal} ${locality}`.trim(), country].filter(Boolean).join(', '),
+        [org, locality, country].filter(Boolean).join(', '),
+        [locality, country].filter(Boolean).join(', '),
+      ], cc)
+      if (!geo) continue
+
+      const title = stripHtml($('h1').first().text()) || stripHtml(ld.name ?? '')
+      const body = $('.f--name-body, .field--name-body').first().text()
+      const description = stripHtml(body || ld.description || '').slice(0, 500)
+      const teachers = (ld.performer ?? []).map((p: any) => p?.name).filter(Boolean)
+
+      events.push({
+        source: SRC,
+        source_id: `eupn-${hashStr(path)}`,
+        source_url: url,
+        title,
+        description: description || stripHtml(ld.description ?? '').slice(0, 500),
+        organizer: stripHtml(ld.organizer?.name ?? '') || teachers[0] || 'European Permaculture Network',
+        location_name: [org, locality, country].filter(Boolean).join(', '),
+        lat: geo.lat,
+        lng: geo.lng,
+        starts_at: starts,
+        ends_at: ends,
+        cost: 'See event page',
+        image_url: typeof ld.image === 'string' ? ld.image : null,
+      })
+    }
+    return events
+  },
 }

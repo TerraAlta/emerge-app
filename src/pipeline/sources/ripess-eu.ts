@@ -1,89 +1,82 @@
 /**
  * RIPESS Europe — ripess.eu
- * Solidarity economy, social & solidarity economy networks across Europe.
+ * Solidarity economy networks across Europe: congresses, social forums, SSE
+ * fairs and gatherings that the network lists in its agenda.
+ *
+ * The agenda (ripess.eu/en/agenda/) is The Events Calendar, so we read its
+ * REST API: /wp-json/tribe/events/v1/events (future events only). A handful
+ * of events a year. Venues carry city + country but no coordinates, so they
+ * are geocoded (Nominatim, cached). Wall-clock times are re-anchored to the
+ * venue country's zone (the site's own zone is Europe/Paris for everything);
+ * events without a venue (webinars) or flagged online are skipped.
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml, hashStr } from './utils'
+import { getJson, geocodeEuFirst, tzForCountry, zonedIso, ONLINE_RE, COUNTRY_CC } from './eu-common'
 
-const URLS = [
-  'https://www.ripess.eu/events/',
-  'https://www.ripess.eu/agenda/',
-]
+const SRC = 'ripess-eu'
+const API = 'https://ripess.eu/wp-json/tribe/events/v1/events'
+
+function wall(s: string): [number, number, number, number, number] | null {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/)
+  return m ? [+m[1], +m[2], +m[3], +m[4], +m[5]] : null
+}
 
 export const ripessEu: SourceFetcher = {
-  name: 'ripess-eu',
+  name: SRC,
   async fetch() {
-    const allEvents: RawEvent[] = []
+    const today = new Date().toISOString().slice(0, 10)
+    const events: RawEvent[] = []
+    let url: string | null = `${API}?per_page=50&start_date=${today}`
+    for (let page = 0; url && page < 4; page++) {
+      const d: any = await getJson(url)
+      if (!d?.events) break
+      for (const e of d.events as any[]) {
+        const title = stripHtml(e.title ?? '')
+        const v = e.venue && !Array.isArray(e.venue) ? e.venue : null
+        if (!title || !v?.city) continue
+        const desc = stripHtml(e.description ?? '')
+        if (ONLINE_RE.test(`${v.venue ?? ''} ${v.city ?? ''}`) || /^online\b/i.test(title)) continue
 
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
-        })
-        if (!res.ok) continue
-        const html = await res.text()
+        const cc = COUNTRY_CC[String(v.country ?? '').trim().toLowerCase()]
+        const tz = tzForCountry(v.country) ?? e.timezone ?? 'Europe/Paris'
+        const s = wall(e.start_date ?? '')
+        if (!s) continue
+        const starts = e.all_day ? zonedIso(tz, s[0], s[1], s[2], 10, 0) : zonedIso(tz, ...s)
+        if (!starts) continue
+        const en = wall(e.end_date ?? '')
+        let ends = en ? (e.all_day ? zonedIso(tz, en[0], en[1], en[2], 18, 0) : zonedIso(tz, ...en)) : null
+        if (ends && ends <= starts) ends = null
 
-        // JSON-LD
-        const jsonLd = extractJsonLd(html, 'ripess-eu')
-        if (jsonLd.length > 0) { allEvents.push(...jsonLd); continue }
-
-        // WP REST / Tribe Events API
-        try {
-          const apiRes = await fetch('https://www.ripess.eu/wp-json/tribe/events/v1/events?per_page=20', {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(5000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              for (const e of data.events) {
-                allEvents.push({
-                  source: 'ripess-eu', source_id: `ripess-${e.id}`,
-                  source_url: e.url ?? url,
-                  title: stripHtml(e.title ?? ''),
-                  description: stripHtml(e.description ?? '').slice(0, 500),
-                  organizer: 'RIPESS Europe',
-                  location_name: e.venue?.venue ?? e.venue?.city ?? 'Europe',
-                  lat: parseFloat(e.venue?.geo_lat ?? '0'), lng: parseFloat(e.venue?.geo_lng ?? '0'),
-                  starts_at: new Date(e.start_date).toISOString(),
-                  cost: e.cost ?? 'See event page',
-                })
-              }
-              if (allEvents.length > 0) return allEvents
-            }
-          }
-        } catch {}
-
-        // HTML scrape fallback
-        const pattern = /<(?:article|div|li|section)[^>]*class="[^"]*(?:event|agenda|solidarity|economy|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li|section)>/gi
-        let match
-        while ((match = pattern.exec(html)) !== null) {
-          const block = match[1]
-          const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-          if (!t) continue
-          const title = stripHtml(t[2]).trim()
-          if (!title || title.length < 5) continue
-          if (/^(menu|nav|search|cookie|footer)/i.test(title)) continue
-
-          const descMatch = block.match(/<p[^>]*>([\s\S]*?)<\/p>/i)
-          const dateMatch = block.match(/datetime="([^"]*)"/) || block.match(/((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s+\d{1,2},?\s+\d{4})/i)
-          let startsAt = new Date().toISOString()
-          if (dateMatch) { const d = new Date(dateMatch[1]); if (!isNaN(d.getTime())) startsAt = d.toISOString() }
-
-          allEvents.push({
-            source: 'ripess-eu', source_id: `ripess-${hashStr(title)}`,
-            source_url: t[1] ? new URL(t[1], 'https://www.ripess.eu').toString() : url,
-            title,
-            description: descMatch ? stripHtml(descMatch[1]).trim().slice(0, 500) : 'RIPESS Europe event — solidarity economy, social enterprise, cooperative networks.',
-            organizer: 'RIPESS Europe',
-            location_name: 'Europe', lat: 0, lng: 0,
-            starts_at: startsAt, cost: 'See event page',
-          })
+        const lat = parseFloat(v.geo_lat ?? '')
+        const lng = parseFloat(v.geo_lng ?? '')
+        let loc = Number.isFinite(lat) && Number.isFinite(lng) && !(lat === 0 && lng === 0) ? { lat, lng } : null
+        if (!loc) {
+          loc = await geocodeEuFirst(
+            [[v.venue, v.city, v.country].filter(Boolean).join(', '), [v.city, v.country].filter(Boolean).join(', ')],
+            cc,
+          )
         }
-      } catch (err) {
-        console.warn(`[ripess-eu] ${url} failed:`, (err as Error).message)
+        if (!loc) continue
+
+        events.push({
+          source: SRC,
+          source_id: `ripess-${e.id}`,
+          source_url: e.url ?? 'https://ripess.eu/en/agenda/',
+          title,
+          description: desc.slice(0, 500) || `${title} — listed in the RIPESS Europe solidarity economy agenda.`,
+          organizer: stripHtml(e.organizer?.[0]?.organizer ?? '') || 'RIPESS Europe',
+          location_name: [v.venue, v.city, v.country].filter(Boolean).map((x: string) => stripHtml(x)).join(', '),
+          lat: loc.lat,
+          lng: loc.lng,
+          starts_at: starts,
+          ends_at: ends,
+          cost: e.cost ? stripHtml(e.cost) : 'See event page',
+          image_url: e.image?.url ?? null,
+        })
       }
+      url = d.next_rest_url ?? null
     }
-    return allEvents
+    return events
   },
 }

@@ -299,7 +299,7 @@ const SOURCES: SourceFetcher[] = [
   openagenda,
   inaturalist,
   repairCafe,
-  wwoof,
+  // wwoof — disabled 2026-10-06: host directories, not events
   ecovillage,
   telegram,
   eupn,
@@ -327,7 +327,7 @@ const SOURCES: SourceFetcher[] = [
   ficNa,
   // priUsa — disabled 2026-10-06: permaculturenews.org returns a 'under maintenance' page everywhere — re-check later
   // transitionUs — disabled 2026-10-06: transitionus.org is now a GoDaddy parking page
-  transitionCa,
+  // transitionCa — disabled 2026-10-06: no events listing; local groups only mention events in blog posts
   rodaleUsa,
   // wwoofUsa — disabled 2026-10-06: login-gated farm-host app; host listings aren't dated events
   // wwoofCa — disabled 2026-10-06: same app as wwoofUsa; no dated events
@@ -350,53 +350,53 @@ const SOURCES: SourceFetcher[] = [
   csaBe,
   // csaWallonieBe — disabled 2026-10-06: lesgrosseslegumes.be no longer resolves; network appears closed
   // communitiesCh — disabled 2026-10-06: communitiesforfuture.org now redirects to pan-European ecolise.eu
-  transitionZh,
+  // transitionZh — disabled 2026-10-06: transition-zuerich.ch no longer served
   transitionCh,
   glariseggCh,
   regenZh,
   biosuisseCh,
   permacultureCh,
-  transitionMt,
+  // transitionMt — disabled 2026-10-06: transition.org.mt no longer exists
   foeMt,
-  greenMt,
-  naturetrustMt,
-  eupnGlobal,
-  permacultureGlobal,
+  // greenMt — disabled 2026-10-06: GreenMT is a packaging-waste compliance company; no events
+  // naturetrustMt — disabled 2026-10-06: website not updated since 2020
+  // eupnGlobal — disabled 2026-10-06: duplicate of eupn (same permaculture-network.eu site)
+  // permacultureGlobal — disabled 2026-10-06: project directory only; /events and /courses 404
   regenInternational,
   // ercGlobal — disabled 2026-10-06: same organisation as ercNa, which now reads its real (worldwide) list
-  workawayGlobal,
-  helpxGlobal,
-  wwoofGlobal,
+  // workawayGlobal — disabled 2026-10-06: login-gated host directory, not events
+  // helpxGlobal — disabled 2026-10-06: membership-only host directory; no events
+  // wwoofGlobal — disabled 2026-10-06: only event is an online webinar
   // ficGlobal — disabled 2026-10-06: same organisation as ficNa, which now reads its real event posts
-  genGathering,
+  // genGathering — disabled 2026-10-06: 2026 gathering over, 2027 unannounced (GEN Europe events come via ecovillage)
   edeGlobal,
-  priGlobal,
+  // priGlobal — disabled 2026-10-06: permaculturenews.org under maintenance everywhere — re-check later
   slowfoodGlobal,
   navdanyaGlobal,
-  localFuturesGlobal,
+  // localFuturesGlobal — disabled 2026-10-06: upcoming items are online only
   // Petal 1 — Land & Nature Stewardship
-  agroecologyEu,
-  rewildingEu,
-  ossSeeds,
+  // agroecologyEu — disabled 2026-10-06: no events calendar; Forum 2027 announced without a date
+  // rewildingEu — disabled 2026-10-06: no events listing; only blog, online course and undated tourism offers
+  // ossSeeds — disabled 2026-10-06: seed list + blog (last post 2023); no events
   // Petal 2 — Building
   cohousingEu,
   // Petal 3 — Tools & Technology
   rescoopEu,
-  fablabGlobal,
+  // fablabGlobal — disabled 2026-10-06: fablabs.io is a lab directory, not events (stamped labs with today's date)
   // Petal 4 — Education & Culture
-  cultureDeclares,
-  artivistNet,
+  // cultureDeclares — disabled 2026-10-06: real site is .org and its gatherings are online only
+  // artivistNet — disabled 2026-10-06: no events page; nothing dated
   // Petal 5 — Health & Wellbeing
   wtrEu,
-  cpaGlobal,
+  // cpaGlobal — disabled 2026-10-06: all upcoming events are online
   // Petal 6 — Finance & Economy
   ripessEu,
   dealGlobal,
-  timebanksEu,
+  // timebanksEu — disabled 2026-10-06: source of fake-dated junk: Timebanking UK calendar holds only 2019 theme demo items
   // Petal 7 — Land Tenure & Governance
   stopEcocide,
-  terredeliensEu,
-  cltEu,
+  // terredeliensEu — disabled 2026-10-06: terredeliens.org is France-only (terredeliens-fr); accesstoland.eu has no events
+  // cltEu — disabled 2026-10-06: cltn.eu gone; clteurope.org is news only; events online (UK covered by clt-uk)
   // Zero Waste
   zeroWasteEu,
   // zeroWasteFr — disabled 2026-10-06: no agenda; API needs login; the map is a directory, not events
@@ -406,30 +406,30 @@ const SOURCES: SourceFetcher[] = [
   // recyclingNetwerkBe — disabled 2026-10-06: renamed Fair Resource Foundation; advocacy, no events
   // hubbubUk — disabled 2026-10-06: whole site returns a Cloudflare challenge (403)
   zeroWasteUsa,
-  olioGlobal,
+  // olioGlobal — disabled 2026-10-06: no events pages
   // zeroWastePt — disabled 2026-10-06: zerowaste.pt doesn't respond
   puschCh,
-  zeroWasteDayGlobal,
+  // zeroWasteDayGlobal — disabled 2026-10-06: zerowaste.day has no DNS
   // Theatre of the Oppressed
   stopLondonUk,
   // kuringaDe — disabled 2026-10-06: calendar is one hand-written post, last date Sep 2026; domain moved to kuringa.de
-  itoGlobal,
+  // itoGlobal — disabled 2026-10-06: theatreoftheoppressed.org is parked
   tonycUsa,
   // Birth & Midwifery Circles
   // positiveBirthUk — disabled 2026-10-06: groups network closed in 2021; only online courses remain
   birthcircleGlobal,
   // Participatory Music & Arts
   naturalVoiceUk,
-  iptnGlobal,
+  // iptnGlobal — disabled 2026-10-06: iptn.info taken over by gambling spam; new site has no events
   theSessionGlobal,
   balfolkEu,
   fasolaGlobal,
-  resartisGlobal,
+  // resartisGlobal — disabled 2026-10-06: no events page/API; nothing dated for 2026/27
   comhaltasIe,
-  artscouncilIe,
+  // artscouncilIe — disabled 2026-10-06: only online funding clinics
   esArtSpaces,
   nlArtSpaces,
-  frArtSpaces,
+  // frArtSpaces — disabled 2026-10-06: Collectif MU domain gone; Le 6b agenda broken since 2025; Bal Blomet is a commercial club
   deArtSpaces,
   // agendaCulturalPt, ptArtSpaces — disabled 2026-10-06: Agenda Cultural Lisboa
   // doesn't respond; LX Factory / Alkantara event pages are 404
@@ -461,10 +461,10 @@ const SOURCES: SourceFetcher[] = [
   ecologyActionCa,
   seedLibrariesCa,
   farmfolkCa,
-  csaCa,
+  // csaCa — disabled 2026-10-06: csafarming.ca no longer exists; no national CSA events listing
   // Malta (new)
   birdlifeMt,
-  moamMt,
+  // moamMt — disabled 2026-10-06: moam.org.mt no longer exists
   // Switzerland (new)
   regenerativCh,
   biovisionCh,
@@ -506,7 +506,7 @@ const SOURCES: SourceFetcher[] = [
   catUk,
   // goodGriefUk — disabled 2026-10-06: Cloudflare challenge on every page; US org, mostly online
   wenUk,
-  weallGlobal,
+  // weallGlobal — disabled 2026-10-06: all events past and online
   // cltUk — disabled 2026-10-06: events API works but ~all are member Zoom webinars (1 in-person in 2 years)
   // Netherlands (new)
   toekomstboerenNl,

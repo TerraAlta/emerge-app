@@ -1,104 +1,85 @@
 /**
- * Navdanya / Vandana Shiva — navdanya.org, vandanashiva.com
- * Seed sovereignty, food justice, Earth University courses.
- * 150+ seed banks across India. Global speaking events.
+ * Navdanya / Vandana Shiva — Earth University (Bija Vidyapeeth)
+ * Residential courses on seed sovereignty, agroecology, ecofeminism and
+ * Earth democracy at the Navdanya biodiversity farm, Ramgarh, Dehradun (India).
+ *
+ * Source: https://navdanya.org/earth-university/ — "Learning @ Navdanya" list
+ * (Elementor premium bullet list):
+ *   <span class="premium-bullet-text">Economic Freedom &amp; Self Reliance</span>
+ *   <span class="premium-bullet-list-desc">13th November 2026(Fri)- 17th November 2026(Tues)</span>
+ *   <a class="premium-bullet-list-link" href="…programme page…">   (optional)
+ * Dates are date-only → 10:00 IST (Asia/Kolkata, UTC+5:30). All programmes run
+ * at the farm → fixed coordinates (OSM node "Navdanya", Ramgarh).
+ * (vandanashiva.com has no events page any more; navdanya.org/events is gone.)
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml, decodeEntities } from './utils'
+import { getText, zonedIso, MONTHS, ONLINE_RE } from './global-common'
 
-const URLS = [
-  'https://www.navdanya.org/earth-university',
-  'https://www.navdanya.org/events',
-  'https://www.navdanya.org/site/living-seed',
-  'https://vandanashiva.com/events/',
-  'https://vandanashiva.com/speaking-schedule/',
-]
+const SRC = 'navdanya-global'
+const URL = 'https://navdanya.org/earth-university/'
+const LAT = 30.3266, LNG = 77.8752 // Navdanya farm, Ramgarh, Dehradun (OSM)
+const TZ = 'Asia/Kolkata'
 
-// Navdanya is in Dehradun, Uttarakhand, India
-const NAVDANYA_LAT = 30.3165
-const NAVDANYA_LNG = 78.0322
+const DATE_RE = /(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\.?,?\s*(\d{4})?/g
+
+function parseDates(s: string): { y: number; m: number; d: number }[] {
+  const out: { y: number; m: number; d: number }[] = []
+  const found = [...s.matchAll(DATE_RE)]
+    .map((m) => ({ d: +m[1], m: MONTHS[m[2].toLowerCase()] ?? MONTHS[m[2].toLowerCase().slice(0, 3)], y: m[3] ? +m[3] : 0 }))
+    .filter((x) => x.m && x.d >= 1 && x.d <= 31)
+  // Fill a missing year from the next date that has one ("03rd October (Sat) - 16th October 2026")
+  for (let i = found.length - 1; i >= 0; i--) {
+    if (!found[i].y) {
+      const next = found.slice(i + 1).find((x) => x.y)
+      if (!next) continue
+      found[i].y = found[i].m > next.m ? next.y - 1 : next.y
+    }
+    out.unshift(found[i])
+  }
+  return out.filter((x) => x.y)
+}
 
 export const navdanyaGlobal: SourceFetcher = {
-  name: 'navdanya-global',
+  name: SRC,
   async fetch() {
-    const allEvents: RawEvent[] = []
+    const html = await getText(URL)
+    if (!html) return []
+    const now = Date.now()
+    const events: RawEvent[] = []
+    const items = html.split(/<li class="premium-bullet-list-content/).slice(1)
+    for (const raw of items) {
+      const item = raw.split('</li>')[0]
+      const title = stripHtml(item.match(/class="premium-bullet-text"[^>]*>([\s\S]*?)<\/span>/)?.[1] ?? '')
+      const when = decodeEntities(item.match(/class="premium-bullet-list-desc"[^>]*>([\s\S]*?)<\/span>/)?.[1] ?? '').trim()
+      if (!title || !when) continue
+      if (ONLINE_RE.test(`${title} ${when}`)) continue
+      const dates = parseDates(when)
+      if (!dates.length) continue
+      const s = dates[0]
+      const startIso = zonedIso(s.y, s.m, s.d, 10, 0, TZ)
+      if (!startIso || Date.parse(startIso) < now + 3600_000) continue
+      const e = dates.length > 1 ? dates[dates.length - 1] : null
+      const endIso = e ? zonedIso(e.y, e.m, e.d, 17, 0, TZ) : null
+      const href = item.match(/class="premium-bullet-list-link"[^>]*href="([^"]+)"/)?.[1]
+        ?? item.match(/href="([^"]+)"[^>]*class="premium-bullet-list-link"/)?.[1]
 
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
-        })
-        if (!res.ok) continue
-        const html = await res.text()
-
-        // JSON-LD
-        const jsonLd = extractJsonLd(html, 'navdanya-global')
-        if (jsonLd.length > 0) { allEvents.push(...jsonLd); continue }
-
-        // Tribe Events API
-        const base = new URL(url).origin
-        try {
-          const apiRes = await fetch(`${base}/wp-json/tribe/events/v1/events?per_page=20`, {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(5000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              for (const e of data.events) {
-                allEvents.push({
-                  source: 'navdanya-global',
-                  source_id: `nav-${e.id}`,
-                  source_url: e.url ?? url,
-                  title: stripHtml(e.title ?? ''),
-                  description: stripHtml(e.description ?? '').slice(0, 500),
-                  organizer: e.organizer?.[0]?.organizer ?? 'Navdanya / Vandana Shiva',
-                  location_name: e.venue?.venue ?? 'Navdanya Biodiversity Farm, Dehradun',
-                  lat: parseFloat(e.venue?.geo_lat ?? '0') || NAVDANYA_LAT,
-                  lng: parseFloat(e.venue?.geo_lng ?? '0') || NAVDANYA_LNG,
-                  starts_at: new Date(e.start_date).toISOString(),
-                  cost: e.cost ?? 'See event page',
-                })
-              }
-              continue
-            }
-          }
-        } catch {}
-
-        // HTML scrape
-        const pattern = /<(?:article|div|li)[^>]*class="[^"]*(?:event|course|programme|university|seed|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-        let match
-        while ((match = pattern.exec(html)) !== null) {
-          const block = match[1]
-          const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-          if (!t) continue
-          const title = stripHtml(t[2]).trim()
-          if (!title || title.length < 5) continue
-          if (/^(menu|nav|search|cookie)/i.test(title)) continue
-
-          const descMatch = block.match(/<p[^>]*>([\s\S]*?)<\/p>/i)
-          const dateMatch = block.match(/datetime="([^"]*)"/) || block.match(/((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s+\d{1,2},?\s+\d{4})/i)
-          let startsAt = new Date().toISOString()
-          if (dateMatch) { const d = new Date(dateMatch[1]); if (!isNaN(d.getTime())) startsAt = d.toISOString() }
-
-          allEvents.push({
-            source: 'navdanya-global',
-            source_id: `nav-${hashStr(title)}`,
-            source_url: t[1] ? new URL(t[1], url).toString() : url,
-            title,
-            description: descMatch ? stripHtml(descMatch[1]).trim().slice(0, 500) : 'Navdanya event — seed sovereignty, food justice, Earth University.',
-            organizer: 'Navdanya / Vandana Shiva',
-            location_name: 'See event page',
-            lat: NAVDANYA_LAT, lng: NAVDANYA_LNG,
-            starts_at: startsAt,
-            cost: 'See event page',
-          })
-        }
-      } catch (err) {
-        console.warn(`[navdanya-global] ${url} failed:`, (err as Error).message)
-      }
+      events.push({
+        source: SRC,
+        source_id: `navdanya-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 60)}-${startIso.slice(0, 10)}`,
+        source_url: href && /^https?:/.test(href) ? href : URL,
+        title: `${title} — Navdanya Earth University`,
+        description: `${title}: a programme of Navdanya's Earth University (Bija Vidyapeeth), founded by Dr Vandana Shiva, at the Navdanya biodiversity conservation farm near Dehradun — learning seed saving, agroecology, Earth democracy and living economies. Dates: ${when}.`,
+        organizer: 'Navdanya — Earth University (Bija Vidyapeeth)',
+        location_name: 'Navdanya Biodiversity Farm, Ramgarh, Dehradun, Uttarakhand, India',
+        lat: LAT,
+        lng: LNG,
+        starts_at: startIso,
+        ends_at: endIso && Date.parse(endIso) > Date.parse(startIso) ? endIso : null,
+        cost: 'See programme page',
+      })
     }
-
-    return allEvents
+    events.sort((a, b) => a.starts_at.localeCompare(b.starts_at))
+    return events
   },
 }

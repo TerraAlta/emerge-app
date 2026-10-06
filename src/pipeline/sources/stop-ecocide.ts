@@ -1,89 +1,116 @@
 /**
- * Stop Ecocide International — stopecocide.earth
- * Ecocide law campaign, assemblies, workshops, direct action events.
+ * Stop Ecocide International — stopecocide.earth/events
+ *
+ * The site is Squarespace; its events collection is available as JSON at
+ * /events?format=json → `upcoming[]` with title, body, startDate/endDate
+ * (epoch ms) and a `location` block (addressTitle, addressLine1/2,
+ * addressCountry, markerLat/markerLng).
+ *
+ * Squarespace stores times as the editor typed them in the SITE time zone
+ * (website.timeZone, Europe/Amsterdam), e.g. a London talk "10am – 3pm" is
+ * stored as 10:00 Amsterdam. We therefore read the wall-clock time in the
+ * site zone and re-interpret it in the venue's own zone.
+ *
+ * Events without a real venue (empty address + Squarespace's default
+ * New York map pin) are online/unspecified and are skipped, as are
+ * webinar/online events.
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml } from './utils'
+import { getJson, tzFor, zonedIso, ONLINE_RE } from './global-net-common'
 
-const URLS = [
-  'https://www.stopecocide.earth/events',
-  'https://www.stopecocide.earth/take-action',
-]
+const SRC = 'stop-ecocide'
+const BASE = 'https://www.stopecocide.earth'
+const DEFAULT_PIN = { lat: 40.7207559, lng: -74.0007613 }
+
+interface SqLocation {
+  addressTitle?: string
+  addressLine1?: string
+  addressLine2?: string
+  addressCountry?: string
+  markerLat?: number
+  markerLng?: number
+  mapLat?: number
+  mapLng?: number
+}
+interface SqEvent {
+  id: string
+  title?: string
+  body?: string
+  excerpt?: string
+  fullUrl?: string
+  assetUrl?: string
+  startDate?: number
+  endDate?: number
+  location?: SqLocation
+}
+
+function wallClock(tz: string, ts: number) {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', {
+      timeZone: tz, hourCycle: 'h23',
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    }).formatToParts(new Date(ts)).map((x) => [x.type, x.value]),
+  )
+  return { y: +p.year, mo: +p.month, d: +p.day, h: +p.hour, mi: +p.minute }
+}
 
 export const stopEcocide: SourceFetcher = {
-  name: 'stop-ecocide',
+  name: SRC,
   async fetch() {
-    const allEvents: RawEvent[] = []
+    const d = await getJson<{ website?: { timeZone?: string }; upcoming?: SqEvent[] }>(`${BASE}/events?format=json`)
+    if (!d?.upcoming?.length) return []
+    const siteTz = d.website?.timeZone || 'Europe/Amsterdam'
 
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
-        })
-        if (!res.ok) continue
-        const html = await res.text()
+    const now = Date.now()
+    const events: RawEvent[] = []
+    for (const e of d.upcoming) {
+      const title = stripHtml(e.title ?? '')
+      if (!title || !e.startDate) continue
+      const body = stripHtml(e.body ?? e.excerpt ?? '').replace(/\s+/g, ' ').trim()
+      if (ONLINE_RE.test(title)) continue
 
-        // JSON-LD
-        const jsonLd = extractJsonLd(html, 'stop-ecocide')
-        if (jsonLd.length > 0) { allEvents.push(...jsonLd); continue }
+      const loc = e.location ?? {}
+      const lat = Number(loc.markerLat ?? loc.mapLat)
+      const lng = Number(loc.markerLng ?? loc.mapLng)
+      const hasAddr = !!(loc.addressLine1 || loc.addressLine2)
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) continue
+      const isDefaultPin = Math.abs(lat - DEFAULT_PIN.lat) < 1e-4 && Math.abs(lng - DEFAULT_PIN.lng) < 1e-4
+      if (isDefaultPin || !hasAddr) continue
+      // venue known, but the body says it's online-only
+      if (/\b(webinar|zoom|online event|livestream)\b/i.test(body) && !/in[- ]person|venue/i.test(body)) continue
 
-        // WP REST / Tribe Events API
-        try {
-          const apiRes = await fetch('https://www.stopecocide.earth/wp-json/tribe/events/v1/events?per_page=20', {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(5000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              for (const e of data.events) {
-                allEvents.push({
-                  source: 'stop-ecocide', source_id: `sei-${e.id}`,
-                  source_url: e.url ?? url,
-                  title: stripHtml(e.title ?? ''),
-                  description: stripHtml(e.description ?? '').slice(0, 500),
-                  organizer: 'Stop Ecocide International',
-                  location_name: e.venue?.venue ?? e.venue?.city ?? 'Global',
-                  lat: parseFloat(e.venue?.geo_lat ?? '0'), lng: parseFloat(e.venue?.geo_lng ?? '0'),
-                  starts_at: new Date(e.start_date).toISOString(),
-                  cost: e.cost ?? 'Free',
-                })
-              }
-              if (allEvents.length > 0) return allEvents
-            }
-          }
-        } catch {}
-
-        // HTML scrape fallback
-        const pattern = /<(?:article|div|li|section)[^>]*class="[^"]*(?:event|action|assembly|workshop|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li|section)>/gi
-        let match
-        while ((match = pattern.exec(html)) !== null) {
-          const block = match[1]
-          const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-          if (!t) continue
-          const title = stripHtml(t[2]).trim()
-          if (!title || title.length < 5) continue
-          if (/^(menu|nav|search|cookie|footer)/i.test(title)) continue
-
-          const descMatch = block.match(/<p[^>]*>([\s\S]*?)<\/p>/i)
-          const dateMatch = block.match(/datetime="([^"]*)"/) || block.match(/((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s+\d{1,2},?\s+\d{4})/i)
-          let startsAt = new Date().toISOString()
-          if (dateMatch) { const d = new Date(dateMatch[1]); if (!isNaN(d.getTime())) startsAt = d.toISOString() }
-
-          allEvents.push({
-            source: 'stop-ecocide', source_id: `sei-${hashStr(title)}`,
-            source_url: t[1] ? new URL(t[1], 'https://www.stopecocide.earth').toString() : url,
-            title,
-            description: descMatch ? stripHtml(descMatch[1]).trim().slice(0, 500) : 'Stop Ecocide event \u2014 ecocide law, earth rights, environmental justice.',
-            organizer: 'Stop Ecocide International',
-            location_name: 'Global', lat: 0, lng: 0,
-            starts_at: startsAt, cost: 'Free',
-          })
-        }
-      } catch (err) {
-        console.warn(`[stop-ecocide] ${url} failed:`, (err as Error).message)
+      const tz = tzFor(loc.addressCountry, lat, lng, loc.addressLine2 ?? '')
+      if (!tz) continue
+      const s = wallClock(siteTz, Number(e.startDate))
+      const startsAt = zonedIso(tz, s.y, s.mo, s.d, s.h, s.mi)
+      if (!startsAt || Date.parse(startsAt) < now + 3600_000) continue
+      let endsAt: string | null = null
+      if (e.endDate) {
+        const en = wallClock(siteTz, Number(e.endDate))
+        endsAt = zonedIso(tz, en.y, en.mo, en.d, en.h, en.mi)
+        if (endsAt && Date.parse(endsAt) <= Date.parse(startsAt)) endsAt = null
       }
+
+      const place = [loc.addressTitle, loc.addressLine1, loc.addressLine2, loc.addressCountry]
+        .map((x) => (x ?? '').trim()).filter(Boolean).join(', ')
+      events.push({
+        source: SRC,
+        source_id: `sei-${e.id}`,
+        source_url: e.fullUrl ? `${BASE}${e.fullUrl}` : `${BASE}/events`,
+        title,
+        description: body.slice(0, 800),
+        organizer: 'Stop Ecocide International',
+        location_name: place,
+        lat,
+        lng,
+        starts_at: startsAt,
+        ends_at: endsAt,
+        cost: /\bfree\b/i.test(body) ? 'Free' : 'See event page',
+        image_url: e.assetUrl ?? null,
+      })
     }
-    return allEvents
+    events.sort((a, b) => a.starts_at.localeCompare(b.starts_at))
+    return events
   },
 }

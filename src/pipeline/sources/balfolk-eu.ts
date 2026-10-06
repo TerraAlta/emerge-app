@@ -1,66 +1,138 @@
-/** Balfolk.eu — balfolk.eu/events — European community folk dance and music events */
+/**
+ * Balfolk Europe — community folk dance (bals, workshops, festivals) across
+ * continental Europe.
+ *
+ * balfolk.eu doesn't exist as a listing. European balfolk events are kept in
+ * the open folkdance.page / balfolk.org listing (the "dancelist" project),
+ * which publishes a JSON feed of future events: /index.json?styles=balfolk.
+ * balfolk-uk.ts reads the UK slice of the same feed, so here we take every
+ * other European country (Belgium, Germany, Netherlands, Czechia, Austria,
+ * France, Italy, Poland, the Baltics, Spain, Switzerland…).
+ *
+ * Timed events carry an ISO offset; all-day ones only a date, which we place
+ * at 10:00 in the country's time zone. The feed has a city but no
+ * coordinates: cities are geocoded once each (Nominatim, ≤40 lookups, busiest
+ * cities first). At most 25 events per city (Brussels alone lists ~90 weekly
+ * classes) and 200 overall, soonest first.
+ */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml, hashStr } from './utils'
+import { getJson, geocodeEu, tzForCountry, zonedIso, COUNTRY_CC, type GeoHit } from './eu-common'
+
+const SRC = 'balfolk-eu'
+const FEED = 'https://folkdance.page/index.json?styles=balfolk'
+const MAX_GEOCODES = 40
+const PER_CITY = 25
+const MAX_EVENTS = 200
+const EXCLUDED = new Set(['gb', 'uk']) // covered by balfolk-uk
+
+interface DanceEvent {
+  name: string
+  links?: string[]
+  start?: string
+  end?: string
+  start_date?: string
+  end_date?: string
+  country?: string
+  city?: string
+  styles?: string[]
+  workshop?: boolean
+  social?: boolean
+  bands?: string[]
+  callers?: string[]
+  price?: string
+  organisation?: string
+  details?: string
+  online?: boolean
+  cancelled?: boolean
+}
+
+function ymd(s: string): [number, number, number] | null {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  return m ? [+m[1], +m[2], +m[3]] : null
+}
 
 export const balfolkEu: SourceFetcher = {
-  name: 'balfolk-eu',
+  name: SRC,
   async fetch() {
-    const all: RawEvent[] = []
-    // Try the events listing page
-    const urls = [
-      'https://balfolk.eu/events/',
-      'https://www.balfolk.eu/events/',
-      'https://balfolk.eu/agenda/',
-    ]
-    for (const url of urls) {
-      try {
-        const r = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(12000),
-        })
-        if (!r.ok) continue
-        const html = await r.text()
+    const data = await getJson<{ events?: DanceEvent[] }>(FEED)
+    const list = Array.isArray(data?.events) ? data!.events! : []
 
-        // Try JSON-LD first
-        const ld = extractJsonLd(html, 'balfolk-eu')
-        if (ld.length > 0) return ld
+    // Keep in-person continental-European events with a usable start
+    type Cand = { e: DanceEvent; cc: string; tz: string; city: string; starts: Date; ends: Date | null }
+    const cands: Cand[] = []
+    for (const e of list) {
+      if (!e.name || e.online || e.cancelled) continue
+      const cc = COUNTRY_CC[(e.country ?? '').trim().toLowerCase()]
+      if (!cc || EXCLUDED.has(cc)) continue
+      const tz = tzForCountry(cc)
+      const city = (e.city ?? '').trim()
+      if (!tz || !city) continue
 
-        // Fallback: parse event blocks
-        const rx = /<(?:article|div|li|tr)[^>]*class="[^"]*(?:event|bal|dance|concert)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li|tr)>/gi
-        let m
-        while ((m = rx.exec(html)) !== null) {
-          const t = m[1].match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-          if (!t) continue
-          const title = stripHtml(t[2]).trim()
-          if (!title || title.length < 5) continue
-
-          const dm = m[1].match(/(?:datetime="([^"]*)")|(\d{1,2}[\s./-]+\w+[\s./-]+\d{4})/i)
-          let starts = new Date().toISOString()
-          if (dm) {
-            const p = new Date(dm[1] || dm[2])
-            if (!isNaN(p.getTime())) starts = p.toISOString()
-          }
-
-          // Try to extract location
-          const locMatch = m[1].match(/(?:location|venue|city|lieu)[\s:]*([^<]{3,60})/i)
-          const location = locMatch ? stripHtml(locMatch[1]).trim() : 'Europe'
-
-          all.push({
-            source: 'balfolk-eu',
-            source_id: `bf-${hashStr(title + starts)}`,
-            source_url: t[1] ? new URL(t[1], url).toString() : url,
-            title,
-            description: `Balfolk community dance event. Traditional folk music and participatory dancing — everyone welcome, no experience needed.`,
-            organizer: 'Balfolk community',
-            location_name: location,
-            lat: 50.8503, lng: 4.3517, // Default Brussels, geocoder will fix
-            starts_at: starts,
-            cost: 'See event page',
-          })
-        }
-        if (all.length > 0) break
-      } catch { continue }
+      let starts: Date | null = null
+      let ends: Date | null = null
+      if (e.start) starts = new Date(e.start)
+      else if (e.start_date) {
+        const p = ymd(e.start_date)
+        const iso = p ? zonedIso(tz, p[0], p[1], p[2], 10, 0) : null
+        starts = iso ? new Date(iso) : null
+      }
+      if (!starts || isNaN(starts.getTime())) continue
+      if (e.end) ends = new Date(e.end)
+      else if (e.end_date) {
+        const p = ymd(e.end_date)
+        const iso = p ? zonedIso(tz, p[0], p[1], p[2], 18, 0) : null
+        ends = iso ? new Date(iso) : null
+      }
+      if (ends && (isNaN(ends.getTime()) || ends <= starts)) ends = null
+      cands.push({ e, cc, tz, city, starts, ends })
     }
-    return all
+    cands.sort((a, b) => a.starts.getTime() - b.starts.getTime())
+
+    // Geocode the busiest cities first, within budget
+    const count = new Map<string, number>()
+    for (const c of cands) count.set(`${c.cc}|${c.city}`, (count.get(`${c.cc}|${c.city}`) ?? 0) + 1)
+    const cities = [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, MAX_GEOCODES).map(([k]) => k)
+    const geo = new Map<string, GeoHit | null>()
+    for (const k of cities) {
+      const [cc, city] = k.split('|')
+      geo.set(k, await geocodeEu(city.replace(/\s+i\.\s*Br\.?$/, ' im Breisgau'), cc))
+    }
+
+    const perCity = new Map<string, number>()
+    const events: RawEvent[] = []
+    for (const { e, cc, city, starts, ends } of cands) {
+      if (events.length >= MAX_EVENTS) break
+      const k = `${cc}|${city}`
+      const loc = geo.get(k)
+      if (!loc) continue
+      const n = perCity.get(k) ?? 0
+      if (n >= PER_CITY) continue
+      perCity.set(k, n + 1)
+
+      const bits: string[] = []
+      if (e.details) bits.push(stripHtml(e.details))
+      const kind = [e.workshop ? 'workshop' : '', e.social ? 'social dance (bal)' : ''].filter(Boolean).join(' + ')
+      bits.push(`Balfolk ${kind || 'event'} in ${city}. Dance styles: ${(e.styles ?? ['balfolk']).join(', ')}.`)
+      if (e.bands?.length) bits.push(`Bands: ${e.bands.join(', ')}.`)
+      if (e.callers?.length) bits.push(`Callers: ${e.callers.join(', ')}.`)
+
+      const startIso = starts.toISOString()
+      events.push({
+        source: SRC,
+        source_id: `bfeu-${hashStr(e.name + startIso + city)}`,
+        source_url: e.links?.[0] ?? `https://folkdance.page/?country=${encodeURIComponent(e.country ?? '')}&styles=balfolk`,
+        title: e.name,
+        description: bits.join(' ').slice(0, 500),
+        organizer: e.organisation || e.name,
+        location_name: `${city}, ${e.country}`,
+        lat: loc.lat,
+        lng: loc.lng,
+        starts_at: startIso,
+        ends_at: ends ? ends.toISOString() : null,
+        cost: e.price ? (/^free$/i.test(e.price) ? 'Free' : e.price) : 'See event page',
+      })
+    }
+    return events
   },
 }
