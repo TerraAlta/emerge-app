@@ -65,10 +65,12 @@ export const terraAltaPt: SourceFetcher = {
           source: SRC,
           source_id: `${SRC}-${hashStr(url + start.toISOString())}`,
           source_url: url,
-          title: stripHtml(e.name).replace(/\s*\/\/\s*/g, ' — ').replace(/\s+/g, ' ').trim(),
-          description: stripHtml(e.description ?? '')
-            .replace(/&gt;/g, '>').replace(/&#0?10;/g, ' ').replace(/\s+/g, ' ')
-            .slice(0, 500) || 'A 10-day Permaculture Design Course at Terra Alta, Sintra.',
+          // The site says "PDC // 1st June 2027 - …"; spell it out so searches for
+          // "permaculture" find it.
+          title: stripHtml(e.name).replace(/\s*\/\/\s*/g, ' — ').replace(/\s+/g, ' ').trim()
+            .replace(/^PDC\b/, 'Permaculture Design Course (PDC)'),
+          description: ('Permaculture Design Course at Terra Alta, Sintra. ' + stripHtml(e.description ?? '')
+            .replace(/&gt;/g, '>').replace(/&#0?10;/g, ' ').replace(/\s+/g, ' ')).slice(0, 500),
           organizer: ORG,
           location_name: [loc.name, typeof loc.address === 'string' ? loc.address : null].filter(Boolean).join(', ') || 'Terra Alta, Sintra',
           lat: LAT,
