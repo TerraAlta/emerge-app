@@ -262,9 +262,12 @@ INSERT INTO public.countries (iso2, name, geom) VALUES
 
 -- Country containing a point; for points just off a coastline (outlines are
 -- generalised), the nearest country within ~30 km.
+-- SECURITY DEFINER: the trigger runs as whoever inserts (service_role, signed-in
+-- users), and they have no grant on countries — without it every insert fails.
 CREATE OR REPLACE FUNCTION public.country_at(lng double precision, lat double precision)
 RETURNS char(2)
 LANGUAGE sql STABLE
+SECURITY DEFINER
 SET search_path = public, extensions
 AS $$
   SELECT iso2 FROM (
@@ -281,6 +284,8 @@ AS $$
   ORDER BY d
   LIMIT 1
 $$;
+
+GRANT EXECUTE ON FUNCTION public.country_at(double precision, double precision) TO anon, authenticated, service_role;
 
 CREATE OR REPLACE FUNCTION public.quests_set_country_code()
 RETURNS trigger
