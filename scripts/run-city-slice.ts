@@ -37,6 +37,7 @@ import { isPotentiallyRelevant } from '../src/pipeline/pre-filter'
 import { scoreQuest } from '../src/pipeline/score-quest'
 import { hasUsableStart } from '../src/pipeline/start-guard'
 import { costTracker, CostCapExceeded } from '../src/pipeline/cost-cap'
+import { recordRun, SLICE_CRASHED, SLICE_HALTED } from '../src/pipeline/run-log'
 
 // ── Env ──
 const envPath = resolve(process.cwd(), '.env.local')
@@ -267,6 +268,12 @@ async function main() {
   console.log(`${tag} done in ${mins}m — ${raw} raw, ${relevant} relevant, ${inserted} inserted, ${duplicates} already stored, ${filtered} below threshold, ${noDate} without a real upcoming date, ${errors} errors`)
   console.log(`${tag} requests: ${stats.requests} (${stats.ok} ok, ${stats.rateLimited} rate-limited, ${stats.otherFail} failed, ${stats.retriesSpent} backoffs)`)
   console.log(`${tag} ${costTracker.summary()}`)
+  if (!dryRun) {
+    await recordRun(db, `city ${index + 1}/${total}`, [{
+      source: 'eventbrite-priority', fetched: raw, alreadyStored: duplicates,
+      inserted, filtered: filtered + noDate + (raw - relevant), errors,
+    }], costTracker.totalUsd)
+  }
 
   // The old failure mode was looking healthy while returning nothing. Say it loudly.
   const limitRate = stats.requests ? stats.rateLimited / stats.requests : 0
@@ -275,8 +282,13 @@ async function main() {
   }
 }
 
-main().catch(err => {
-  if (err instanceof CostCapExceeded) {
+main().catch(async err => {
+  const halted = err instanceof CostCapExceeded
+  if (!dryRun && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+    await recordRun(db, `city ${index + 1}/${total}`, [], costTracker.totalUsd, halted ? SLICE_HALTED : SLICE_CRASHED)
+  }
+  if (halted) {
     console.log(`[city-slice ${index + 1}/${total}] HALTED: ${err.message}`)
     console.log(costTracker.summary())
     process.exit(2)

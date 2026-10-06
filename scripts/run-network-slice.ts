@@ -19,6 +19,7 @@ import { resolve } from 'path'
 import { createClient } from '@supabase/supabase-js'
 import { runPipeline, listSourceNames } from '../src/pipeline/orchestrator'
 import { costTracker, CostCapExceeded } from '../src/pipeline/cost-cap'
+import { recordRun, SLICE_CRASHED, SLICE_HALTED } from '../src/pipeline/run-log'
 
 // ── Env: .env.local locally, process.env in CI ──
 const envPath = resolve(process.cwd(), '.env.local')
@@ -134,6 +135,7 @@ async function main() {
   const mins = ((Date.now() - started) / 60000).toFixed(1)
   stamp(`Done in ${mins}m — ${results.length} sources, ${fetched} fetched, ${stored} already stored (not re-scored), ${inserted} inserted, ${filtered} filtered, ${errors} errors`)
   stamp(costTracker.summary())
+  if (!dryRun) await recordRun(supabase, runnerName, results, costTracker.totalUsd)
 
   // Surfaced so a slice that quietly fetched nothing is visible in the run
   // summary rather than looking like a clean pass.
@@ -142,8 +144,12 @@ async function main() {
   }
 }
 
-main().catch(err => {
-  if (err instanceof CostCapExceeded) {
+const runnerName = `network ${index + 1}/${total}`
+
+main().catch(async err => {
+  const halted = err instanceof CostCapExceeded
+  if (!dryRun && !checkOnly) await recordRun(supabase, runnerName, [], costTracker.totalUsd, halted ? SLICE_HALTED : SLICE_CRASHED)
+  if (halted) {
     stamp(`HALTED: ${err.message}`)
     stamp(costTracker.summary())
     process.exit(2)
