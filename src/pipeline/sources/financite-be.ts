@@ -1,86 +1,138 @@
 /**
  * Réseau Financité — financite.be
- * Ethical finance network, French-speaking Belgium.
+ * Ethical/solidarity finance network, French-speaking Belgium: ciné-débats,
+ * conferences, workshops, "Financité Talks", local groups.
+ *
+ * Drupal agenda at /activités (paged ?page=N, ~14 per page, upcoming only).
+ * Each card has <time datetime="…Z"> (the real start in UTC), the town
+ * ("En ligne" for online activities → skipped), the type and a link. Detail
+ * pages add the end time ("08H30 16H15"), venue name, street and postcode +
+ * town (fields field-activites-*-lieu) and the description. Venue is
+ * geocoded (cached), falling back to the town. ≤ 25 requests.
  */
+import * as cheerio from 'cheerio'
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { getText, parisIso, geocodeFrFirst, ONLINE_RE } from './fr-common'
 
+const SRC = 'financite-be'
 const BASE = 'https://www.financite.be'
-const URLS = [`${BASE}/fr/agenda`, `${BASE}/fr/evenements`]
-const DEF = { lat: 50.8503, lng: 4.3517 }
+const LIST = `${BASE}/activit%C3%A9s`
+const MAX_PAGES = 5
+const MAX_REQUESTS = 25
+const MAX_EVENTS = 200
 
-function parseBE(s: string): string {
-  const m: Record<string,string> = {januari:'01',februari:'02',maart:'03',april:'04',mei:'05',juni:'06',juli:'07',augustus:'08',september:'09',oktober:'10',november:'11',december:'12',janvier:'01',février:'02',mars:'03',avril:'04',mai:'05',juin:'06',juillet:'07',août:'08',septembre:'09',octobre:'10',novembre:'11',décembre:'12'}
-  const c = s.toLowerCase().trim()
-  for (const [k,v] of Object.entries(m)) { if (c.includes(k)) { const d = c.match(/(\d{1,2})\s/); const y = c.match(/(\d{4})/); if(d&&y) return new Date(`${y[1]}-${v}-${d[1].padStart(2,'0')}`).toISOString() } }
-  const p = new Date(s); return isNaN(p.getTime()) ? new Date().toISOString() : p.toISOString()
+interface Card { url: string; title: string; start: string; town: string; type: string; image: string | null }
+
+function parseList(html: string): Card[] {
+  const $ = cheerio.load(html)
+  const out: Card[] = []
+  // Cards are grid columns containing a <time> and an h2 title link
+  $('time.datetime').each((_, el) => {
+    const card = $(el).closest('[class*="col-xxl-3"], [class*="col-xl-4"]')
+    if (!card.length) return
+    const a = card.find('.bloc_titre_activites h2 a').first()
+    const href = a.attr('href')
+    const dt = $(el).attr('datetime')
+    if (!href || !dt || isNaN(Date.parse(dt))) return
+    const img = card.find('img').first().attr('src')
+    out.push({
+      url: new URL(href, BASE).toString(),
+      title: a.text().replace(/\s+/g, ' ').trim(),
+      start: new Date(dt).toISOString(),
+      town: card.find('.typo_165').first().text().replace(/\s+/g, ' ').trim(),
+      type: card.find('.SourceSerif4Regular').first().text().replace(/\s+/g, ' ').trim(),
+      image: img ? new URL(img, BASE).toString() : null,
+    })
+  })
+  return out
+}
+
+function field($: cheerio.CheerioAPI, name: string): string {
+  return $(`.field--name-field-activites-${name}-lieu .field__item`).first().text().replace(/\s+/g, ' ').trim()
 }
 
 export const financiteBe: SourceFetcher = {
-  name: 'financite-be',
+  name: SRC,
   async fetch() {
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
-        })
-        if (!res.ok) continue
-        const html = await res.text()
-
-        try {
-          const apiRes = await fetch(`${BASE}/wp-json/tribe/events/v1/events?per_page=20`, {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              return data.events.map((e: any) => ({
-                source: 'financite-be', source_id: `fin-be-${e.id}`,
-                source_url: e.url ?? url, title: stripHtml(e.title ?? ''),
-                description: stripHtml(e.description ?? '').slice(0, 500),
-                organizer: e.organizer?.[0]?.organizer ?? 'Réseau Financité',
-                location_name: e.venue?.venue ?? e.venue?.city ?? 'Bruxelles',
-                lat: parseFloat(e.venue?.geo_lat ?? '0') || DEF.lat,
-                lng: parseFloat(e.venue?.geo_lng ?? '0') || DEF.lng,
-                starts_at: new Date(e.start_date).toISOString(),
-                cost: e.cost ?? 'Voir événement',
-              }))
-            }
-          }
-        } catch {}
-
-        const jsonLd = extractJsonLd(html, 'financite-be')
-        if (jsonLd.length > 0) return jsonLd
-
-        const events = scrapeHtml(html, url)
-        if (events.length > 0) return events
-      } catch { continue }
+    const now = Date.now()
+    let requests = 0
+    const cards: Card[] = []
+    const seen = new Set<string>()
+    for (let page = 0; page < MAX_PAGES; page++) {
+      requests++
+      let html = await getText(page ? `${LIST}?page=${page}` : LIST)
+      // The site occasionally serves the first page without its listing; one
+      // retry keeps that from emptying the whole week.
+      if (page === 0 && (!html || parseList(html).length === 0)) {
+        await new Promise(r => setTimeout(r, 3000))
+        requests++
+        html = await getText(LIST)
+      }
+      if (!html) break
+      let added = 0
+      for (const c of parseList(html)) {
+        const k = `${c.url}|${c.start}`
+        if (seen.has(k)) continue
+        seen.add(k)
+        cards.push(c)
+        added++
+      }
+      if (!added || !html.includes(`?page=${page + 1}"`)) break
     }
-    return []
-  },
-}
 
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const pat = /<(?:article|div|li)[^>]*class="[^"]*(?:event|agenda|formation|rencontre|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let m
-  while ((m = pat.exec(html)) !== null) {
-    const block = m[1]
-    const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!t) continue
-    const title = stripHtml(t[2]).trim()
-    if (!title || title.length < 5) continue
-    const loc = block.match(/(?:class="[^"]*(?:lieu|location|city)[^"]*"[^>]*>)([\s\S]*?)<\//i)
-    const locName = loc ? stripHtml(loc[1]).trim() : 'Bruxelles'
-    events.push({
-      source: 'financite-be', source_id: `fin-be-${hashStr(title)}`,
-      source_url: t[1] ? new URL(t[1], baseUrl).toString() : baseUrl,
-      title, description: 'Événement Réseau Financité. Voir le lien pour détails.',
-      organizer: 'Réseau Financité', location_name: locName,
-      lat: DEF.lat, lng: DEF.lng,
-      starts_at: parseBE(block), cost: 'Voir événement',
-    })
-  }
-  return events
+    const events: RawEvent[] = []
+    for (const c of cards) {
+      if (events.length >= MAX_EVENTS) break
+      if (!c.title || Date.parse(c.start) < now) continue
+      if (!c.town || ONLINE_RE.test(`${c.town} ${c.title}`)) continue
+
+      let venue = ''
+      let street = ''
+      let cp = ''
+      let end: string | null = null
+      let description = ''
+      if (requests < MAX_REQUESTS) {
+        requests++
+        const html = await getText(c.url)
+        if (html) {
+          const $ = cheerio.load(html)
+          venue = field($, 'nom')
+          street = field($, 'adresse')
+          cp = field($, 'cpostal')
+          description = $('.SourceSerif4Regular.typo_218').first().clone().children('.row').remove().end()
+            .text().replace(/\s+/g, ' ').trim().slice(0, 600)
+          // "JEU 08.10.2026 <br> 08H30 16H15"
+          const when = $('.bloc_debug .typo_218').first().text().replace(/\s+/g, ' ')
+          const m = when.match(/(\d{2})\.(\d{2})\.(\d{4})\s+\d{1,2}H\d{2}\s+(\d{1,2})H(\d{2})/i)
+          if (m) {
+            const e = parisIso(+m[3], +m[2], +m[1], +m[4], +m[5])
+            if (e && e > c.start) end = e
+          }
+        }
+      }
+
+      const geo = await geocodeFrFirst([
+        [street, cp || c.town].filter(Boolean).join(', ') + ', Belgique',
+        `${cp || c.town}, Belgique`,
+        `${c.town}, Belgique`,
+      ])
+      if (!geo) continue
+
+      events.push({
+        source: SRC,
+        source_id: `financite-${c.url.split('/').pop()}-${c.start.slice(0, 10)}`,
+        source_url: c.url,
+        title: c.title,
+        description: description || `${c.type || 'Activité'} du Réseau Financité à ${c.town}.`,
+        organizer: 'Réseau Financité',
+        location_name: [venue, street, cp || c.town].filter(Boolean).join(', '),
+        lat: geo.lat, lng: geo.lng,
+        starts_at: c.start,
+        ends_at: end,
+        cost: 'Voir site',
+        image_url: c.image,
+      })
+    }
+    return events
+  },
 }

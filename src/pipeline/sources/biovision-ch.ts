@@ -1,67 +1,105 @@
-/** Biovision — biovision.ch — Swiss foundation for ecological development */
+/**
+ * Biovision — Stiftung für ökologische Entwicklung — biovision.ch
+ * Swiss foundation for agroecology / sustainable food systems. Public events:
+ * the yearly Biovision-Symposium (Volkshaus Zürich), talks, conferences,
+ * CLEVER escape games, soil days.
+ *
+ * https://www.biovision.ch/veranstaltungen/ is an Elementor page (no event
+ * post type / API). Each event is a block of widgets in a fixed order:
+ *   heading "Title" → text "21. Oktober 2026 <br> 11.00 – 12.00 Uhr"
+ *   → text "Venue <br> Street <br> 2502 Biel" → text description.
+ * The widgets are read in document order and an event is taken whenever a
+ * heading is followed by a full date with a year. Past events either lack
+ * the year or are filtered by date; online events (Teams/Zoom/"Online") are
+ * skipped. Times are Europe/Zurich (10:00 if none). Venues are geocoded.
+ */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml, hashStr } from './utils'
+import { getText, monthNum, zurichIso, geocodeChFirst, ONLINE_RE } from './ch-common'
 
-const URLS = ['https://www.biovision.ch/veranstaltungen/', 'https://www.biovision.ch/events/', 'https://www.biovision.ch/agenda/']
+const SRC = 'biovision-ch'
+const ORG = 'Biovision – Stiftung für ökologische Entwicklung'
+const URL_DE = 'https://www.biovision.ch/veranstaltungen/'
 
-function parseCH(s: string): string {
-  const m: Record<string,string> = {januar:'01',februar:'02','märz':'03',april:'04',mai:'05',juni:'06',juli:'07',august:'08',september:'09',oktober:'10',november:'11',dezember:'12',janvier:'01','février':'02',mars:'03',avril:'04',juin:'06',juillet:'07','août':'08',septembre:'09',octobre:'10',novembre:'11','décembre':'12'}
-  const c = s.toLowerCase().replace(/\./g,'').trim()
-  for (const [k,v] of Object.entries(m)) { if (c.includes(k)) { const d = c.match(/(\d{1,2})\s/); const y = c.match(/(\d{4})/); if(d&&y) return new Date(`${y[1]}-${v}-${d[1].padStart(2,'0')}`).toISOString() } }
-  const p = new Date(s); return isNaN(p.getTime()) ? new Date().toISOString() : p.toISOString()
+type W = { kind: 'h' | 't'; text: string; html: string }
+
+function widgets(html: string): W[] {
+  const out: W[] = []
+  const re = /<div class="elementor-heading-title[^"]*">([\s\S]*?)<\/div>|<h[1-6] class="elementor-heading-title[^"]*">([\s\S]*?)<\/h[1-6]>|data-widget_type="text-editor\.default">\s*<div class="elementor-widget-container">([\s\S]*?)<\/div>\s*<\/div>/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(html))) {
+    if (m[1] !== undefined || m[2] !== undefined) {
+      const h = m[1] ?? m[2]
+      out.push({ kind: 'h', text: stripHtml(h), html: h })
+    } else {
+      // keep line breaks as " | " (stripHtml collapses whitespace)
+      out.push({ kind: 't', text: stripHtml(m[3].replace(/<br\s*\/?>/gi, ' | ').replace(/<\/p>/gi, ' | ')).replace(/^\s*\|\s*|\s*\|\s*$/g, ''), html: m[3] })
+    }
+  }
+  return out
 }
 
+const DATE_RE = /^\s*(\d{1,2})\.\s*([A-Za-zäöüÄÖÜéû]+)\s+(20\d\d)\b/
+
 export const biovisionCh: SourceFetcher = {
-  name: 'biovision-ch',
+  name: SRC,
   async fetch() {
-    try {
-      const r = await fetch('https://www.biovision.ch/wp-json/tribe/events/v1/events?per_page=30', {
-        headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
+    const html = await getText(URL_DE)
+    if (!html) return []
+    const ws = widgets(html)
+    const now = Date.now()
+    const out: RawEvent[] = []
+    const seen = new Set<string>()
+    for (let i = 0; i < ws.length - 1; i++) {
+      if (ws[i].kind !== 'h') continue
+      const title = ws[i].text
+      const dw = ws[i + 1]
+      const dm = dw.kind === 't' ? dw.text.match(DATE_RE) : null
+      if (!title || !dm) continue
+      const mo = monthNum(dm[2])
+      if (!mo) continue
+      const tm = dw.text.match(/(\d{1,2})[.:](\d{2})\s*[–-]\s*(\d{1,2})[.:](\d{2})/) ?? dw.text.match(/(\d{1,2})[.:](\d{2})\s*Uhr/)
+      const y = +dm[3], d = +dm[1]
+      const start = zurichIso(y, mo, d, tm ? +tm[1] : 10, tm ? +tm[2] : 0)
+      if (!start || Date.parse(start) < now) continue
+      const end = tm && tm[3] ? zurichIso(y, mo, d, +tm[3], +tm[4]) : null
+
+      const lw = ws[i + 2]
+      const place = lw && lw.kind === 't' && !DATE_RE.test(lw.text) ? lw.text.split('|').map((x) => x.trim()).filter(Boolean).join(', ') : ''
+      if (!place || ONLINE_RE.test(place) || ONLINE_RE.test(title)) continue
+      const key = `${title}|${start}`
+      if (seen.has(key)) continue // desktop + mobile copies
+      seen.add(key)
+
+      // Venue lines up to the one with the postcode ("2502 Biel"); without a
+      // postcode only the first line (the rest is e.g. language / admission)
+      const all = place.split(',').map((s) => s.trim()).filter(Boolean)
+      const pcIdx = all.findIndex((l) => /\b\d{4}\s+[A-ZÄÖÜÉ]/.test(l))
+      const lines = pcIdx >= 0 ? all.slice(0, pcIdx + 1) : all.slice(0, 1)
+      const venue = lines.join(', ')
+      const pc = venue.match(/\b(\d{4})\s+([A-ZÄÖÜÉ][\wäöüéè.-]+)/)
+      const geo = await geocodeChFirst([venue, pc ? `${pc[1]} ${pc[2]}` : '', lines[0] ?? ''].filter(Boolean))
+      if (!geo) continue
+
+      const descW = ws[i + 3]
+      const desc = descW && descW.kind === 't' && descW.text.length > 40 ? descW.text : ''
+      const link = (descW?.html ?? '').match(/href="(https?:\/\/[^"]+)"/)?.[1]
+      out.push({
+        source: SRC,
+        source_id: `bv-ch-${hashStr(key)}`,
+        source_url: URL_DE,
+        title,
+        description: [desc.replace(/\s+/g, ' ').slice(0, 600), link ? `Programm/Anmeldung: ${link}` : ''].filter(Boolean).join(' '),
+        organizer: ORG,
+        location_name: venue,
+        lat: geo.lat,
+        lng: geo.lng,
+        starts_at: start,
+        ends_at: end && end > start ? end : null,
+        cost: /eintritt frei|kostenlos|gratis|entrée libre/i.test(`${place} ${desc}`) ? 'Free' : 'Siehe Veranstaltung',
+        image_url: null,
       })
-      if (r.ok) {
-        const d = await r.json()
-        if (d.events?.length) return d.events.map((e: any) => ({
-          source: 'biovision-ch', source_id: `bv-t${e.id}`,
-          source_url: e.url ?? null, title: stripHtml(e.title ?? ''),
-          description: stripHtml(e.description ?? '').slice(0, 500),
-          organizer: 'Biovision',
-          location_name: e.venue?.venue ?? 'Switzerland',
-          lat: parseFloat(e.venue?.geo_lat ?? '47.3769'), lng: parseFloat(e.venue?.geo_lng ?? '8.5417'),
-          starts_at: new Date(e.start_date).toISOString(), cost: e.cost ?? 'See event page',
-        }))
-      }
-    } catch {}
-    for (const url of URLS) {
-      try {
-        const r = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
-        })
-        if (!r.ok) continue
-        const html = await r.text()
-        const ld = extractJsonLd(html, 'biovision-ch')
-        if (ld.length > 0) return ld
-        const out: RawEvent[] = []
-        const rx = /<(?:article|div|li)[^>]*class="[^"]*(?:event|veranstaltung|anlass|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-        let m
-        while ((m = rx.exec(html)) !== null) {
-          const t = m[1].match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-          if (!t) continue
-          const title = stripHtml(t[2]).trim()
-          if (!title || title.length < 5 || /^(menu|nav|search)/i.test(title)) continue
-          const dm = m[1].match(/(?:datetime="([^"]*)")|(\d{1,2}\.?\s+\w+\s+\d{4})/i)
-          const starts = dm ? parseCH(dm[1] || dm[2]) : new Date().toISOString()
-          out.push({
-            source: 'biovision-ch', source_id: `bv-${hashStr(title)}`,
-            source_url: t[1] ? new URL(t[1], url).toString() : url, title,
-            description: 'Biovision ecological development event.',
-            organizer: 'Biovision', location_name: 'Switzerland',
-            lat: 47.3769, lng: 8.5417, starts_at: starts, cost: 'See event page',
-          })
-        }
-        if (out.length > 0) return out
-      } catch { continue }
     }
-    return []
+    return out
   },
 }

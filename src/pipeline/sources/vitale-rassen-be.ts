@@ -1,86 +1,98 @@
 /**
- * Vitale Rassen — vitaelerassen.be
- * Flemish seed saving network — seed swaps, variety days, Dutch-speaking.
+ * Vitale Rassen — vitalerassen.be
+ * Flemish organic seed cooperative/network: seed fairs (zadenbeurzen,
+ * "Reclaim The Seeds"), study days, courses — mostly January–March.
+ *
+ * There is no agenda: events are announced as ordinary WordPress posts
+ * whose TITLE starts with the date — "Zon. 15 maart – Reclaim The Seeds
+ * (Mol)", "Zon. 15/02 Zadenbeurs 't Grom", "Bijeenkomst 16/1: …". We read
+ * the latest posts from the REST API (/wp-json/wp/v2/posts, one request)
+ * and keep only those with a day+month in the title; the year is the first
+ * occurrence on/after the publication date. Hours come from the body
+ * ("van 10u tot 17u", "10:00 - 16:00"), else 10:00 local. Place: the
+ * "(Town)" in the title, or "Locatie:/Waar:" in the body, geocoded (cached);
+ * posts without a place are skipped.
+ *
+ * Outside seed-fair season this legitimately returns nothing. (The old
+ * vitaelerassen.be domain does not resolve.)
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml, decodeEntities } from './utils'
+import { getJson, parisIso, ONLINE_RE } from './fr-common'
+import { geocodeBeNl } from './csa-be'
 
-const BASE = 'https://www.vitaelerassen.be'
-const URLS = [`${BASE}/agenda`, `${BASE}/evenementen`]
-const DEF = { lat: 50.8503, lng: 4.3517 }
+const SRC = 'vitale-rassen-be'
+const API = 'https://www.vitalerassen.be/wp-json/wp/v2/posts?per_page=40&_fields=id,date,link,title,content'
 
-function parseBE(s: string): string {
-  const m: Record<string,string> = {januari:'01',februari:'02',maart:'03',april:'04',mei:'05',juni:'06',juli:'07',augustus:'08',september:'09',oktober:'10',november:'11',december:'12',janvier:'01',février:'02',mars:'03',avril:'04',mai:'05',juin:'06',juillet:'07',août:'08',septembre:'09',octobre:'10',novembre:'11',décembre:'12'}
-  const c = s.toLowerCase().trim()
-  for (const [k,v] of Object.entries(m)) { if (c.includes(k)) { const d = c.match(/(\d{1,2})\s/); const y = c.match(/(\d{4})/); if(d&&y) return new Date(`${y[1]}-${v}-${d[1].padStart(2,'0')}`).toISOString() } }
-  const p = new Date(s); return isNaN(p.getTime()) ? new Date().toISOString() : p.toISOString()
+const NL_MONTHS: Record<string, number> = {
+  jan: 1, januari: 1, feb: 2, februari: 2, mrt: 3, maart: 3, apr: 4, april: 4, mei: 5, jun: 6, juni: 6,
+  jul: 7, juli: 7, aug: 8, augustus: 8, sep: 9, sept: 9, september: 9, okt: 10, oktober: 10,
+  nov: 11, november: 11, dec: 12, december: 12,
+}
+
+/** Day + month from a title: "15 maart", "15/02", "16/1". */
+function titleDate(t: string): { d: number; m: number; y?: number } | null {
+  const a = t.match(/(?:^|[\s.:(])(\d{1,2})\s+([a-z]+)\.?(?:\s+(20\d{2}))?/i)
+  if (a && NL_MONTHS[a[2].toLowerCase()]) return { d: +a[1], m: NL_MONTHS[a[2].toLowerCase()], y: a[3] ? +a[3] : undefined }
+  const b = t.match(/(?:^|[\s.:(])(\d{1,2})\/(\d{1,2})(?:\/(?:'|’)?(\d{2,4}))?(?![\d/])/)
+  if (b && +b[2] >= 1 && +b[2] <= 12) {
+    const y = b[3] ? (b[3].length === 2 ? 2000 + +b[3] : +b[3]) : undefined
+    return { d: +b[1], m: +b[2], y }
+  }
+  return null
 }
 
 export const vitaleRassenBe: SourceFetcher = {
-  name: 'vitale-rassen-be',
+  name: SRC,
   async fetch() {
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
-        })
-        if (!res.ok) continue
-        const html = await res.text()
+    const posts = await getJson<any[]>(API, 25000)
+    if (!Array.isArray(posts)) return []
+    const now = Date.now()
+    const events: RawEvent[] = []
+    for (const p of posts) {
+      const title = decodeEntities(stripHtml(p.title?.rendered ?? ''))
+      const td = titleDate(title)
+      if (!td) continue
+      if (/geannuleerd|afgelast|volzet/i.test(title)) continue
+      const pub = new Date(p.date)
+      if (isNaN(pub.getTime())) continue
+      let y = td.y ?? pub.getUTCFullYear()
+      if (!td.y && Date.UTC(y, td.m - 1, td.d) < pub.getTime() - 86400000) y++
+      const body = decodeEntities(String(p.content?.rendered ?? '').replace(/<[^>]+>/g, '\n'))
+        .split('\n').map((l) => l.replace(/\s+/g, ' ').trim()).filter(Boolean).join('\n')
 
-        try {
-          const apiRes = await fetch(`${BASE}/wp-json/tribe/events/v1/events?per_page=20`, {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              return data.events.map((e: any) => ({
-                source: 'vitale-rassen-be', source_id: `vr-be-${e.id}`,
-                source_url: e.url ?? url, title: stripHtml(e.title ?? ''),
-                description: stripHtml(e.description ?? '').slice(0, 500),
-                organizer: e.organizer?.[0]?.organizer ?? 'Vitale Rassen',
-                location_name: e.venue?.venue ?? e.venue?.city ?? 'Vlaanderen',
-                lat: parseFloat(e.venue?.geo_lat ?? '0') || DEF.lat,
-                lng: parseFloat(e.venue?.geo_lng ?? '0') || DEF.lng,
-                starts_at: new Date(e.start_date).toISOString(),
-                cost: e.cost ?? 'Zie evenement',
-              }))
-            }
-          }
-        } catch {}
+      const hm = body.match(/(?:van\s+)?(\d{1,2})(?:[u:.h](\d{2})?)\s*(?:u\s*)?(?:tot|-|–)\s*(\d{1,2})(?:[u:.h](\d{2})?)/i)
+      const valid = hm && +hm[1] < 24 && +hm[3] < 24 && /[u:h.]/.test(hm[0])
+      const start = parisIso(y, td.m, td.d, valid ? +hm![1] : 10, valid ? +(hm![2] ?? 0) : 0)
+      if (!start || Date.parse(start) < now) continue
+      let end = valid ? parisIso(y, td.m, td.d, +hm![3], +(hm![4] ?? 0)) : null
+      if (end && end <= start) end = null
 
-        const jsonLd = extractJsonLd(html, 'vitale-rassen-be')
-        if (jsonLd.length > 0) return jsonLd
+      const town = title.match(/\(([^)]{2,40})\)\s*$/)?.[1]?.trim() ?? ''
+      const where = (body.match(/(?:Locatie|Waar|Adres)\s*:\s*([^\n]{3,140})/i)?.[1] ?? '')
+        .replace(/\s*(?:Toegang|Prijs|Wanneer|Inkom)\b.*$/i, '').replace(/\s*\((?:nabij|bij)[^)]*\)/i, '').trim()
+      if (ONLINE_RE.test(`${title} ${where}`)) continue
+      const geo = await geocodeBeNl([
+        where ? `${where.replace(/\s+in\s+/i, ', ')}, België` : '',
+        town ? `${town}, België` : '',
+      ].filter(Boolean))
+      if (!geo) continue
 
-        const events = scrapeHtml(html, url)
-        if (events.length > 0) return events
-      } catch { continue }
+      const cleanTitle = title.replace(/^(?:[A-Za-z]{2,4}\.?\s+)?\d{1,2}(?:\s+[a-z]+\.?|\/\d{1,2})\s*[–:-]?\s*/i, '').trim() || title
+      events.push({
+        source: SRC,
+        source_id: `vitalerassen-${p.id}`,
+        source_url: p.link ?? null,
+        title: cleanTitle,
+        description: body.replace(/\s+/g, ' ').trim().slice(0, 600),
+        organizer: 'Vitale Rassen',
+        location_name: where || town,
+        lat: geo.lat, lng: geo.lng,
+        starts_at: start,
+        ends_at: end,
+        cost: 'Zie website',
+      })
     }
-    return []
+    return events
   },
-}
-
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const pat = /<(?:article|div|li)[^>]*class="[^"]*(?:event|evenement|agenda|zaad|ras|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let m
-  while ((m = pat.exec(html)) !== null) {
-    const block = m[1]
-    const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!t) continue
-    const title = stripHtml(t[2]).trim()
-    if (!title || title.length < 5) continue
-    const loc = block.match(/(?:class="[^"]*(?:locatie|location|plaats)[^"]*"[^>]*>)([\s\S]*?)<\//i)
-    const locName = loc ? stripHtml(loc[1]).trim() : 'Vlaanderen'
-    events.push({
-      source: 'vitale-rassen-be', source_id: `vr-be-${hashStr(title)}`,
-      source_url: t[1] ? new URL(t[1], baseUrl).toString() : baseUrl,
-      title, description: 'Vitale Rassen evenement. Zie link voor details.',
-      organizer: 'Vitale Rassen', location_name: locName,
-      lat: DEF.lat, lng: DEF.lng,
-      starts_at: parseBE(block), cost: 'Zie evenement',
-    })
-  }
-  return events
 }

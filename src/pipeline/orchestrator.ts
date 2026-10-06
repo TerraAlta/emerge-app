@@ -307,7 +307,7 @@ const SOURCES: SourceFetcher[] = [
   colibrisFr,
   mundraubDe,
   // incredibleEdibleUk — disabled 2026-10-06: no events on the site — 'find a group' is an undated directory
-  permaculturaEs,
+  // permaculturaEs — disabled 2026-10-06: permacultura.es gone; successor posts ~4 free-text items a year, none upcoming
   permacultureFr,
   // transitieNl — disabled 2026-10-06: Transition Towns NL agenda is empty; old transities.nl domain is for sale
   // nationalTrustUk — disabled 2026-10-06: event search is behind Radware bot protection (not bypassed)
@@ -332,9 +332,9 @@ const SOURCES: SourceFetcher[] = [
   // wwoofUsa — disabled 2026-10-06: login-gated farm-host app; host listings aren't dated events
   // wwoofCa — disabled 2026-10-06: same app as wwoofUsa; no dated events
   ercNa,
-  transitionEs,
-  ecoaldeasEs,
-  resilienceEs,
+  // transitionEs — disabled 2026-10-06: no agenda; reddetransicion.org has a broken SSL certificate
+  // ecoaldeasEs — disabled 2026-10-06: Red Ibérica de Ecoaldeas has paused activities (last post Apr 2025)
+  // resilienceEs — disabled 2026-10-06: consultancy site with no events
   huertosEs,
   permaculturaIt,
   riveIt,
@@ -344,12 +344,12 @@ const SOURCES: SourceFetcher[] = [
   transitionFr,
   terredeliensFr,
   amapFr,
-  transitieBe,
-  transitionWallonieBe,
-  permacultuurBe,
+  // transitieBe — disabled 2026-10-06: news only, no agenda (partner florerendegemeenschap.be/kalender could be a new source)
+  // transitionWallonieBe — disabled 2026-10-06: duplicate of transition-fr (same reseautransition.be feed)
+  // permacultuurBe — disabled 2026-10-06: duplicate of permacultuur-nl (same permacultuurnetwerk.eu feed covers BE)
   csaBe,
-  csaWallonieBe,
-  communitiesCh,
+  // csaWallonieBe — disabled 2026-10-06: lesgrosseslegumes.be no longer resolves; network appears closed
+  // communitiesCh — disabled 2026-10-06: communitiesforfuture.org now redirects to pan-European ecolise.eu
   transitionZh,
   transitionCh,
   glariseggCh,
@@ -402,8 +402,8 @@ const SOURCES: SourceFetcher[] = [
   // zeroWasteFr — disabled 2026-10-06: no agenda; API needs login; the map is a directory, not events
   // zeroWasteDe — disabled 2026-10-06: calendar is password-protected and internal
   zeroWasteBe,
-  rezeroEs,
-  recyclingNetwerkBe,
+  // rezeroEs — disabled 2026-10-06: advocacy foundation; no agenda
+  // recyclingNetwerkBe — disabled 2026-10-06: renamed Fair Resource Foundation; advocacy, no events
   // hubbubUk — disabled 2026-10-06: whole site returns a Cloudflare challenge (403)
   zeroWasteUsa,
   olioGlobal,
@@ -478,9 +478,9 @@ const SOURCES: SourceFetcher[] = [
   // Spain (new)
   seaeEs,
   agriRegenEs,
-  semillasEs,
+  // semillasEs — disabled 2026-10-06: redsemillas.info inactive since 2020 (redsemillas.org is a different, Ecuadorian org)
   reasEs,
-  cicEs,
+  // cicEs — disabled 2026-10-06: cooperativa.cat events category: 1 post since 2023, nothing upcoming
   // Belgium (new)
   natagoraBe,
   vitaleRassenBe,

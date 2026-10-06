@@ -1,69 +1,65 @@
-/** Regenerativ.ch — regenerative agriculture & community events in Switzerland */
+/**
+ * Regenerativ Schweiz — regenerativ.ch
+ * Swiss regenerative-agriculture association: field days, practice days,
+ * base courses (grassland, orchards, vineyards), slurry analysis workshops
+ * and online talks.
+ *
+ * The site is Wix with the Wix Events app; https://www.regenerativ.ch/events
+ * embeds every listed event as JSON (UTC start/end, location type
+ * 0 = venue / 1 = online, address + coordinates, "scheduleTbd" for
+ * pre-registrations without a date). Read with extractWixEvents.
+ * Online events and undated pre-registrations ("Voranmeldung …", TBD date or
+ * TBD place) are skipped — at the time of writing (Oct 2026) every listed
+ * event was one of those, so this source may legitimately return 0 until
+ * dated in-person courses/field days are published.
+ */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { stripHtml } from './utils'
+import { getText, geocodeChFirst, extractWixEvents, ONLINE_RE } from './ch-common'
 
-const URLS = ['https://regenerativ.ch/events/', 'https://regenerativ.ch/veranstaltungen/', 'https://regenerativ.ch/agenda/']
-
-function parseCH(s: string): string {
-  const m: Record<string,string> = {januar:'01',februar:'02','märz':'03',april:'04',mai:'05',juni:'06',juli:'07',august:'08',september:'09',oktober:'10',november:'11',dezember:'12',janvier:'01','février':'02',mars:'03',avril:'04',juin:'06',juillet:'07','août':'08',septembre:'09',octobre:'10',novembre:'11','décembre':'12',gennaio:'01',febbraio:'02',marzo:'03',aprile:'04',maggio:'05',giugno:'06',luglio:'07',agosto:'08',settembre:'09',ottobre:'10',dicembre:'12'}
-  const c = s.toLowerCase().replace(/\./g,'').trim()
-  for (const [k,v] of Object.entries(m)) { if (c.includes(k)) { const d = c.match(/(\d{1,2})\s/); const y = c.match(/(\d{4})/); if(d&&y) return new Date(`${y[1]}-${v}-${d[1].padStart(2,'0')}`).toISOString() } }
-  const p = new Date(s); return isNaN(p.getTime()) ? new Date().toISOString() : p.toISOString()
-}
+const SRC = 'regenerativ-ch'
+const BASE = 'https://www.regenerativ.ch'
 
 export const regenerativCh: SourceFetcher = {
-  name: 'regenerativ-ch',
+  name: SRC,
   async fetch() {
-    // 1. Tribe Events API
-    try {
-      const r = await fetch('https://regenerativ.ch/wp-json/tribe/events/v1/events?per_page=30', {
-        headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
-      })
-      if (r.ok) {
-        const d = await r.json()
-        if (d.events?.length) return d.events.map((e: any) => ({
-          source: 'regenerativ-ch', source_id: `rch-t${e.id}`,
-          source_url: e.url ?? null, title: stripHtml(e.title ?? ''),
-          description: stripHtml(e.description ?? '').slice(0, 500),
-          organizer: 'Regenerativ.ch',
-          location_name: e.venue?.venue ?? 'Switzerland',
-          lat: parseFloat(e.venue?.geo_lat ?? '47.3769'), lng: parseFloat(e.venue?.geo_lng ?? '8.5417'),
-          starts_at: new Date(e.start_date).toISOString(), cost: e.cost ?? 'See event page',
-        }))
+    const html = await getText(`${BASE}/events`, 25000)
+    if (!html) return []
+    const now = Date.now()
+    const out: RawEvent[] = []
+    for (const e of extractWixEvents(html)) {
+      const c = e.scheduling?.config ?? {}
+      const loc = e.location ?? {}
+      const title = String(e.title ?? '').trim()
+      if (!title || c.scheduleTbd || !c.startDate || loc.tbd) continue
+      if (loc.type === 1 || ONLINE_RE.test(title) || ONLINE_RE.test(loc.name ?? '')) continue
+      const start = new Date(c.startDate)
+      if (isNaN(start.getTime()) || start.getTime() < now) continue
+      let lat = loc.coordinates?.lat ?? loc.fullAddress?.geocode?.latitude
+      let lng = loc.coordinates?.lng ?? loc.fullAddress?.geocode?.longitude
+      if (!(typeof lat === 'number' && typeof lng === 'number') || (!lat && !lng)) {
+        const g = await geocodeChFirst([loc.address ?? '', loc.name ?? ''].filter(Boolean))
+        if (!g) continue
+        lat = g.lat; lng = g.lng
       }
-    } catch {}
-    // 2. JSON-LD + HTML scrape
-    for (const url of URLS) {
-      try {
-        const r = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
-        })
-        if (!r.ok) continue
-        const html = await r.text()
-        const ld = extractJsonLd(html, 'regenerativ-ch')
-        if (ld.length > 0) return ld
-        const out: RawEvent[] = []
-        const rx = /<(?:article|div|li)[^>]*class="[^"]*(?:event|veranstaltung|workshop|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-        let m
-        while ((m = rx.exec(html)) !== null) {
-          const t = m[1].match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-          if (!t) continue
-          const title = stripHtml(t[2]).trim()
-          if (!title || title.length < 5 || /^(menu|nav|search)/i.test(title)) continue
-          const dm = m[1].match(/(?:datetime="([^"]*)")|(\d{1,2}\.?\s+\w+\s+\d{4})/i)
-          const starts = dm ? parseCH(dm[1] || dm[2]) : new Date().toISOString()
-          out.push({
-            source: 'regenerativ-ch', source_id: `rch-${hashStr(title)}`,
-            source_url: t[1] ? new URL(t[1], url).toString() : url, title,
-            description: 'Regenerative event in Switzerland.',
-            organizer: 'Regenerativ.ch', location_name: 'Switzerland',
-            lat: 47.3769, lng: 8.5417, starts_at: starts, cost: 'See event page',
-          })
-        }
-        if (out.length > 0) return out
-      } catch { continue }
+      const end = c.endDate && !c.endDateHidden ? new Date(c.endDate).toISOString() : null
+      const t = e.registration?.ticketing
+      const price = t?.lowestTicketPriceFormatted || t?.lowestPrice?.formatted
+      out.push({
+        source: SRC,
+        source_id: `regen-ch-${e.id}`,
+        source_url: `${BASE}/events-1/${e.slug}`,
+        title,
+        description: stripHtml(String(e.description || e.about || '')).slice(0, 600) || `${title} — Regenerativ Schweiz`,
+        organizer: 'Regenerativ Schweiz',
+        location_name: [loc.name, loc.address].filter((s: string) => s && s.trim()).join(', ') || 'Schweiz',
+        lat, lng,
+        starts_at: start.toISOString(),
+        ends_at: end && end > start.toISOString() ? end : null,
+        cost: price ? String(price) : 'Siehe Veranstaltung',
+        image_url: e.mainImage?.url ?? null,
+      })
     }
-    return []
+    return out
   },
 }

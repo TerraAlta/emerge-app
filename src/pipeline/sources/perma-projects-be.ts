@@ -1,86 +1,118 @@
 /**
- * PERMA-PROJECTS — perma-projects.be
- * Flemish permaculture project network.
+ * Permaprojects — permaprojects.be
+ * Bio-intensive market-gardening institute + farm (La Hulpe, Brabant
+ * wallon): field visits, thematic trainings, info sessions.
+ *
+ * WordPress/Bricks site. /agenda/ lists upcoming "évènements" (custom post
+ * type `evenement`) as cards: "le 17 octobre" / "du 5 octobre au 9 octobre",
+ * type and title, linking to /evenement/<slug>/. Detail pages carry
+ * "Date Le 17 octobre", "Horaire De 09:30 à 17:30", optional "Lieu …"
+ * ("À distance" = online → skipped) and "Prix …". No year is printed: it is
+ * the next occurrence of that day/month. Events without a "Lieu" take place
+ * at the training field (Chaussée de Bruxelles 117, 1310 La Hulpe).
+ * One listing + ≤ 20 detail requests.
+ *
+ * (The old perma-projects.be domain does not resolve.)
  */
+import * as cheerio from 'cheerio'
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
+import { getText, parisIso, frMonth, geocodeFrFirst, ONLINE_RE } from './fr-common'
 
-const BASE = 'https://www.perma-projects.be'
-const URLS = [`${BASE}/agenda`, `${BASE}/evenementen`, `${BASE}/events`]
-const DEF = { lat: 50.8503, lng: 4.3517 }
+const SRC = 'perma-projects-be'
+const BASE = 'https://permaprojects.be'
+const AGENDA = `${BASE}/agenda/`
+const FIELD = { name: 'Permaprojects, Chaussée de Bruxelles 117, 1310 La Hulpe', lat: 50.7484, lng: 4.4642 }
+const MAX_DETAILS = 20
 
-function parseBE(s: string): string {
-  const m: Record<string,string> = {januari:'01',februari:'02',maart:'03',april:'04',mei:'05',juni:'06',juli:'07',augustus:'08',september:'09',oktober:'10',november:'11',december:'12',janvier:'01',février:'02',mars:'03',avril:'04',mai:'05',juin:'06',juillet:'07',août:'08',septembre:'09',octobre:'10',novembre:'11',décembre:'12'}
-  const c = s.toLowerCase().trim()
-  for (const [k,v] of Object.entries(m)) { if (c.includes(k)) { const d = c.match(/(\d{1,2})\s/); const y = c.match(/(\d{4})/); if(d&&y) return new Date(`${y[1]}-${v}-${d[1].padStart(2,'0')}`).toISOString() } }
-  const p = new Date(s); return isNaN(p.getTime()) ? new Date().toISOString() : p.toISOString()
+/** Next occurrence (from ~2 weeks ago) of day/month → year. */
+function yearFor(d: number, m: number, now: Date): number {
+  const y = now.getUTCFullYear()
+  return Date.UTC(y, m - 1, d) < now.getTime() - 14 * 86400000 ? y + 1 : y
+}
+
+function dayMonth(s: string): { d: number; m: number } | null {
+  const x = s.match(/(\d{1,2})(?:er)?\s+([a-zéû]+)/i)
+  const m = x ? frMonth(x[2]) : undefined
+  return x && m ? { d: +x[1], m } : null
+}
+
+function textOf(html: string): string {
+  const $ = cheerio.load(html.replace(/<svg[\s\S]*?<\/svg>/g, ''))
+  $('script, style, header, footer, nav').remove()
+  return $('main').text().replace(/\s+/g, ' ').trim() || $('body').text().replace(/\s+/g, ' ').trim()
 }
 
 export const permaProjectsBe: SourceFetcher = {
-  name: 'perma-projects-be',
+  name: SRC,
   async fetch() {
-    for (const url of URLS) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-          signal: AbortSignal.timeout(10000),
-        })
-        if (!res.ok) continue
-        const html = await res.text()
-
-        try {
-          const apiRes = await fetch(`${BASE}/wp-json/tribe/events/v1/events?per_page=20`, {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              return data.events.map((e: any) => ({
-                source: 'perma-projects-be', source_id: `pp-be-${e.id}`,
-                source_url: e.url ?? url, title: stripHtml(e.title ?? ''),
-                description: stripHtml(e.description ?? '').slice(0, 500),
-                organizer: e.organizer?.[0]?.organizer ?? 'PERMA-PROJECTS',
-                location_name: e.venue?.venue ?? e.venue?.city ?? 'Vlaanderen',
-                lat: parseFloat(e.venue?.geo_lat ?? '0') || DEF.lat,
-                lng: parseFloat(e.venue?.geo_lng ?? '0') || DEF.lng,
-                starts_at: new Date(e.start_date).toISOString(),
-                cost: e.cost ?? 'Zie evenement',
-              }))
-            }
-          }
-        } catch {}
-
-        const jsonLd = extractJsonLd(html, 'perma-projects-be')
-        if (jsonLd.length > 0) return jsonLd
-
-        const events = scrapeHtml(html, url)
-        if (events.length > 0) return events
-      } catch { continue }
-    }
-    return []
-  },
-}
-
-function scrapeHtml(html: string, baseUrl: string): RawEvent[] {
-  const events: RawEvent[] = []
-  const pat = /<(?:article|div|li)[^>]*class="[^"]*(?:event|evenement|project|permacultuur|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let m
-  while ((m = pat.exec(html)) !== null) {
-    const block = m[1]
-    const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!t) continue
-    const title = stripHtml(t[2]).trim()
-    if (!title || title.length < 5) continue
-    const loc = block.match(/(?:class="[^"]*(?:locatie|location|plaats)[^"]*"[^>]*>)([\s\S]*?)<\//i)
-    const locName = loc ? stripHtml(loc[1]).trim() : 'Vlaanderen'
-    events.push({
-      source: 'perma-projects-be', source_id: `pp-be-${hashStr(title)}`,
-      source_url: t[1] ? new URL(t[1], baseUrl).toString() : baseUrl,
-      title, description: 'PERMA-PROJECTS evenement. Zie link voor details.',
-      organizer: 'PERMA-PROJECTS', location_name: locName,
-      lat: DEF.lat, lng: DEF.lng,
-      starts_at: parseBE(block), cost: 'Zie evenement',
+    const html = await getText(AGENDA)
+    if (!html) return []
+    const $ = cheerio.load(html)
+    const cards: { url: string; title: string; type: string; when: string }[] = []
+    $('a[href*="/evenement/"]').each((_, el) => {
+      const a = $(el)
+      const url = a.attr('href')
+      const title = a.find('h3').first().text().replace(/\s+/g, ' ').trim()
+      if (!url || !title || cards.some((c) => c.url === url)) return
+      cards.push({
+        url,
+        title,
+        type: a.find('.brxe-text-basic').first().text().trim(),
+        when: a.find('p').first().text().replace(/\s+/g, ' ').trim(),
+      })
     })
-  }
-  return events
+
+    const now = new Date()
+    const events: RawEvent[] = []
+    for (const c of cards.slice(0, MAX_DETAILS)) {
+      const page = await getText(c.url)
+      const txt = page ? textOf(page) : ''
+      // "Date Le 17 octobre Horaire De 09:30 à 17:30 Lieu … Public … Prix 95 €"
+      const dateTxt = txt.match(/\bDate\s+(.{3,60}?)\s+(?:Horaire|Type|Lieu|Public|Prix)\b/)?.[1] ?? c.when
+      const parts = dateTxt.split(/\s+au\s+/i)
+      const sdm = dayMonth(parts[0])
+      if (!sdm) continue
+      const edm = parts[1] ? dayMonth(parts[1]) : null
+      const hor = txt.match(/\bHoraire\s+De\s+(\d{1,2})[:h](\d{2})?\s+à\s+(\d{1,2})[:h](\d{2})?/i)
+      const lieu = txt.match(/\bLieu\s+(.{2,120}?)\s+(?:Public|Prix|Type)\b/)?.[1]?.trim() ?? ''
+      if (ONLINE_RE.test(lieu) || /distance/i.test(lieu)) continue
+
+      const y = yearFor(sdm.d, sdm.m, now)
+      const start = parisIso(y, sdm.m, sdm.d, hor ? +hor[1] : 10, hor ? +(hor[2] ?? 0) : 0)
+      if (!start || Date.parse(start) < now.getTime()) continue
+      let end: string | null = null
+      if (hor) {
+        const ed = edm ?? sdm
+        const ey = ed.m < sdm.m ? y + 1 : y
+        end = parisIso(ey, ed.m, ed.d, +hor[3], +(hor[4] ?? 0))
+        if (end && end <= start) end = null
+      }
+
+      let loc = { name: FIELD.name, lat: FIELD.lat, lng: FIELD.lng }
+      if (lieu && !/La Hulpe/i.test(lieu)) {
+        const geo = await geocodeFrFirst([`${lieu}, Belgique`])
+        if (!geo) continue
+        loc = { name: lieu, ...geo }
+      }
+      const prix = txt.match(/\bPrix\s+(.{1,40}?)(?:\s{1}[A-ZÀ-Ý][a-zà-ÿ]|\s*$)/)?.[1]?.trim() ?? ''
+      const descStart = txt.indexOf(c.title, txt.indexOf('Prix'))
+      const description = (descStart > 0 ? txt.slice(descStart + c.title.length) : '')
+        .replace(/je m'inscris.*$/i, '').replace(/Inscrivez-vous à notre newsletter.*$/i, '').trim().slice(0, 600)
+
+      events.push({
+        source: SRC,
+        source_id: `permaprojects-${c.url.replace(/\/$/, '').split('/').pop()}-${start.slice(0, 10)}`,
+        source_url: c.url,
+        title: c.title,
+        description: description || `${c.type || 'Évènement'} — Permaprojects, institut d'entrepreneuriat en maraîchage bio-intensif.`,
+        organizer: 'Permaprojects',
+        location_name: loc.name,
+        lat: loc.lat, lng: loc.lng,
+        starts_at: start,
+        ends_at: end,
+        cost: /gratuit/i.test(prix) ? 'Gratuit' : prix || 'Voir site',
+      })
+    }
+    return events
+  },
 }

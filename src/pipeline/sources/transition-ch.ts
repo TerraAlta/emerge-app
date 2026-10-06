@@ -1,87 +1,76 @@
 /**
- * Transition Schweiz — Basel, Bern, Genève networks aggregated.
+ * Transition Schweiz — Swiss Transition Town initiatives.
+ *
+ * Of the Swiss local sites the old file guessed (transition-basel.ch,
+ * transition-bern.ch, transition-geneve.ch) only Bern is still online
+ * (now transitionbern.ch). Basel/Genève and transition-schweiz.ch no longer
+ * resolve; the national D-A-CH calendar (transition-initiativen.org) is
+ * already covered by transition-de.
+ *
+ * Transition Bern publishes its dates in a DokuWiki page
+ * (https://wiki.transitionbern.ch/doku.php?id=zeitplan, read as raw wiki text
+ * with &do=export_raw): the next "Transition Bern Treffen" ("am **29.10.2026
+ * (Donnerstag) ab 19 Uhr**. Ort folgt.") and a list of further meetings
+ * ("07.12.2026 (Montag), 19 Uhr"). These open meetings are public ("alle
+ * eingeladen"). Only lines in the "Transition Bern" sections are read (the
+ * "Weiteres, Andere" section links other groups). The venue is usually
+ * announced later ("Ort folgt"), so the event is placed in Bern city centre
+ * unless a "Ort: …" is given. Times are Europe/Zurich.
  */
 import type { RawEvent, SourceFetcher } from './types'
-import { stripHtml, hashStr, extractJsonLd } from './utils'
-import { extractMultiDate, geocodeSwiss } from './ch-mt-utils'
+import { hashStr } from './utils'
+import { getText, zurichIso, geocodeCh } from './ch-common'
 
-const CITIES: { base: string; city: string; lat: number; lng: number }[] = [
-  { base: 'https://www.transition-basel.ch', city: 'Basel', lat: 47.5596, lng: 7.5886 },
-  { base: 'https://www.transition-bern.ch', city: 'Bern', lat: 46.9480, lng: 7.4474 },
-  { base: 'https://transition-geneve.ch', city: 'Genève', lat: 46.2044, lng: 6.1432 },
-]
+const SRC = 'transition-ch'
+const WIKI = 'https://wiki.transitionbern.ch/doku.php?id=zeitplan'
+const BERN = { lat: 46.9480, lng: 7.4474 }
 
 export const transitionCh: SourceFetcher = {
-  name: 'transition-ch',
+  name: SRC,
   async fetch() {
-    const all: RawEvent[] = []
-    for (const { base, city, lat, lng } of CITIES) {
-      try {
-        // Try Tribe Events API
-        try {
-          const apiRes = await fetch(`${base}/wp-json/tribe/events/v1/events?per_page=20`, {
-            headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
-          })
-          if (apiRes.ok) {
-            const data = await apiRes.json()
-            if (data.events?.length > 0) {
-              all.push(...data.events.map((e: any) => {
-                const geo = geocodeSwiss(e.venue?.city || e.venue?.venue || '')
-                return {
-                  source: 'transition-ch', source_id: `tr-ch-${e.id}`,
-                  source_url: e.url ?? `${base}/events/`, title: stripHtml(e.title ?? ''),
-                  description: stripHtml(e.description ?? '').slice(0, 500),
-                  organizer: e.organizer?.[0]?.organizer ?? `Transition ${city}`,
-                  location_name: e.venue?.venue ?? e.venue?.city ?? city,
-                  lat: parseFloat(e.venue?.geo_lat ?? '0') || geo?.lat || lat,
-                  lng: parseFloat(e.venue?.geo_lng ?? '0') || geo?.lng || lng,
-                  starts_at: new Date(e.start_date).toISOString(), cost: e.cost ?? 'Siehe Veranstaltung',
-                } as RawEvent
-              }))
-              continue
-            }
-          }
-        } catch {}
+    const raw = await getText(`${WIKI}&do=export_raw`, 20000, 'text/plain,*/*')
+    if (!raw) return []
+    // Only the Transition Bern part (stop at the "Weiteres, Andere" heading)
+    const cut = raw.search(/=+\s*Weiteres,\s*Andere/i)
+    const text = cut > 0 ? raw.slice(0, cut) : raw
 
-        // Fetch HTML pages
-        for (const path of ['/events/', '/agenda/']) {
-          try {
-            const res = await fetch(`${base}${path}`, {
-              headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Emerge-App/1.0)', Accept: 'text/html' },
-              signal: AbortSignal.timeout(10000),
-            })
-            if (!res.ok) continue
-            const html = await res.text()
-            const jsonLd = extractJsonLd(html, 'transition-ch')
-            if (jsonLd.length > 0) { all.push(...jsonLd); break }
-            const events = scrapeHtml(html, `${base}${path}`, city, lat, lng)
-            if (events.length > 0) { all.push(...events); break }
-          } catch { continue }
+    const now = Date.now()
+    const out: RawEvent[] = []
+    const seen = new Set<string>()
+    for (const line of text.split('\n')) {
+      const clean = line.replace(/\*\*|\\\\|\[\[[^\]|]*\|?([^\]]*)\]\]/g, '$1').trim()
+      const re = /\b(\d{1,2})\.(\d{1,2})\.(20\d\d)\b(?:\s*\([^)]*\))?[,\s]*(?:ab\s+)?(\d{1,2})(?:[:.](\d{2}))?\s*Uhr/g
+      let m: RegExpExecArray | null
+      while ((m = re.exec(clean))) {
+        const start = zurichIso(+m[3], +m[2], +m[1], +m[4], m[5] ? +m[5] : 0)
+        if (!start || Date.parse(start) < now || seen.has(start)) continue
+        seen.add(start)
+        const extra = clean.slice(m.index + m[0].length).replace(/^[\s.,]+/, '')
+        const ortM = clean.match(/\bOrt:\s*([^.\n]+)/)
+        let geo = BERN
+        let locName = 'Bern (Ort wird bekanntgegeben)'
+        if (ortM && !/folgt/i.test(ortM[1])) {
+          const g = await geocodeCh(`${ortM[1].trim()}, Bern`)
+          if (g) { geo = g; locName = ortM[1].trim() }
         }
-      } catch { continue }
+        const hv = /\bHV\b|Hauptversammlung/i.test(extra)
+        out.push({
+          source: SRC,
+          source_id: `tr-ch-bern-${hashStr(start)}`,
+          source_url: WIKI,
+          title: hv ? 'Transition Bern Treffen mit Hauptversammlung' : 'Transition Bern Treffen',
+          description: 'Offenes Treffen von Transition Bern: alle, die sich für den Grossen Wandel interessieren, sind eingeladen – Austausch, Kreativgruppen (Bern Unverpackt, Fair Economy, Innerer Wandel, SoLaVelo, Transition Streets …) und neue Projekte. Der Ort wird jeweils im Wiki bekanntgegeben.',
+          organizer: 'Transition Bern',
+          location_name: locName,
+          lat: geo.lat,
+          lng: geo.lng,
+          starts_at: start,
+          ends_at: null,
+          cost: 'Free',
+          image_url: null,
+        })
+      }
     }
-    return all
+    return out
   },
-}
-
-function scrapeHtml(html: string, baseUrl: string, city: string, defLat: number, defLng: number): RawEvent[] {
-  const events: RawEvent[] = []
-  const pat = /<(?:article|div|li)[^>]*class="[^"]*(?:event|veranstaltung|agenda|tribe)[^"]*"[^>]*>([\s\S]*?)<\/(?:article|div|li)>/gi
-  let m
-  while ((m = pat.exec(html)) !== null) {
-    const block = m[1]
-    const t = block.match(/<h[234][^>]*>[\s]*(?:<a[^>]*href="([^"]*)"[^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[234]>/i)
-    if (!t) continue
-    const title = stripHtml(t[2]).trim()
-    if (!title || title.length < 5) continue
-    const geo = geocodeSwiss(block)
-    events.push({
-      source: 'transition-ch', source_id: `tr-ch-${hashStr(title + city)}`,
-      source_url: t[1] ? new URL(t[1], baseUrl).toString() : baseUrl, title,
-      description: `Transition ${city} Veranstaltung.`, organizer: 'Transition Schweiz',
-      location_name: city, lat: geo?.lat || defLat, lng: geo?.lng || defLng,
-      starts_at: extractMultiDate(block), cost: 'Siehe Veranstaltung',
-    })
-  }
-  return events
 }
