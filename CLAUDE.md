@@ -154,10 +154,14 @@ connection the same searches work.
 - **Eventbrite carries almost nothing aligned in Portugal** — a one-off
   11-city deep sweep (2026-10-07) added 1 event. Portugal comes from:
   `viral-agenda-pt` (Viral Agenda keyword searches, bulk), `agendalx-pt`
-  (Lisbon municipal JSON API, bulk), `quinta-da-lage-pt`, `plantar-uma-arvore-pt`,
-  plus the older Tamera/Terra Alta/Freixo do Meio/Aldeias do Xisto. Verified
-  reachable from GitHub runners. Researched but not yet built: Cascais 360
-  (ambiente), Vale da Lama, SPEA, LPN, Agenda Porto, Lipor.
+  (Lisbon municipal JSON API, bulk), `cascais-360-pt` (environment + nature
+  sections), `quinta-da-lage-pt`, `plantar-uma-arvore-pt`, `vale-da-lama-pt`,
+  `lpn-pt`, `spea-pt`, `lipor-pt`, plus the older Tamera/Terra Alta/Freixo do
+  Meio/Aldeias do Xisto. All verified reachable from GitHub runners
+  (2026-10-07). Agenda Porto was tried and dropped: its "Ao Fresco" section
+  is culture, 0 of 14 events passed the pre-filter. Social-only groups worth
+  inviting to post directly: Repair Café Lisboa/Porto, Montis, Colher para
+  Semear, Casa da Horta, HortaFCUL, Sirigaita, Mercado de Levante.
 - Don't move it back to GitHub Actions or Vercel (AWS IPs) without a residential
   proxy — it will silently return nothing again.
 - Pre-filter: 94% rejected before AI → keeps cost at ~$3-5/week

@@ -257,6 +257,11 @@ import { viralAgendaPt } from './sources/viral-agenda-pt'
 import { agendalxPt } from './sources/agendalx-pt'
 import { quintaDaLagePt } from './sources/quinta-da-lage-pt'
 import { plantarUmaArvorePt } from './sources/plantar-uma-arvore-pt'
+import { cascais360Pt } from './sources/cascais-360-pt'
+import { valeDaLamaPt } from './sources/vale-da-lama-pt'
+import { lpnPt } from './sources/lpn-pt'
+import { speaPt } from './sources/spea-pt'
+import { liporPt } from './sources/lipor-pt'
 // City-based scrapers (Meetup + Eventbrite across 50 cities)
 import { meetupCities } from './sources/meetup-cities'
 // eventbrite-cities + eventbrite-cultural: DISABLED here 2026-10-01. Eventbrite's
@@ -543,6 +548,11 @@ const SOURCES: SourceFetcher[] = [
   aldeiasXistoPt,
   quintaDaLagePt,
   plantarUmaArvorePt,
+  cascais360Pt,
+  valeDaLamaPt,
+  lpnPt,
+  speaPt,
+  liporPt,
   viralAgendaPt,   // bulk — keyword searches, pre-filtered
   agendalxPt,      // bulk — Lisbon municipal agenda, pre-filtered
   // City-based scrapers
