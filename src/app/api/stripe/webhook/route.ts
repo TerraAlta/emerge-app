@@ -77,7 +77,16 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    const { error: updateErr } = await supabase
+    // Async payment methods complete the session before the money arrives.
+    if (session.payment_status !== 'paid') {
+      console.warn('[stripe-webhook] session completed but not paid:', session.id, session.payment_status)
+      return NextResponse.json({ received: true })
+    }
+
+    // Idempotent: Stripe can deliver the same event more than once. Only the
+    // first delivery flips an unpaid project; a repeat (after delivery, or
+    // after a reject + refund) must not reset status or re-run scoping.
+    const { data: flipped, error: updateErr } = await supabase
       .from('guild_projects')
       .update({
         paid: true,
@@ -86,10 +95,16 @@ export async function POST(request: NextRequest) {
         updated_at: new Date().toISOString(),
       })
       .eq('id', projectId)
+      .eq('paid', false)
+      .select('id')
 
     if (updateErr) {
       console.error('[stripe-webhook] project update failed:', updateErr)
       return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+    }
+    if (!flipped?.length) {
+      console.log('[stripe-webhook] project already paid — ignoring repeat delivery:', projectId, session.id)
+      return NextResponse.json({ received: true })
     }
 
     const origin = getAppUrl() // never the request's Origin header: it's attacker-controlled and this URL receives INTERNAL_TRIGGER_KEY / is the Stripe redirect
