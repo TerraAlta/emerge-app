@@ -19,6 +19,7 @@
  * Returns:   { ok: true, docId }
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { escapeHtml as esc } from '@/lib/html'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail, isEmailConfigured } from '@/lib/email'
@@ -310,8 +311,8 @@ Please generate the scoping document as JSON following the schema you were given
           html: `
             <div style="font-family: -apple-system, sans-serif; max-width: 560px; padding: 24px; line-height: 1.6;">
               <h2 style="font-weight: 300;">New scoping doc ready to review</h2>
-              <p><strong>${project.project_name || '(unnamed)'}</strong> · ${brief.country || '?'}</p>
-              <p>${brief.tagline || ''}</p>
+              <p><strong>${esc(project.project_name || '(unnamed)')}</strong> · ${esc(brief.country || '?')}</p>
+              <p>${esc(brief.tagline)}</p>
               <p><a href="${appUrl}/admin/guild" style="display:inline-block;background:#C8913A;color:white;padding:10px 20px;border-radius:999px;text-decoration:none;">Open review queue</a></p>
             </div>
           `,

@@ -17,6 +17,7 @@
  * Cooldown: 7 days per pitch (skipped if match already ran recently).
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { escapeHtml as esc } from '@/lib/html'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
 import { GUILD_MODEL, isDailyLimitReached, logApiUsage } from '@/lib/guild-costs'
@@ -305,13 +306,13 @@ Return the ranked JSON array.`
           const greeting = prof?.first_name || 'there'
           const html = `
             <div style="font-family:-apple-system,sans-serif;max-width:560px;padding:24px 20px;color:#1a1a1a;line-height:1.6;">
-              <h2 style="font-weight:300;font-size:22px;">Hello ${greeting},</h2>
+              <h2 style="font-weight:300;font-size:22px;">Hello ${esc(greeting)},</h2>
               <p>Someone published a pitch on the Guild that looked like a possible fit.</p>
               <p style="background:#F7F3ED;padding:16px 18px;border-radius:10px;font-style:italic;">
-                <strong>${pitch.title}</strong><br/>
-                ${pitch.one_line_vision}
+                <strong>${esc(pitch.title)}</strong><br/>
+                ${esc(pitch.one_line_vision)}
               </p>
-              <p style="margin-top:16px;font-size:13px;color:#555;">Why we thought of you: ${String(m.reasoning || '').slice(0, 400)}</p>
+              <p style="margin-top:16px;font-size:13px;color:#555;">Why we thought of you: ${esc(String(m.reasoning || '').slice(0, 400))}</p>
               <p style="margin-top:16px;">
                 <a href="${appUrl}/guild/pitch/${pitch.id}" style="display:inline-block;background:#C8913A;color:#fff;padding:10px 22px;border-radius:999px;text-decoration:none;font-weight:600;">Read the pitch</a>
               </p>

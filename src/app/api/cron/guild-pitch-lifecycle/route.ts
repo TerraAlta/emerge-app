@@ -9,6 +9,7 @@
  * Protected by CRON_SECRET.
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { escapeHtml as esc } from '@/lib/html'
 import { isCronAuthorized } from '@/lib/cron-auth'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail, isEmailConfigured } from '@/lib/email'
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
         html: `
           <div style="font-family:-apple-system,sans-serif;max-width:560px;padding:24px 20px;color:#1a1a1a;line-height:1.6;">
             <h2 style="font-weight:300;font-size:22px;">Your pitch has expired</h2>
-            <p><strong>${pitch.title}</strong> — ${pitch.one_line_vision || ''}</p>
+            <p><strong>${esc(pitch.title)}</strong> — ${esc(pitch.one_line_vision)}</p>
             <p style="margin-top:12px;">Pitches on the Guild expire after 6 months to keep the board alive. If this project is still happening, reactivate in one click — it'll be live for another 6 months.</p>
             <p style="margin-top:20px;">
               <a href="${reactivateUrl}" style="display:inline-block;background:#C8913A;color:#fff;padding:12px 26px;border-radius:999px;text-decoration:none;font-weight:600;">Reactivate my pitch</a>
@@ -109,7 +110,7 @@ export async function GET(request: NextRequest) {
         html: `
           <div style="font-family:-apple-system,sans-serif;max-width:560px;padding:24px 20px;color:#1a1a1a;line-height:1.6;">
             <h2 style="font-weight:300;font-size:22px;">A quick check-in 🌱</h2>
-            <p><strong>${pitch.title}</strong> — ${pitch.one_line_vision || ''}</p>
+            <p><strong>${esc(pitch.title)}</strong> — ${esc(pitch.one_line_vision)}</p>
             <p style="margin-top:12px;">It's been ${Math.round(days / 30)} months since you last confirmed this pitch is still active. If it is, tap below and it stays live for another 6 months. If not — no action needed; it'll expire${pitch.expires_at ? ` on ${new Date(pitch.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}` : ' on its own'}.</p>
             <p style="margin-top:20px;">
               <a href="${confirmUrl}" style="display:inline-block;background:#C8913A;color:#fff;padding:12px 26px;border-radius:999px;text-decoration:none;font-weight:600;">Yes, still active</a>

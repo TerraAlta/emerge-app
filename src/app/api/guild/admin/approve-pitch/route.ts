@@ -8,6 +8,7 @@
  * and emails the pitch owner that they're live.
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { escapeHtml as esc } from '@/lib/html'
 import { createClient } from '@supabase/supabase-js'
 import { waitUntil } from '@vercel/functions'
 import { sendEmail, isEmailConfigured } from '@/lib/email'
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 20px; color: #1a1a1a; line-height: 1.6;">
             <h1 style="font-weight: 300; font-size: 26px; margin: 0 0 16px;">Your pitch is live</h1>
-            <p>We have personally reviewed <strong>${pitch.title}</strong> and it is now visible in the Guild pitches directory.</p>
+            <p>We have personally reviewed <strong>${esc(pitch.title)}</strong> and it is now visible in the Guild pitches directory.</p>
             <p>We are also looking for practitioners whose work matches what you described — matches will appear on your pitch page over the next few minutes.</p>
             <p style="margin-top: 24px;"><a href="${appUrl}/guild/pitch/${pitch.id}" style="display: inline-block; background: #C8913A; color: white; padding: 12px 24px; text-decoration: none; border-radius: 999px; font-weight: 600;">View your pitch</a></p>
             <p style="font-size: 12px; color: #999; margin-top: 32px;">— The Guild · Emerge</p>

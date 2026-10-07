@@ -13,6 +13,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail, isEmailConfigured } from '@/lib/email'
+import { escapeHtml as esc } from '@/lib/html'
+import { claimNotification } from '@/lib/notify-once'
 import { getAppUrl } from '@/lib/app-url'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
 
@@ -88,21 +90,22 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: refreshErr.message }, { status: 500 })
       }
 
-      // Edit notification — fire-and-forget, never block the response
+      // Edit notification — fire-and-forget, never block the response.
+      // At most one per pitch per day, however often the owner saves.
       try {
-        if (isEmailConfigured()) {
+        if (isEmailConfigured() && await claimNotification(supabase, 'pitch_edited', pitchId)) {
           const { data: u } = await supabase.auth.admin.getUserById(userId)
           const submitterEmail = u?.user?.email || 'unknown'
           const appUrl = getAppUrl()
           await sendEmail({
             to: ADMIN_NOTIFY_EMAIL,
-            subject: `[Guild] Published pitch edited — ${pitch.title}`,
+            subject: `[Guild] Published pitch edited — ${String(pitch.title).slice(0, 80)}`,
             html: `
               <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; padding: 24px; line-height: 1.6; color: #1a1a1a;">
                 <h2 style="font-weight: 300; font-size: 22px; margin: 0 0 12px;">A live pitch was edited</h2>
-                <p style="margin: 0 0 4px;"><strong>${pitch.title}</strong></p>
-                <p style="margin: 0 0 4px; color: #555;">${pitch.one_line_vision || ''}</p>
-                <p style="margin: 4px 0 16px; font-size: 12px; color: #999;">edited by ${submitterEmail}</p>
+                <p style="margin: 0 0 4px;"><strong>${esc(pitch.title)}</strong></p>
+                <p style="margin: 0 0 4px; color: #555;">${esc(pitch.one_line_vision)}</p>
+                <p style="margin: 4px 0 16px; font-size: 12px; color: #999;">edited by ${esc(submitterEmail)}</p>
                 <p><a href="${appUrl}/guild/pitch/${pitchId}" style="display:inline-block;background:#C8913A;color:white;padding:10px 20px;border-radius:999px;text-decoration:none;font-weight:600;">Open the pitch</a></p>
                 <p style="margin-top:16px; font-size:12px; color:#999;">No action needed — this is FYI. The edit is already live.</p>
               </div>
@@ -129,9 +132,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: submitErr.message }, { status: 500 })
     }
 
-    // Notify admin
+    // Notify admin — only when this call actually moved it into review (not on
+    // repeat calls for a pitch already pending), and at most once a day.
     try {
-      if (isEmailConfigured()) {
+      if (isEmailConfigured() && pitch.status !== 'pending_review' && await claimNotification(supabase, 'pitch_review', pitchId)) {
         const { data: u } = await supabase.auth.admin.getUserById(userId)
         const submitterEmail = u?.user?.email || 'unknown'
         const appUrl = getAppUrl()
@@ -139,15 +143,15 @@ export async function POST(request: NextRequest) {
 
         await sendEmail({
           to: ADMIN_NOTIFY_EMAIL,
-          subject: `[Guild] New pitch pending review — ${pitch.title}`,
+          subject: `[Guild] New pitch pending review — ${String(pitch.title).slice(0, 80)}`,
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; padding: 24px; line-height: 1.6; color: #1a1a1a;">
               <h2 style="font-weight: 300; font-size: 22px; margin: 0 0 12px;">New pitch pending review</h2>
-              <p style="margin: 0 0 4px;"><strong>${pitch.title}</strong></p>
-              <p style="margin: 0 0 4px; color: #555;">${pitch.one_line_vision || ''}</p>
-              <p style="margin: 0 0 4px; font-size: 13px; color: #666;">${[pitch.country, pitch.region].filter(Boolean).join(' · ')}${pitch.language ? ` · ${pitch.language}` : ''}</p>
-              ${petals ? `<p style="margin: 0 0 4px; font-size: 13px; color: #666;">Petals: ${petals}</p>` : ''}
-              <p style="margin: 4px 0 16px; font-size: 12px; color: #999;">${submitterEmail}</p>
+              <p style="margin: 0 0 4px;"><strong>${esc(pitch.title)}</strong></p>
+              <p style="margin: 0 0 4px; color: #555;">${esc(pitch.one_line_vision)}</p>
+              <p style="margin: 0 0 4px; font-size: 13px; color: #666;">${esc([pitch.country, pitch.region].filter(Boolean).join(' · '))}${pitch.language ? ` · ${esc(pitch.language)}` : ''}</p>
+              ${petals ? `<p style="margin: 0 0 4px; font-size: 13px; color: #666;">Petals: ${esc(petals)}</p>` : ''}
+              <p style="margin: 4px 0 16px; font-size: 12px; color: #999;">${esc(submitterEmail)}</p>
               <p><a href="${appUrl}/admin/guild" style="display:inline-block;background:#C8913A;color:white;padding:10px 20px;border-radius:999px;text-decoration:none;font-weight:600;">Open review queue</a></p>
             </div>
           `,

@@ -1,4 +1,5 @@
 /** Weekly digest email HTML template */
+import { escapeHtml } from '@/lib/html'
 
 interface DigestQuest {
   title: string
@@ -22,26 +23,13 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; label: string 
   make:      { bg: '#1F180E', text: '#6D4C2A', label: 'Make' },
 }
 
-/**
- * Escape anything that came from outside before putting it in the HTML.
- *
- * Quest titles, addresses and news summaries are SCRAPED from public sites —
- * anyone can create an Eventbrite event and put markup in its title. Without
- * this, that markup renders inside an email sent from Pedro's own address,
- * which is a tidy little phishing vector.
- */
-function escapeHtml(value: unknown): string {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
+// Everything that came from outside goes through escapeHtml() before the HTML:
+// quest titles, addresses and news summaries are SCRAPED from public sites, and
+// markup in them would render inside an email sent from Pedro's own address.
 
 /**
  * Only let http(s) links through. A scraped `javascript:` or `data:` URL in an
- * href is the same problem as above, one layer down.
+ * href is the same problem, one layer down.
  */
 function safeUrl(url: unknown): string | null {
   if (!url) return null
