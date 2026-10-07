@@ -1,6 +1,7 @@
 'use client'
 
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet'
+import { displaySourceName } from '@/lib/source-label'
 import { useEffect, useRef } from 'react'
 import { CATEGORIES } from '@/lib/categories'
 import { formatDate } from '@/lib/dateUtils'
@@ -266,7 +267,7 @@ function QuestDot({
           {q.source_name && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10 }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-amber)', flexShrink: 0 }} />
-              <span style={{ fontSize: 13, color: 'var(--color-amber)', fontWeight: 500 }}>via {q.source_name}</span>
+              <span style={{ fontSize: 13, color: 'var(--color-amber)', fontWeight: 500 }}>via {displaySourceName(q.source_name, q.source_url)}</span>
             </div>
           )}
 

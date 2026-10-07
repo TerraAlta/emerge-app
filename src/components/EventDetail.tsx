@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { displaySourceName } from '@/lib/source-label'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import SharePopup from './SharePopup'
@@ -235,7 +236,7 @@ export default function EventDetail({
           {/* Organiser + source */}
           <div className="flex items-center gap-2 mb-4">
             <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-              via {quest.source_name}
+              via {displaySourceName(quest.source_name, quest.source_url)}
             </span>
             {typeof quest.distance_km === 'number' && (
               <>

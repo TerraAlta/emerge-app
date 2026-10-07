@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, Suspense } from 'react'
+import { displaySourceName } from '@/lib/source-label'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import dynamic from 'next/dynamic'
@@ -73,41 +74,6 @@ const typeLabel: Record<string, string> = {
 }
 
 
-const SOURCE_DISPLAY: Record<string, string> = {
-  'redeconvergir.pt': 'Rede Convergir',
-  'gaia.org.pt': 'GAIA Portugal',
-  'repaircafe.org': 'Repair Caf\u00e9 Network',
-  'transitionnetwork.org': 'Transition Network',
-  'permaculture.org.uk': 'Permaculture Association',
-  'findhorn.org': 'Findhorn Foundation',
-  'communitylandscotland.org.uk': 'Community Land Scotland',
-  'landvernd.is': 'Landvernd',
-  'slowfood.com': 'Slow Food',
-  'greenpeace.org': 'Greenpeace',
-  'umanotera.si': 'Umanotera',
-  'allevents.in': 'AllEvents',
-}
-
-function displaySourceName(sourceName: string, sourceUrl?: string | null): string {
-  // Pipeline source names like "meetup-cities", "eventbrite-cities", "local-networks"
-  if (sourceName === 'meetup-cities') return 'Meetup'
-  if (sourceName === 'eventbrite-cities') return 'Eventbrite'
-  if (sourceName === 'eventbrite-cultural') return 'Eventbrite'
-  if (sourceName === 'allevents-cultural') return 'AllEvents'
-  if (sourceName === 'local-networks' && sourceUrl) {
-    try {
-      const host = new URL(sourceUrl).hostname.replace(/^www\./, '')
-      if (SOURCE_DISPLAY[host]) return SOURCE_DISPLAY[host]
-      // Check partial domain matches
-      for (const [domain, name] of Object.entries(SOURCE_DISPLAY)) {
-        if (host.endsWith(domain)) return name
-      }
-      return host
-    } catch { /* fall through */ }
-  }
-  // Fallback: clean up the source name
-  return sourceName.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-}
 
 /**
  * Top-level doors — three primary sections of the app.
