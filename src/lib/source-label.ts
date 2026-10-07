@@ -39,5 +39,10 @@ export function displaySourceName(sourceName: string | null | undefined, sourceU
     } catch { /* fall through */ }
   }
   // Fallback: clean up the source name
-  return sourceName.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  // Drop scraper-file country/region suffixes: "zegg-de" → "Zegg",
+  // "Terra Alta Pt" → "Terra Alta".
+  return sourceName
+    .replace(/[\s-](pt|de|uk|fr|nl|es|it|be|ch|at|ie|is|si|mt|dk|fi|se|no|us|usa|ca|eu|na|global)$/i, '')
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
 }
