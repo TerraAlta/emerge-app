@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { authHeaders } from '@/lib/auth-headers'
 
 interface DigestSettingsProps {
   userId: string
@@ -18,6 +19,30 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [showDelete, setShowDelete] = useState(false)
+  const [deleteText, setDeleteText] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+
+  async function deleteAccount() {
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      const res = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: await authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ confirm: deleteText.trim() }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Could not delete your account')
+      await supabase.auth.signOut()
+      try { localStorage.clear() } catch { /* private mode */ }
+      window.location.href = '/'
+    } catch (err: any) {
+      setDeleteError(err.message)
+      setDeleting(false)
+    }
+  }
   const [nameSaved, setNameSaved] = useState(false)
 
   useEffect(() => {
@@ -90,7 +115,7 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
       <div
-        className="w-full rounded-t-[20px] px-5 pt-5 pb-8"
+        className="w-full rounded-t-[20px] px-5 pt-5 pb-8 max-h-[92vh] overflow-y-auto"
         style={{ maxWidth: 390, background: 'var(--color-card)', border: '0.5px solid var(--color-text-faint)' }}
       >
         <div className="flex items-center justify-between mb-5">
@@ -184,6 +209,55 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
                     {km}km
                   </button>
                 ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Privacy + account deletion */}
+        <div className="mt-5 pt-4 text-center" style={{ borderTop: '0.5px solid var(--color-pill-bg)' }}>
+          <a href="/privacy" className="text-[12px] underline" style={{ color: 'var(--color-text-secondary)' }}>Privacy policy</a>
+          {!showDelete ? (
+            <button
+              onClick={() => setShowDelete(true)}
+              className="block mx-auto mt-3 text-[12px]"
+              style={{ color: 'var(--color-danger, #D4785A)', background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              Delete my account
+            </button>
+          ) : (
+            <div className="mt-3 rounded-[12px] px-4 py-3 text-left" style={{ background: 'var(--color-pill-bg)' }}>
+              <p className="text-[12px] leading-relaxed mb-2" style={{ color: 'var(--color-text)' }}>
+                This permanently deletes your account, profile, journal, learning progress, event joins and any Guild profile, projects and pitches. Events you posted stay public without your name. This can&apos;t be undone.
+              </p>
+              <label className="text-[12px] block mb-1.5" style={{ color: 'var(--color-text-secondary)' }} htmlFor="delete-confirm">
+                Type DELETE to confirm
+              </label>
+              <input
+                id="delete-confirm"
+                value={deleteText}
+                onChange={e => setDeleteText(e.target.value)}
+                autoComplete="off"
+                className="w-full px-3 py-2 rounded-[8px] text-[13px] mb-2"
+                style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)', color: 'var(--color-text)' }}
+              />
+              {deleteError && <p className="text-[12px] mb-2" style={{ color: 'var(--color-danger, #D4785A)' }}>{deleteError}</p>}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setShowDelete(false); setDeleteText(''); setDeleteError('') }}
+                  className="flex-1 py-2 rounded-full text-[12px]"
+                  style={{ background: 'var(--color-card)', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={deleteAccount}
+                  disabled={deleteText.trim() !== 'DELETE' || deleting}
+                  className="flex-1 py-2 rounded-full text-[12px] font-semibold text-white"
+                  style={{ background: 'var(--color-danger, #D4785A)', border: 'none', cursor: 'pointer', opacity: deleteText.trim() !== 'DELETE' || deleting ? 0.5 : 1 }}
+                >
+                  {deleting ? 'Deleting…' : 'Delete forever'}
+                </button>
               </div>
             </div>
           )}

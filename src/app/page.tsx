@@ -433,8 +433,12 @@ function FooterDisclaimer() {
             className="text-[8px]"
             style={{ color: 'var(--color-text-faint)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
           >
-            {openDisclaimer ? 'Hide disclaimer' : 'Disclaimer & privacy'}
+            {openDisclaimer ? 'Hide disclaimer' : 'Disclaimer'}
           </button>
+          <span style={{ color: 'var(--color-text-faint)', fontSize: 8 }}>·</span>
+          <a href="/privacy" className="text-[8px]" style={{ color: 'var(--color-text-faint)', textDecoration: 'underline' }}>
+            Privacy
+          </a>
         </div>
       </div>
 
@@ -473,8 +477,8 @@ function FooterDisclaimer() {
             Emerge is not liable for any loss, injury, or damages arising from attendance at listed events.
           </p>
           <p className="text-[8px] mt-1.5 leading-[1.7]" style={{ color: 'var(--color-text-muted)' }}>
-            Your location data is used only to show nearby events and is never shared with other users or third parties.
-            We store only the minimum data needed to operate your account.
+            Your location is used only to show nearby events and is never shown to other users. We store only what's
+            needed to run your account. Full details — and how to delete your account — in the privacy policy.
           </p>
         </div>
       )}

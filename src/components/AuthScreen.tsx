@@ -328,7 +328,8 @@ export default function AuthScreen({ onSignIn, onSignUp, defaultMode = 'login' }
 
         {/* Legal + credit */}
         <p className="mt-10 text-[8px] text-center leading-[1.7] px-2" style={{ color: 'var(--color-text-faint)' }}>
-          By signing up you agree that Emerge is a community platform. We aggregate publicly available events and do not organise or endorse them. Attend at your own risk. Your data is stored securely and never shared.
+          By signing up you agree that Emerge is a community platform. We aggregate publicly available events and do not organise or endorse them. Attend at your own risk. We never sell your data or show ads — see our{' '}
+          <a href="/privacy" style={{ color: 'var(--color-amber-border)', textDecoration: 'underline' }}>privacy policy</a>.
         </p>
         <p className="mt-2 text-[8px] text-center" style={{ color: 'var(--color-text-faint)' }}>
           Created by Pedro Valdjiu · <a href="https://terralta.org" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-amber-border)', textDecoration: 'underline' }}>terralta.org</a>
