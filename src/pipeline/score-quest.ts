@@ -93,7 +93,10 @@ Location: "${event.location ?? 'unknown'}"`,
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
   // Strip any markdown fencing the model might add despite instructions
   const cleaned = text.replace(/```json\s*|```\s*/g, '').trim()
-  const parsed = JSON.parse(cleaned)
+  // Haiku occasionally adds a sentence after the JSON ("Unexpected
+  // non-whitespace character after JSON"), so parse just the object.
+  const start = cleaned.indexOf('{'), end = cleaned.lastIndexOf('}')
+  const parsed = JSON.parse(start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned)
 
   let score = Math.max(0, Math.min(100, Math.round(parsed.score)))
 

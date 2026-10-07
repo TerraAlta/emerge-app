@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import Anthropic from '@anthropic-ai/sdk'
-import { isCreditError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
-import { decrypt, isEncrypted } from '@/lib/crypto'
-import { buildScoringPrompt } from '@/lib/scoring-prompt'
+import { costTracker, CostCapExceeded, DAILY_CRON_CAP_USD } from '@/pipeline/cost-cap'
+import { importLumaEvents, storedKey } from '@/lib/luma'
 
 export const maxDuration = 300
 
@@ -12,45 +10,15 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-let _ai: Anthropic | null = null
-function getAI() {
-  if (!_ai) _ai = new Anthropic()
-  return _ai
-}
-
-async function scoreEvent(title: string, description: string, location: string) {
-  try {
-    const result = await getAI().messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 200,
-      system: [
-        {
-          type: 'text',
-          text: buildScoringPrompt(),
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
-      messages: [{ role: 'user', content: `Event: "${title}"\nDescription: "${description}"\nLocation: "${location}"` }],
-    })
-
-    const text = result.content[0].type === 'text' ? result.content[0].text : ''
-    return JSON.parse(text.replace(/```json\s*|```\s*/g, '').trim())
-  } catch (err) {
-    if (isCreditError(err)) {
-      await notifyPipelineFailure('credits_exhausted', { source: 'sync-luma', event: title })
-      return null
-    }
-    throw err
-  }
-}
-
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const secret = process.env.CRON_SECRET
+  if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Fetch all connected Luma calendars
+  // Warm instances are reused between days — see CostTracker.reset().
+  costTracker.reset(DAILY_CRON_CAP_USD)
+
   const { data: calendars, error } = await supabase
     .from('connected_calendars')
     .select('*')
@@ -62,85 +30,51 @@ export async function GET(request: NextRequest) {
 
   let totalInserted = 0
   let totalFiltered = 0
+  let costCapped = false
+  const seenKeys = new Set<string>()   // older duplicate rows of the same key sync once
 
   for (const cal of calendars) {
     try {
+      const key = storedKey(cal)
+      if (seenKeys.has(key)) continue
+      seenKeys.add(key)
+
       const res = await fetch('https://api.lu.ma/public/v1/calendar/list-events', {
-        headers: { 'x-luma-api-key': isEncrypted(cal.api_key_encrypted) ? decrypt(cal.api_key_encrypted) : cal.api_key_encrypted, Accept: 'application/json' },
+        headers: { 'x-luma-api-key': key, Accept: 'application/json' },
         signal: AbortSignal.timeout(15_000),
       })
-
       if (!res.ok) {
         console.warn(`[sync-luma] ${cal.organiser_name}: API returned ${res.status}`)
         continue
       }
-
       const data = await res.json()
       const events = data.entries ?? data.events ?? []
 
-      for (const entry of events) {
-        const ev = entry.event ?? entry
-        if (!ev.name || !ev.start_at) continue
-        if (new Date(ev.start_at) < new Date()) continue
+      const result = await importLumaEvents(supabase, events, cal.organiser_name, cal.rejected_event_ids ?? [])
+      totalInserted += result.inserted
+      totalFiltered += result.filtered
 
-        // Check if already exists
-        const { data: existing } = await supabase
-          .from('quests')
-          .select('id')
-          .eq('title', ev.name)
-          .eq('starts_at', new Date(ev.start_at).toISOString())
-          .limit(1)
-
-        if (existing?.length) continue
-
-        try {
-          const location = ev.geo_address_json?.full_address ?? ev.location ?? ''
-          const scored = await scoreEvent(ev.name, ev.description ?? '', location)
-          if (!scored) continue
-          const score = Math.max(0, Math.min(100, Math.round(scored.score)))
-
-          if (score < 50) { totalFiltered++; continue }
-
-          const lat = ev.geo_latitude ?? 0
-          const lng = ev.geo_longitude ?? 0
-
-          await supabase.from('quests').upsert(
-            {
-              title: ev.name,
-              description: (ev.description ?? '').slice(0, 500),
-              category: scored.category ?? 'community',
-              geog: lat !== 0 ? `POINT(${lng} ${lat})` : null,
-              address: location || 'See event page',
-              starts_at: new Date(ev.start_at).toISOString(),
-              ends_at: ev.end_at ? new Date(ev.end_at).toISOString() : null,
-              source_url: ev.url ?? `https://lu.ma/${ev.api_id ?? ev.id}`,
-              source_name: cal.organiser_name,
-              ai_score: score,
-              ai_reasoning: scored.reason,
-              image_url: ev.cover_url ?? null,
-              max_participants: ev.guest_limit ?? null,
-            },
-            { onConflict: 'title,starts_at' }
-          )
-          totalInserted++
-        } catch { /* skip */ }
-      }
-
-      // Update last_synced_at
       await supabase
         .from('connected_calendars')
-        .update({ last_synced_at: new Date().toISOString() })
+        .update({ last_synced_at: new Date().toISOString(), rejected_event_ids: result.rejectedIds })
         .eq('id', cal.id)
-
     } catch (err) {
+      if (err instanceof CostCapExceeded) {
+        costCapped = true
+        console.warn(`[sync-luma] ${err.message} — halting run.`)
+        break
+      }
       console.error(`[sync-luma] ${cal.organiser_name} failed:`, (err as Error).message)
     }
   }
 
+  console.log(`[sync-luma] ${costTracker.summary()}`)
   return NextResponse.json({
     ok: true,
-    calendars_synced: calendars.length,
+    calendars_synced: seenKeys.size,
     inserted: totalInserted,
     filtered: totalFiltered,
+    costUsd: Number(costTracker.totalUsd.toFixed(4)),
+    costCapped,
   })
 }
