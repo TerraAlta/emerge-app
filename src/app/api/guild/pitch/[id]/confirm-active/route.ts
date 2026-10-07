@@ -14,12 +14,20 @@ function getServiceClient() {
   )
 }
 
+/** "Yes, still active": confirms AND extends the pitch another 180 days —
+ *  the email promises "it stays live", which a confirm alone didn't do. */
 async function confirm(pitchId: string) {
   const supabase = getServiceClient()
+  const now = new Date()
   await supabase
     .from('guild_pitches')
-    .update({ last_confirmed_active_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .update({
+      last_confirmed_active_at: now.toISOString(),
+      expires_at: new Date(now.getTime() + 180 * 86_400_000).toISOString(),
+      updated_at: now.toISOString(),
+    })
     .eq('id', pitchId)
+    .in('status', ['published', 'paused'])
 }
 
 async function authedUser(request: NextRequest): Promise<string | null> {

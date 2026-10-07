@@ -240,6 +240,25 @@ export default function AdminGuildPage() {
     }
   }
 
+  /** Re-run the AI scoping for a project stuck in 'scoping' with no doc. */
+  async function regenerateProject(projectId: string) {
+    if (!confirm('Re-run the AI scoping for this project? (One Haiku call, a few cents.)')) return
+    setActionLoading(projectId)
+    try {
+      const res = await fetch('/api/guild/generate-scoping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(await authHeader()) },
+        body: JSON.stringify({ projectId }),
+      })
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Re-run failed')
+      await loadConsultations()
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   async function rejectProject(projectId: string) {
     const reason = prompt('Reason for rejection (shown to client):')
     if (reason === null) return
@@ -679,9 +698,25 @@ export default function AdminGuildPage() {
                               )}
 
                               {isGenerating && (
-                                <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-                                  Scoping doc is being drafted. Refresh in a minute.
-                                </p>
+                                <div className="space-y-2">
+                                  <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                                    No scoping doc yet. Normally it appears within a minute — if it's been longer, drafting failed (e.g. the daily AI limit) and you can re-run it.
+                                  </p>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => regenerateProject(p.id)}
+                                      disabled={actionLoading === p.id}
+                                      className="flex-1 py-2 rounded-full text-[12px] font-semibold"
+                                      style={{ background: 'var(--color-amber)', color: 'var(--color-pill-active-text)', border: 'none', cursor: 'pointer', opacity: actionLoading === p.id ? 0.5 : 1 }}
+                                    >{actionLoading === p.id ? 'Working...' : 'Re-run scoping'}</button>
+                                    <button
+                                      onClick={() => rejectProject(p.id)}
+                                      disabled={actionLoading === p.id}
+                                      className="flex-1 py-2 rounded-full text-[12px]"
+                                      style={{ background: 'var(--color-pill-bg)', color: 'var(--color-text)', border: '0.5px solid var(--color-border)', cursor: 'pointer', opacity: actionLoading === p.id ? 0.5 : 1 }}
+                                    >Close project</button>
+                                  </div>
+                                </div>
                               )}
 
                               {doc?.doc_content && (

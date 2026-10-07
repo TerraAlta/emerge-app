@@ -130,6 +130,25 @@ export default function Home() {
   )
 }
 
+/** lat/lng from a PostGIS geography as PostgREST returns it: EWKB hex, or GeoJSON. */
+function pointFromGeog(geog: unknown): { lat: number; lng: number } | null {
+  if (geog && typeof geog === 'object' && Array.isArray((geog as any).coordinates)) {
+    const [lng, lat] = (geog as any).coordinates
+    return { lat, lng }
+  }
+  if (typeof geog !== 'string' || !/^[0-9a-f]+$/i.test(geog) || geog.length < 42) return null
+  const bytes = new Uint8Array(geog.match(/../g)!.map(h => parseInt(h, 16)))
+  const view = new DataView(bytes.buffer)
+  const le = bytes[0] === 1
+  const type = view.getUint32(1, le)
+  let offset = 5
+  if (type & 0x20000000) offset += 4 // SRID present
+  if ((type & 0xff) !== 1) return null // not a Point
+  const lng = view.getFloat64(offset, le)
+  const lat = view.getFloat64(offset + 8, le)
+  return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null
+}
+
 function HomeInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -153,6 +172,25 @@ function HomeInner() {
       router.replace('/')
     }
   }, [searchParams, router])
+
+  // Shared links (EventDetail / SharePopup build ?quest=<id>) open that event.
+  useEffect(() => {
+    const questId = searchParams?.get('quest')
+    if (!questId || !/^[0-9a-f-]{36}$/i.test(questId)) return
+    let cancelled = false
+    supabase
+      .from('quests')
+      .select('id, title, description, category, address, starts_at, ends_at, source_url, source_name, ai_score, ai_reasoning, image_url, max_participants, geog')
+      .eq('id', questId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data) return
+        const pos = pointFromGeog(data.geog)
+        if (!pos) return
+        setSelectedEvent({ ...data, lat: pos.lat, lng: pos.lng })
+      })
+    return () => { cancelled = true }
+  }, [searchParams])
 
   if (authLoading) {
     return (
@@ -537,7 +575,7 @@ function EventBoard({
   }, [])
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
   const [attendedCount, setAttendedCount] = useState(0)
-  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, keywordFallback, setManualLocation } = useNearbyEvents({ radiusKm, searchKeyword: keywordSearch || null })
+  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, keywordFallback, distanceFallback, setManualLocation } = useNearbyEvents({ radiusKm, searchKeyword: keywordSearch || null })
 
   // Fetch quests attended count
   useEffect(() => {
@@ -833,7 +871,7 @@ function EventBoard({
         {/* Pulse pills */}
         <div className="flex gap-2 px-4 pt-3 pb-4">
           {[
-            { val: quests.length.toString(), label: 'Events nearby' },
+            { val: quests.length.toString(), label: distanceFallback ? 'Nearest events' : 'Events nearby' },
             { val: closestDist !== null ? `${closestDist.toFixed(1)}km` : '\u2014', label: 'Closest event' },
             { val: attendedCount.toString(), label: 'Events attended' },
           ].map(pill => (
@@ -944,6 +982,15 @@ function EventBoard({
           <div className="px-4 pb-2">
             <p className="text-[12px]" style={{ color: 'var(--color-amber)' }}>
               No “{keywordSearch}” events near you yet — here’s what’s on nearby.
+            </p>
+          </div>
+        )}
+
+        {/* Nothing within the radius (no search) — say these are farther away */}
+        {distanceFallback && !keywordSearch && !loading && radiusKm !== 'national' && (
+          <div className="px-4 pb-2">
+            <p className="text-[12px]" style={{ color: 'var(--color-amber)' }}>
+              Nothing within {radiusKm}km yet — here are the nearest events, up to 500km away.
             </p>
           </div>
         )}

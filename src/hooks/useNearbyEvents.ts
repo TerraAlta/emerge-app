@@ -63,6 +63,9 @@ export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
   // True when a keyword search found nothing nearby and we're showing the
   // nearest events of any kind instead — the UI must say so.
   const [keywordFallback, setKeywordFallback] = useState(false)
+  // True whenever nothing was within the radius and we're showing the
+  // nearest events (up to 500 km) instead — with or without a keyword.
+  const [distanceFallback, setDistanceFallback] = useState(false)
 
   // Reverse geocode to get city name and country code (Photon/Komoot — no rate limits)
   const reverseGeocode = useCallback(async (lat: number, lng: number): Promise<{ name: string; countryCode: string }> => {
@@ -195,6 +198,7 @@ export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
 
     let results = (data ?? []) as NearbyQuest[]
     let usedKeywordFallback = false
+    let usedDistanceFallback = false
 
     // Fallback: if no quests found nearby, fetch nearest quests globally (up to 500km)
     if (results.length === 0 && radiusKm !== 'national') {
@@ -207,9 +211,11 @@ export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
       if (fallback.data && fallback.data.length > 0) {
         results = (fallback.data as NearbyQuest[]).slice(0, 20)
         usedKeywordFallback = Boolean(searchKeyword)
+        usedDistanceFallback = true
       }
     }
     setKeywordFallback(usedKeywordFallback)
+    setDistanceFallback(usedDistanceFallback)
     if (category) {
       results = results.filter((q) => q.category === category)
     }
@@ -270,19 +276,10 @@ export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
     fetchQuests()
   }, [fetchQuests])
 
-  // Realtime subscription for new quests
-  useEffect(() => {
-    const channel = supabase
-      .channel('quests-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'quests' }, () => {
-        fetchQuests()
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [fetchQuests])
+  // No realtime subscription: events arrive in one weekly batch, and the
+  // old 'quests-realtime' channel was rejected by the server (401) and
+  // retried ~280 times an hour per open tab. If it had connected, every one
+  // of the ~1,000 Sunday inserts would have refetched every open list.
 
   return {
     quests,
@@ -294,6 +291,7 @@ export function useNearbyEvents(options: UseNearbyQuestsOptions = {}) {
     locationLoading,
     countryCode,
     keywordFallback,
+    distanceFallback,
     setManualLocation,
     refetch: fetchQuests,
   }

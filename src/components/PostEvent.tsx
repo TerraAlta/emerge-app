@@ -294,11 +294,19 @@ export default function PostEvent({ userId, onBack, onSuccess }: Props) {
                     <>
                       <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>We&apos;re reviewing it</p>
                       <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                        &ldquo;{urlResult.title}&rdquo; is queued for review — usually within 24h.
+                        &ldquo;{urlResult.title}&rdquo; isn&apos;t a clear match, so a person will take a look — usually within a few days.
                       </p>
                     </>
                   )}
-                  {!urlResult.approved && !urlResult.queued && (
+                  {urlResult.notSaved && (
+                    <>
+                      <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>Not added</p>
+                      <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                        {urlResult.notSaved}
+                      </p>
+                    </>
+                  )}
+                  {!urlResult.approved && !urlResult.queued && !urlResult.notSaved && (
                     <>
                       <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>Not quite right for Emerge</p>
                       <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>

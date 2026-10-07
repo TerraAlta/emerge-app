@@ -5,6 +5,7 @@ import * as cheerio from 'cheerio'
 import { isCreditError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
 import { buildScoringPrompt } from '@/lib/scoring-prompt'
 import { getRequestUserId } from '@/lib/request-user'
+import { sendEmail, isEmailConfigured } from '@/lib/email'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -210,15 +211,20 @@ export async function POST(request: NextRequest) {
     const score = Math.max(0, Math.min(100, Math.round(scored.score)))
 
     // 4. Decision
-    const approved = score >= 75
+    let approved = score >= 75
     const queued = score >= 40 && score < 75
     const rejected = score < 40
+    // Why an approved event still didn't go live (shown to the submitter).
+    let notSaved: string | null = null
 
-    // 5. Insert if approved
+    // 5. Insert if approved — and only say "live" if it really was saved.
+    if (approved && !event.starts_at) notSaved = "We couldn't find a date on that page, so it wasn't added."
+    else if (approved && !(event.lat || event.lng)) notSaved = "We couldn't find where it takes place, so it wasn't added."
+    if (notSaved) approved = false
     if (approved && event.starts_at) {
       const sourceName = event.organizer || parsed.hostname.replace(/^www\./, '')
 
-      const { error: dbError } = await supabase.from('quests').upsert(
+      const { data: saved, error: dbError } = await supabase.from('quests').upsert(
         {
           title: event.title,
           description: event.description,
@@ -238,15 +244,38 @@ export async function POST(request: NextRequest) {
         // Never overwrite an existing event: a submitted page with the same
         // title + start as a real event used to replace its link.
         { onConflict: 'title,starts_at', ignoreDuplicates: true }
-      )
+      ).select('id')
 
       if (dbError) {
         console.error('[submit-event] DB error:', dbError.message)
+        approved = false
+        notSaved = 'Something went wrong saving it — please try again later.'
+      } else if (!saved?.length) {
+        approved = false
+        notSaved = 'This event is already on Emerge.'
       }
+    }
+
+    // Borderline scores: email the admin the link so "we're reviewing it" is
+    // true (these used to be dropped silently).
+    if (queued && isEmailConfigured() && process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+      const esc = (t: string) => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!))
+      await sendEmail({
+        to: process.env.NEXT_PUBLIC_ADMIN_EMAIL,
+        subject: `Event to review on Emerge (score ${score}): ${String(event.title).slice(0, 80)}`,
+        html: `<div style="font-family:system-ui,sans-serif;max-width:560px">
+<p>A signed-in user submitted an event that scored <strong>${score}/100</strong> — not clear enough to publish automatically.</p>
+<p><strong>${esc(event.title)}</strong><br>${esc(event.starts_at ?? 'no date found')} · ${esc(event.location_name ?? '')}</p>
+<p>AI's reason: ${esc(scored.reason ?? '')}</p>
+<p><a href="${esc(url)}">Open the event page</a></p>
+<p style="color:#888;font-size:12px">If it belongs on Emerge, add it from the admin page or ask the submitter to post it manually.</p>
+</div>`,
+      }).catch(() => {})
     }
 
     return NextResponse.json({
       approved,
+      notSaved,
       queued,
       rejected,
       score,

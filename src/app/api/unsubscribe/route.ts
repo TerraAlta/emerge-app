@@ -40,6 +40,26 @@ export async function GET(request: NextRequest) {
   })
 }
 
+/**
+ * RFC 8058 one-click unsubscribe: Gmail and other mail apps POST to the
+ * List-Unsubscribe URL (the digest sends List-Unsubscribe-Post). Without a
+ * POST handler they got a 405 and the user stayed subscribed.
+ */
+export async function POST(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const userId = searchParams.get('uid')
+  const token = searchParams.get('token')
+  if (!userId || !token || !verifyUnsubscribeToken(userId, token)) {
+    return NextResponse.json({ error: 'Invalid unsubscribe link' }, { status: 403 })
+  }
+  const { error } = await supabase
+    .from('profiles')
+    .update({ email_digest_enabled: false })
+    .eq('id', userId)
+  if (error) return NextResponse.json({ error: 'Could not unsubscribe' }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}
+
 function page(message: string, success: boolean): string {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Emerge — Unsubscribe</title></head>
 <body style="margin:0;padding:0;background:#0D1A0B;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;">

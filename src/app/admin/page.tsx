@@ -138,7 +138,7 @@ function AnalyticsTab() {
       const { count: userPostedQuests } = await supabase
         .from('quests')
         .select('*', { count: 'exact', head: true })
-        .eq('source', 'user')
+        .not('created_by', 'is', null) // events posted by signed-in users (there is no 'source' column)
 
       setStats({
         totalUsers,
@@ -147,15 +147,17 @@ function AnalyticsTab() {
         userPostedQuests: userPostedQuests ?? null,
       })
 
-      // Most active cities — group by location_name using raw query workaround
-      // Since supabase-js doesn't support GROUP BY directly, we fetch all and aggregate client-side
+      // Most active countries for UPCOMING events (quests has no location_name
+      // column, and addresses are free text). Aggregated client-side.
       const { data: questLocations } = await supabase
         .from('quests')
-        .select('location_name')
+        .select('country_code')
+        .gte('starts_at', new Date().toISOString())
+        .limit(5000)
       if (questLocations) {
         const cityMap: Record<string, number> = {}
         for (const q of questLocations) {
-          const name = q.location_name || 'Unknown'
+          const name = q.country_code || 'Unknown'
           cityMap[name] = (cityMap[name] || 0) + 1
         }
         const sorted = Object.entries(cityMap)
@@ -242,7 +244,7 @@ function AnalyticsTab() {
 
       {/* Most active cities */}
       <div>
-        <SectionHeader>Most active cities</SectionHeader>
+        <SectionHeader>Upcoming events by country</SectionHeader>
         <div
           className="rounded-[12px] overflow-hidden"
           style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}

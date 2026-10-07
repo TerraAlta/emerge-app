@@ -79,12 +79,18 @@ export async function GET(request: NextRequest) {
   const checkInCutoff = new Date(now.getTime() - CHECK_IN_THRESHOLD_DAYS * 86_400_000)
   const { data: needsCheckIn } = await supabase
     .from('guild_pitches')
-    .select('id, user_id, title, one_line_vision, last_confirmed_active_at')
+    .select('id, user_id, title, one_line_vision, last_confirmed_active_at, expires_at')
     .eq('status', 'published')
     .lt('last_confirmed_active_at', checkInCutoff.toISOString())
 
+  // This cron runs daily and every pitch past 120 days matches the query, so
+  // without a cap each owner got this email every day until expiry (~60
+  // emails). Send only on a few milestone days instead.
+  const REMINDER_DAYS = new Set([120, 150, 173])
   for (const pitch of needsCheckIn || []) {
     try {
+      const days = Math.floor((now.getTime() - new Date(pitch.last_confirmed_active_at).getTime()) / 86_400_000)
+      if (!REMINDER_DAYS.has(days)) continue
       if (!isEmailConfigured()) continue
       const { data: authUser } = await supabase.auth.admin.getUserById(pitch.user_id)
       const email = authUser?.user?.email
@@ -103,7 +109,7 @@ export async function GET(request: NextRequest) {
           <div style="font-family:-apple-system,sans-serif;max-width:560px;padding:24px 20px;color:#1a1a1a;line-height:1.6;">
             <h2 style="font-weight:300;font-size:22px;">A quick check-in 🌱</h2>
             <p><strong>${pitch.title}</strong> — ${pitch.one_line_vision || ''}</p>
-            <p style="margin-top:12px;">It's been 4 months since you last confirmed this pitch is still active. If it is, tap below and it stays live. If not — no action needed; it'll expire in 2 months.</p>
+            <p style="margin-top:12px;">It's been ${Math.round(days / 30)} months since you last confirmed this pitch is still active. If it is, tap below and it stays live for another 6 months. If not — no action needed; it'll expire${pitch.expires_at ? ` on ${new Date(pitch.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}` : ' on its own'}.</p>
             <p style="margin-top:20px;">
               <a href="${confirmUrl}" style="display:inline-block;background:#C8913A;color:#fff;padding:12px 26px;border-radius:999px;text-decoration:none;font-weight:600;">Yes, still active</a>
             </p>

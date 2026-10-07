@@ -31,7 +31,8 @@ interface Quest {
   max_participants: number | null
   lat: number
   lng: number
-  distance_km: number
+  /** Missing when the event was opened from a shared link. */
+  distance_km?: number
 }
 
 interface Participant {
@@ -236,10 +237,14 @@ export default function EventDetail({
             <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
               via {quest.source_name}
             </span>
-            <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>&middot;</span>
-            <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-              {quest.distance_km.toFixed(1)}km away
-            </span>
+            {typeof quest.distance_km === 'number' && (
+              <>
+                <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>&middot;</span>
+                <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
+                  {quest.distance_km.toFixed(1)}km away
+                </span>
+              </>
+            )}
             {quest.ai_score > 0 && (
               <>
                 <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>&middot;</span>
@@ -279,7 +284,7 @@ export default function EventDetail({
                 </p>
                 <p className="text-[13px] mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
                   {joined
-                    ? `${quest.distance_km.toFixed(1)}km from you \u2014 exact location`
+                    ? (typeof quest.distance_km === 'number' ? `${quest.distance_km.toFixed(1)}km from you \u2014 exact location` : 'Exact location')
                     : `Approximate area \u2014 exact location after joining`
                   }
                 </p>

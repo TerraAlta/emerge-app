@@ -25,6 +25,7 @@ import { sendEmail, isEmailConfigured } from '@/lib/email'
 import { getAppUrl } from '@/lib/app-url'
 import { GUILD_MODEL, calculateCost, isDailyLimitReached, logApiUsage } from '@/lib/guild-costs'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
+import { requireAdmin } from '@/lib/admin-auth'
 
 const ADMIN_NOTIFY_EMAIL = process.env.GUILD_ADMIN_EMAIL || 'terraalta.sintra@gmail.com'
 
@@ -103,8 +104,8 @@ export async function POST(request: NextRequest) {
     const internalKey = request.headers.get('x-internal-key')
     const isInternal = internalKey && internalKey === process.env.INTERNAL_TRIGGER_KEY
 
-    if (!isInternal) {
-      // Fall back to admin check (future-proofing: admin can manually re-generate)
+    // ...or an admin re-running a project that got stuck in 'scoping'.
+    if (!isInternal && !(await requireAdmin(request))) {
       return NextResponse.json({ error: 'Not authorised' }, { status: 401 })
     }
 
@@ -131,12 +132,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
+    // Only the brief is needed (the prompt is built from it). Requiring the
+    // intake transcript too left every "fill a form myself" project — which
+    // has no transcript — stuck in 'scoping' forever.
     const brief = project.extracted_brief || {}
-    const transcript = project.intake_transcript || []
-
-    if (!transcript.length || !brief || Object.keys(brief).length === 0) {
+    if (!brief || Object.keys(brief).length === 0) {
       return NextResponse.json({ error: 'Project intake is incomplete' }, { status: 400 })
     }
+
+    // A re-run replaces any earlier unapproved draft, so the client page
+    // (one doc per project) never sees duplicates.
+    const { data: delivered } = await supabase.from('guild_scoping_docs')
+      .select('id').eq('project_id', projectId).not('approved_at', 'is', null).limit(1)
+    if (delivered?.length) {
+      return NextResponse.json({ error: 'This project already has an approved scoping document' }, { status: 409 })
+    }
+    await supabase.from('guild_scoping_docs').delete().eq('project_id', projectId).is('approved_at', null)
 
     // Mark project as generating scoping
     await supabase

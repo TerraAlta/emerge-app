@@ -287,7 +287,10 @@ export default function AuthScreen({ onSignIn, onSignUp, defaultMode = 'login' }
                       if (!email) { setError('Enter your email first'); return }
                       setSubmitting(true)
                       const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
-                        redirectTo: `${window.location.origin}/auth/callback`,
+                        // Straight to the reset form: it handles both link formats
+                        // (?token_hash=… and #access_token=…). Via /auth/callback the
+                        // access_token form lost the form and just signed people in.
+                        redirectTo: `${window.location.origin}/reset-password`,
                       })
                       setSubmitting(false)
                       if (resetErr) { setError(resetErr.message) }

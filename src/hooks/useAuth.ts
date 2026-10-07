@@ -35,7 +35,13 @@ export function useAuth() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        // A recovery link that lands anywhere other than the reset form
+        // (older emails, other templates) should still show the form.
+        if (event === 'PASSWORD_RECOVERY' && typeof window !== 'undefined' && window.location.pathname !== '/reset-password') {
+          window.location.assign('/reset-password')
+          return
+        }
         setUser(session?.user ?? null)
         if (session?.user) {
           fetchProfile(session.user.id)
