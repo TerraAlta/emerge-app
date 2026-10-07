@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
-import { GUILD_MODEL, MAX_EXTRACTION_TOKENS, isDailyLimitReached, logApiUsage } from '@/lib/guild-costs'
+import { GUILD_MODEL, MAX_EXTRACTION_TOKENS, isDailyLimitReached, isUserDailyLimitReached, cleanTranscript, logApiUsage } from '@/lib/guild-costs'
 import { getRequestUserId, ownsRow, aiInputTooLarge } from '@/lib/request-user'
 
 let _ai: Anthropic | null = null
@@ -62,14 +62,21 @@ export async function POST(request: NextRequest) {
 
     const userId = await getRequestUserId(request)
     if (!userId) return NextResponse.json({ error: 'Please sign in to continue' }, { status: 401 })
-    const { pitchId, transcript, prep_context_text } = await request.json()
+    if (await isUserDailyLimitReached(userId)) {
+      return NextResponse.json(
+        { error: 'You have reached today\'s limit for Guild AI. Please continue tomorrow.' },
+        { status: 429 }
+      )
+    }
+    const { pitchId, transcript: rawTranscript, prep_context_text } = await request.json()
+    const transcript = cleanTranscript(rawTranscript)
     if (pitchId && !(await ownsRow('guild_pitches', pitchId, 'user_id', userId))) {
       return NextResponse.json({ error: 'Pitch not found' }, { status: 404 })
     }
     if (aiInputTooLarge(transcript, prep_context_text)) {
       return NextResponse.json({ error: 'This conversation is too long to process' }, { status: 413 })
     }
-    if (!userId || !pitchId || !Array.isArray(transcript)) {
+    if (!userId || !pitchId || transcript.length === 0) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 

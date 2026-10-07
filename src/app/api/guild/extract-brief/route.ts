@@ -10,7 +10,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { GUILD_MODEL, MAX_EXTRACTION_TOKENS, isDailyLimitReached, logApiUsage } from '@/lib/guild-costs'
+import { GUILD_MODEL, MAX_EXTRACTION_TOKENS, isDailyLimitReached, isUserDailyLimitReached, cleanTranscript, logApiUsage } from '@/lib/guild-costs'
 import { getRequestUserId, ownsRow, aiInputTooLarge } from '@/lib/request-user'
 
 let _ai: Anthropic | null = null
@@ -64,7 +64,14 @@ export async function POST(request: NextRequest) {
 
     const userId = await getRequestUserId(request)
     if (!userId) return NextResponse.json({ error: 'Please sign in to continue' }, { status: 401 })
-    const { projectId, transcript, prep_context_text } = await request.json()
+    if (await isUserDailyLimitReached(userId)) {
+      return NextResponse.json(
+        { error: 'You have reached today\'s limit for Guild AI. Please continue tomorrow.' },
+        { status: 429 }
+      )
+    }
+    const { projectId, transcript: rawTranscript, prep_context_text } = await request.json()
+    const transcript = cleanTranscript(rawTranscript)
     if (projectId && !(await ownsRow('guild_projects', projectId, 'client_user_id', userId))) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
@@ -73,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
     const prepContext = typeof prep_context_text === 'string' ? prep_context_text.slice(0, 15000) : ''
 
-    if (!userId || !projectId || !Array.isArray(transcript)) {
+    if (!userId || !projectId || transcript.length === 0) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 

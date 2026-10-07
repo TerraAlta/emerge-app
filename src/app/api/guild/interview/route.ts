@@ -7,7 +7,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { GUILD_MODEL, MAX_INTERVIEW_TOKENS, isDailyLimitReached, logApiUsage } from '@/lib/guild-costs'
+import { GUILD_MODEL, MAX_INTERVIEW_TOKENS, isDailyLimitReached, isUserDailyLimitReached, cleanTranscript, logApiUsage } from '@/lib/guild-costs'
 import { getRequestUserId, ownsRow, aiInputTooLarge } from '@/lib/request-user'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
 
@@ -77,7 +77,14 @@ export async function POST(request: NextRequest) {
 
     const userId = await getRequestUserId(request)
     if (!userId) return NextResponse.json({ error: 'Please sign in to continue' }, { status: 401 })
-    const { petals, transcript, prep_context_text } = await request.json()
+    if (await isUserDailyLimitReached(userId)) {
+      return NextResponse.json(
+        { error: 'You have reached today\'s limit for Guild AI. Please continue tomorrow.' },
+        { status: 429 }
+      )
+    }
+    const { petals, transcript: rawTranscript, prep_context_text } = await request.json()
+    const transcript = cleanTranscript(rawTranscript)
     const prepContext = typeof prep_context_text === 'string' ? prep_context_text.slice(0, 15000) : ''
 
     if (!userId || !petals?.length || !Array.isArray(transcript)) {

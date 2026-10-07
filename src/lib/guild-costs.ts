@@ -5,7 +5,8 @@
  * 1. All calls use claude-haiku-4-5-20251001 — never Sonnet/Opus
  * 2. Interview: max 15,000 tokens total
  * 3. Extraction: max 5,000 tokens total
- * 4. Daily global limit: EUR 2.00 (~$2.20)
+ * 4. Daily global limit: EUR 2.00 (~$2.20), and a per-user limit so one
+ *    account can't use up everyone's day
  * 5. Every call logged to guild_api_usage table
  */
 
@@ -13,6 +14,10 @@ import { createClient } from '@supabase/supabase-js'
 
 const GUILD_MODEL = 'claude-haiku-4-5-20251001'
 const DAILY_LIMIT_USD = 2.20 // ~EUR 2.00
+// A full onboarding costs ~$0.02; this is ~15 of them. Stops one account
+// (or a script) from exhausting the global cap for everyone.
+const USER_DAILY_LIMIT_USD = 0.30
+const MAX_MESSAGE_CHARS = 8000
 const MAX_INTERVIEW_TOKENS = 15000
 const MAX_EXTRACTION_TOKENS = 5000
 
@@ -40,14 +45,45 @@ export async function isDailyLimitReached(): Promise<boolean> {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('guild_api_usage')
     .select('cost_usd')
     .gte('created_at', today.toISOString())
 
-  if (!data) return false
+  // Fail closed: if we can't see today's spend, don't spend more.
+  if (error || !data) return true
   const totalToday = data.reduce((sum, row) => sum + Number(row.cost_usd || 0), 0)
   return totalToday >= DAILY_LIMIT_USD
+}
+
+/** True once this user has spent their share of today's Guild AI budget. */
+export async function isUserDailyLimitReached(userId: string): Promise<boolean> {
+  const supabase = getServiceClient()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const { data, error } = await supabase
+    .from('guild_api_usage')
+    .select('cost_usd')
+    .eq('user_id', userId)
+    .gte('created_at', today.toISOString())
+
+  if (error || !data) return true
+  const spent = data.reduce((sum, row) => sum + Number(row.cost_usd || 0), 0)
+  return spent >= USER_DAILY_LIMIT_USD
+}
+
+/**
+ * A client-sent chat transcript, reduced to what the interview prompts expect:
+ * user/assistant turns with plain-text content. Without this a caller could
+ * send image/document blocks or other roles straight to Anthropic, slipping
+ * past the length-based token estimate.
+ */
+export function cleanTranscript(transcript: unknown): { role: 'user' | 'assistant'; content: string }[] {
+  if (!Array.isArray(transcript)) return []
+  return transcript
+    .filter((m: any) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+    .map((m: any) => ({ role: m.role, content: m.content.slice(0, MAX_MESSAGE_CHARS) }))
 }
 
 /** Log an AI call to the usage table */
