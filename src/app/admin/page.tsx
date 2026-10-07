@@ -583,6 +583,13 @@ export default function AdminPage() {
           Guild review →
         </a>
         <a
+          href="/admin/submissions"
+          className="text-[10px] inline-block"
+          style={{ color: 'var(--color-amber)', textDecoration: 'underline' }}
+        >
+          Submitted events →
+        </a>
+        <a
           href="/"
           className="text-[10px] inline-block"
           style={{ color: 'var(--color-text-secondary)', textDecoration: 'underline' }}

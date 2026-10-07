@@ -292,9 +292,9 @@ export default function PostEvent({ userId, onBack, onSuccess }: Props) {
                   )}
                   {urlResult.queued && (
                     <>
-                      <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>We&apos;re reviewing it</p>
+                      <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--color-text)' }}>Thanks — it&apos;s with us for review</p>
                       <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                        &ldquo;{urlResult.title}&rdquo; isn&apos;t a clear match, so a person will take a look — usually within a few days.
+                        A person looks at every event submitted by link before it goes on the map. &ldquo;{urlResult.title}&rdquo; should appear within a few days if it fits.
                       </p>
                     </>
                   )}

@@ -7,6 +7,9 @@ import { isCreditError, notifyPipelineFailure } from '@/lib/pipeline-monitor'
 import { buildScoringPrompt } from '@/lib/scoring-prompt'
 import { getRequestUserId } from '@/lib/request-user'
 import { sendEmail, isEmailConfigured } from '@/lib/email'
+import { escapeHtml as esc } from '@/lib/html'
+import { claimNotification } from '@/lib/notify-once'
+import { getAppUrl } from '@/lib/app-url'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,6 +31,10 @@ function checkRateLimit(ip: string): boolean {
 }
 
 let _ai: Anthropic | null = null
+
+const MAX_SUBMISSIONS_PER_DAY = 20
+/** Below this the AI's verdict stands; at or above, a person decides. */
+const REVIEW_THRESHOLD = 40
 function getAI() {
   if (!_ai) _ai = new Anthropic()
   return _ai
@@ -151,6 +158,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Please sign in to submit an event' }, { status: 401 })
     }
 
+    // Per-account limit (the IP limiter above lives in one serverless
+    // instance's memory, so it barely holds). Every scored submission is
+    // recorded in quest_submissions, so this also caps AI spend per user.
+    const { count: recent } = await supabase
+      .from('quest_submissions')
+      .select('id', { count: 'exact', head: true })
+      .eq('submitted_by', userId)
+      .gte('created_at', new Date(Date.now() - 24 * 3600_000).toISOString())
+    if ((recent ?? 0) >= MAX_SUBMISSIONS_PER_DAY) {
+      return NextResponse.json({ error: 'You have submitted a lot of events today — please try again tomorrow.' }, { status: 429 })
+    }
+
     const { url } = await request.json()
     if (!url || typeof url !== 'string') {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 })
@@ -204,7 +223,7 @@ export async function POST(request: NextRequest) {
         ],
         messages: [{
           role: 'user',
-          content: `Event: "${event.title}"\nDescription: "${event.description}"\nLocation: "${event.location_name}"\nOrganiser: "${event.organizer}"`,
+          content: `Event: "${String(event.title).slice(0, 300)}"\nDescription: "${String(event.description ?? '').slice(0, 1500)}"\nLocation: "${event.location_name}"\nOrganiser: "${event.organizer}"`,
         }],
       })
     } catch (err) {
@@ -217,74 +236,65 @@ export async function POST(request: NextRequest) {
 
     const aiText = aiResult.content[0].type === 'text' ? aiResult.content[0].text : ''
     const cleaned = aiText.replace(/```json\s*|```\s*/g, '').trim()
-    const scored = JSON.parse(cleaned)
+    const jsonStart = cleaned.indexOf('{'), jsonEnd = cleaned.lastIndexOf('}')
+    const scored = JSON.parse(jsonStart >= 0 && jsonEnd > jsonStart ? cleaned.slice(jsonStart, jsonEnd + 1) : cleaned)
     const score = Math.max(0, Math.min(100, Math.round(scored.score)))
 
-    // 4. Decision
-    let approved = score >= 75
-    const queued = score >= 40 && score < 75
-    const rejected = score < 40
-    // Why an approved event still didn't go live (shown to the submitter).
+    // 4. Decision. Nothing a user submits by link goes live on the AI's word
+    //    alone: a page can be written to talk the scorer into a high score, and
+    //    the soul doc keeps human judgment in the loop. Clear misses are
+    //    turned away; everything else waits for Pedro at /admin/submissions.
     let notSaved: string | null = null
-
-    // 5. Insert if approved — and only say "live" if it really was saved.
-    if (approved && !event.starts_at) notSaved = "We couldn't find a date on that page, so it wasn't added."
-    else if (approved && !(event.lat || event.lng)) notSaved = "We couldn't find where it takes place, so it wasn't added."
-    if (notSaved) approved = false
-    if (approved && event.starts_at) {
-      const sourceName = event.organizer || parsed.hostname.replace(/^www\./, '')
-
-      const { data: saved, error: dbError } = await supabase.from('quests').upsert(
-        {
-          title: event.title,
-          description: event.description,
-          category: scored.category ?? 'community',
-          geog: event.lat !== 0 ? `POINT(${event.lng} ${event.lat})` : null,
-          address: event.location_name || 'See event page',
-          starts_at: event.starts_at,
-          ends_at: event.ends_at,
-          source_url: url,
-          source_name: sourceName,
-          ai_score: score,
-          ai_reasoning: scored.reason,
-          image_url: event.image_url,
-          max_participants: null,
-          created_by: userId,
-        },
-        // Never overwrite an existing event: a submitted page with the same
-        // title + start as a real event used to replace its link.
-        { onConflict: 'title,starts_at', ignoreDuplicates: true }
-      ).select('id')
-
-      if (dbError) {
-        console.error('[submit-event] DB error:', dbError.message)
-        approved = false
-        notSaved = 'Something went wrong saving it — please try again later.'
-      } else if (!saved?.length) {
-        approved = false
-        notSaved = 'This event is already on Emerge.'
+    if (score >= REVIEW_THRESHOLD) {
+      if (!event.starts_at) notSaved = "We couldn't find a date on that page, so it wasn't added."
+      else if (!(event.lat || event.lng)) notSaved = "We couldn't find where it takes place, so it wasn't added."
+      else {
+        const { data: dup } = await supabase.from('quests').select('id').eq('source_url', url).limit(1)
+        if (dup?.length) notSaved = 'This event is already on Emerge.'
       }
     }
+    const queued = score >= REVIEW_THRESHOLD && !notSaved
+    const rejected = score < REVIEW_THRESHOLD
 
-    // Borderline scores: email the admin the link so "we're reviewing it" is
-    // true (these used to be dropped silently).
-    if (queued && isEmailConfigured() && process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-      const esc = (t: string) => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!))
+    const { error: subErr } = await supabase.from('quest_submissions').insert({
+      submitted_by: userId,
+      url,
+      title: String(event.title).slice(0, 500),
+      description: event.description ?? null,
+      category: scored.category ?? 'community',
+      lat: event.lat || null,
+      lng: event.lng || null,
+      address: event.location_name || null,
+      starts_at: event.starts_at || null,
+      ends_at: event.ends_at || null,
+      image_url: event.image_url || null,
+      organizer: event.organizer || parsed.hostname.replace(/^www\./, ''),
+      ai_score: score,
+      ai_reasoning: scored.reason ?? null,
+      status: queued ? 'pending' : 'auto_rejected',
+    })
+    if (subErr) {
+      console.error('[submit-event] could not queue submission:', subErr.message)
+      return NextResponse.json({ error: 'Something went wrong saving it — please try again later.' }, { status: 500 })
+    }
+
+    // At most one "submissions waiting" email an hour, however many arrive.
+    if (queued && isEmailConfigured() && process.env.NEXT_PUBLIC_ADMIN_EMAIL &&
+        await claimNotification(supabase, 'quest_submissions_waiting', '00000000-0000-0000-0000-000000000000', 1)) {
       await sendEmail({
         to: process.env.NEXT_PUBLIC_ADMIN_EMAIL,
-        subject: `Event to review on Emerge (score ${score}): ${String(event.title).slice(0, 80)}`,
+        subject: `Event submitted to Emerge — waiting for your review`,
         html: `<div style="font-family:system-ui,sans-serif;max-width:560px">
-<p>A signed-in user submitted an event that scored <strong>${score}/100</strong> — not clear enough to publish automatically.</p>
-<p><strong>${esc(event.title)}</strong><br>${esc(event.starts_at ?? 'no date found')} · ${esc(event.location_name ?? '')}</p>
-<p>AI's reason: ${esc(scored.reason ?? '')}</p>
-<p><a href="${esc(url)}">Open the event page</a></p>
-<p style="color:#888;font-size:12px">If it belongs on Emerge, add it from the admin page or ask the submitter to post it manually.</p>
+<p>A signed-in user submitted an event (AI score <strong>${score}/100</strong>). It's waiting for you — nothing goes live until you approve it.</p>
+<p><strong>${esc(event.title)}</strong><br>${esc(event.starts_at ?? '')} · ${esc(event.location_name ?? '')}</p>
+<p><a href="${getAppUrl()}/admin/submissions" style="display:inline-block;background:#C8913A;color:white;padding:10px 20px;border-radius:999px;text-decoration:none;font-weight:600;">Review submissions</a></p>
+<p style="color:#888;font-size:12px">At most one of these emails an hour; any others are in the same queue.</p>
 </div>`,
       }).catch(() => {})
     }
 
     return NextResponse.json({
-      approved,
+      approved: false,
       notSaved,
       queued,
       rejected,
