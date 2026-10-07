@@ -10,11 +10,12 @@
  * the workspace-level cap in the Anthropic Console.
  */
 
-// Claude Haiku 4.5 pricing (USD per million tokens)
-const HAIKU_INPUT_PER_M = 0.80
-const HAIKU_CACHE_WRITE_PER_M = 1.00    // 1.25x base
-const HAIKU_CACHE_READ_PER_M = 0.08     // 0.10x base
-const HAIKU_OUTPUT_PER_M = 4.00
+// Claude Haiku 4.5 pricing (USD per million tokens). Until 2026-10-07 these
+// were Haiku 3.5's prices ($0.80/$4), which understated spend by ~25%.
+const HAIKU_INPUT_PER_M = 1.00
+const HAIKU_CACHE_WRITE_PER_M = 1.25    // 1.25x base
+const HAIKU_CACHE_READ_PER_M = 0.10     // 0.10x base
+const HAIKU_OUTPUT_PER_M = 5.00
 
 const DEFAULT_CAP_USD = 8
 

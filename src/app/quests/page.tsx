@@ -20,7 +20,7 @@ import JournalView, { type JournalEntry } from '@/components/quests/JournalView'
 import { QUEST_PETALS, QUEST_PETAL_MAP, getPetalProgress, bloomFraction } from '@/lib/quest-petals'
 import type { Quest } from '@/lib/quest-content'
 import {
-  loadCompleted, saveCompleted, loadJournal, saveJournalEntry,
+  loadCompleted, saveCompleted, loadJournal, saveJournalEntry, clearAnonymousProgress,
   deriveProgress, totalXp, questsForPetalIn, type Journal,
 } from '@/lib/quest-progress'
 import { fetchAllQuests, fetchCompleted, completeQuestDb, fetchJournalDb, saveJournalDb } from '@/lib/quest-data'
@@ -59,6 +59,25 @@ export default function QuestsPage() {
       if (uid) {
         const [done, jrnl] = await Promise.all([fetchCompleted(uid), fetchJournalDb(uid)])
         if (!alive) return
+        // Progress kept on this device (played before signing in, or a save
+        // that failed) is uploaded once and merged — it used to be ignored.
+        // This user's own backup copy + anything played while signed out.
+        const localDone = new Set([...loadCompleted(uid), ...loadCompleted()])
+        const localJournal = { ...loadJournal(), ...loadJournal(uid) }
+        const questById = new Map(quests.map(q => [q.id, q]))
+        const questOfCard = new Map<string, string>()
+        for (const q of quests) for (const c of q.cards) questOfCard.set(c.id, q.id)
+        for (const id of localDone) {
+          const q = questById.get(id)
+          if (q && !done.has(id)) { done.add(id); completeQuestDb(uid, id, q.xpReward) }
+        }
+        for (const [cardId, text] of Object.entries(localJournal)) {
+          const qid = questOfCard.get(cardId)
+          if (qid && text?.trim() && !jrnl[cardId]) { jrnl[cardId] = text; saveJournalDb(uid, cardId, qid, text) }
+        }
+        clearAnonymousProgress()
+        saveCompleted(done, uid)
+        for (const [cardId, text] of Object.entries(jrnl)) saveJournalEntry(cardId, text, uid)
         setCompleted(done)
         setJournal(jrnl)
       } else {
@@ -102,16 +121,17 @@ export default function QuestsPage() {
     setCompleted(prev => {
       const next = new Set(prev)
       next.add(quest.id)
+      // Always keep a copy on the device too, so a failed save isn't lost.
+      saveCompleted(next, userId)
       if (userId) completeQuestDb(userId, quest.id, quest.xpReward)
-      else saveCompleted(next)
       return next
     })
   }
 
   function saveReflection(cardId: string, text: string) {
     setJournal(j => ({ ...j, [cardId]: text }))
+    saveJournalEntry(cardId, text, userId)
     if (userId && activeQuest) saveJournalDb(userId, cardId, activeQuest.id, text)
-    else saveJournalEntry(cardId, text)
   }
 
   // ── QUEST PLAYER ──

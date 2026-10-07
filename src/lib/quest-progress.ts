@@ -13,35 +13,50 @@ import type { Quest } from '@/lib/quest-content'
 const COMPLETED_KEY = 'emerge-quest-completed'
 const JOURNAL_KEY = 'emerge-quest-journal'
 
-// ── Anonymous (localStorage) persistence ─────────────────────────────────────
-export function loadCompleted(): Set<string> {
+// ── localStorage persistence ─────────────────────────────────────────────────
+// `scope` = a user id: signed-in users keep a per-user backup copy (so a save
+// that fails isn't lost, and two people sharing a browser never mix). No
+// scope = the anonymous copy, which is migrated into the account once on
+// sign-in and then cleared (see clearAnonymousProgress).
+const keyFor = (base: string, scope?: string | null) => (scope ? `${base}:${scope}` : base)
+
+export function loadCompleted(scope?: string | null): Set<string> {
   if (typeof window === 'undefined') return new Set()
   try {
-    const raw = localStorage.getItem(COMPLETED_KEY)
+    const raw = localStorage.getItem(keyFor(COMPLETED_KEY, scope))
     return new Set<string>(raw ? JSON.parse(raw) : [])
   } catch { return new Set() }
 }
 
-export function saveCompleted(ids: Set<string>) {
+export function saveCompleted(ids: Set<string>, scope?: string | null) {
   if (typeof window === 'undefined') return
-  localStorage.setItem(COMPLETED_KEY, JSON.stringify([...ids]))
+  try { localStorage.setItem(keyFor(COMPLETED_KEY, scope), JSON.stringify([...ids])) } catch { /* storage full/blocked */ }
 }
 
 export type Journal = Record<string, string>
 
-export function loadJournal(): Journal {
+export function loadJournal(scope?: string | null): Journal {
   if (typeof window === 'undefined') return {}
   try {
-    const raw = localStorage.getItem(JOURNAL_KEY)
+    const raw = localStorage.getItem(keyFor(JOURNAL_KEY, scope))
     return raw ? JSON.parse(raw) : {}
   } catch { return {} }
 }
 
-export function saveJournalEntry(cardId: string, text: string) {
+export function saveJournalEntry(cardId: string, text: string, scope?: string | null) {
   if (typeof window === 'undefined') return
-  const j = loadJournal()
+  const j = loadJournal(scope)
   j[cardId] = text
-  localStorage.setItem(JOURNAL_KEY, JSON.stringify(j))
+  try { localStorage.setItem(keyFor(JOURNAL_KEY, scope), JSON.stringify(j)) } catch { /* storage full/blocked */ }
+}
+
+/** Forget the signed-out copy once it has been moved into an account. */
+export function clearAnonymousProgress() {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.removeItem(COMPLETED_KEY)
+    localStorage.removeItem(JOURNAL_KEY)
+  } catch { /* ignore */ }
 }
 
 // ── Pure derivations (work for both signed-in and anon) ──────────────────────

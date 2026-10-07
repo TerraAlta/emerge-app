@@ -130,7 +130,7 @@ function AnalyticsTab() {
       // Events joined
       let questsJoined: number | null = null
       try {
-        const { count } = await supabase.from('quest_participants').select('*', { count: 'exact', head: true })
+        const { count } = await supabase.from('quest_participants_public').select('*', { count: 'exact', head: true }) // raw table is own-rows only
         questsJoined = count
       } catch { /* RLS blocked */ }
 
@@ -181,7 +181,7 @@ function AnalyticsTab() {
       // We fetch quest_participants, count per quest, then fetch quest titles
       try {
         const { data: participants } = await supabase
-          .from('quest_participants')
+          .from('quest_participants_public')
           .select('quest_id')
         if (participants && participants.length > 0) {
           const countMap: Record<string, number> = {}

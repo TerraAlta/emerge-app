@@ -17,6 +17,7 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
   const [initialFirstName, setInitialFirstName] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [nameSaved, setNameSaved] = useState(false)
 
   useEffect(() => {
@@ -62,25 +63,25 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
     setSaving(false)
   }
 
+  // Supabase returns errors instead of throwing — check them, put the
+  // control back and say so, rather than showing a setting that didn't save.
   async function toggle(val: boolean) {
+    const prev = enabled
     setEnabled(val)
     setSaving(true)
-    try {
-      await supabase.from('profiles').update({ email_digest_enabled: val }).eq('id', userId)
-    } catch (err) {
-      console.error('Failed to update digest enabled:', err)
-    }
+    setSaveError('')
+    const { error } = await supabase.from('profiles').update({ email_digest_enabled: val }).eq('id', userId)
+    if (error) { setEnabled(prev); setSaveError("Couldn't save that — please try again.") }
     setSaving(false)
   }
 
   async function changeRadius(km: number) {
+    const prev = radius
     setRadius(km)
     setSaving(true)
-    try {
-      await supabase.from('profiles').update({ email_digest_radius_km: km }).eq('id', userId)
-    } catch (err) {
-      console.error('Failed to update digest radius:', err)
-    }
+    setSaveError('')
+    const { error } = await supabase.from('profiles').update({ email_digest_radius_km: km }).eq('id', userId)
+    if (error) { setRadius(prev); setSaveError("Couldn't save that — please try again.") }
     setSaving(false)
   }
 
@@ -188,6 +189,9 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
           )}
         </div>
 
+        {saveError && !saving && (
+          <p className="text-[13px] text-center mt-1" style={{ color: 'var(--color-danger, #D4785A)' }}>{saveError}</p>
+        )}
         {saving && (
           <p className="text-[13px] text-center mt-1" style={{ color: 'var(--color-text-secondary)' }}>Saving...</p>
         )}

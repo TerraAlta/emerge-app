@@ -112,9 +112,9 @@ export default function NewsScreen() {
     setLoading(false)
   }, [timeRange, userId])
 
-  useEffect(() => {
-    load()
-  }, [load])
+  // (The single effect below loads either the feed or the saved list — a
+  // second effect here used to load the feed too, which could overwrite the
+  // saved list in Saved mode.)
 
   // For "Saved only" mode, we override items with the user's saved items regardless of time range
   const loadSavedOnly = useCallback(async () => {

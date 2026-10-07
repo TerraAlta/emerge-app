@@ -18,7 +18,6 @@ import DigestSettings from '@/components/DigestSettings'
 // import TrustScreen from '@/components/TrustScreen' // Removed — revisit when user base grows
 import OnboardingSplash, { openWelcomeCard } from '@/components/OnboardingSplash'
 import WhatsNewRibbon from '@/components/WhatsNewRibbon'
-import SubmitEvent from '@/components/SubmitEvent'
 import ConnectLuma from '@/components/ConnectLuma'
 import SupportTicketButton from '@/components/SupportTicketButton'
 
@@ -157,7 +156,6 @@ function HomeInner() {
   const [showAuthFromDetail, setShowAuthFromDetail] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
   const [showPostEvent, setShowPostEvent] = useState(false)
-  const [showSubmitEvent, setShowSubmitEvent] = useState(false)
   const [showConnectLuma, setShowConnectLuma] = useState(false)
   const [activeTab, setActiveTab] = useState<TabKey>('events')
   const [eventView, setEventView] = useState<EventView>('list')
@@ -235,18 +233,17 @@ function HomeInner() {
   }
 
   // Post event screen — signed-in only
-  if (showPostEvent || showSubmitEvent) {
+  if (showPostEvent) {
     if (isAnon) {
       setShowAuthFromDetail(true)
       setShowPostEvent(false)
-      setShowSubmitEvent(false)
       return null
     }
     return (
       <PostEvent
         userId={user!.id}
-        onBack={() => { setShowPostEvent(false); setShowSubmitEvent(false) }}
-        onSuccess={() => { setShowPostEvent(false); setShowSubmitEvent(false) }}
+        onBack={() => setShowPostEvent(false)}
+        onSuccess={() => setShowPostEvent(false)}
       />
     )
   }

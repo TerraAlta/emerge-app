@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 
 function getSecret(): string {
   const secret = process.env.UNSUBSCRIBE_SECRET || process.env.CRON_SECRET
@@ -13,5 +13,8 @@ export function generateUnsubscribeToken(userId: string): string {
 
 /** Verify the unsubscribe token matches the user ID */
 export function verifyUnsubscribeToken(userId: string, token: string): boolean {
-  return token === generateUnsubscribeToken(userId)
+  const expected = Buffer.from(generateUnsubscribeToken(userId))
+  const given = Buffer.from(String(token))
+  // Constant-time comparison, so the token can't be guessed byte by byte.
+  return given.length === expected.length && timingSafeEqual(given, expected)
 }

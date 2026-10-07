@@ -476,12 +476,13 @@ export default function EventDetail({
                     onClick={async () => {
                       if (!reportReason || !userId) return
                       setReportSubmitting(true)
-                      await supabase.from('quest_reports').insert({
+                      const { error: reportErr } = await supabase.from('quest_reports').insert({
                         quest_id: quest.id,
                         reported_by: userId,
                         reason: reportReason,
                       })
                       setReportSubmitting(false)
+                      if (reportErr) { alert("Couldn't send the report — please try again."); return }
                       setReportSent(true)
                       setShowReport(false)
                     }}

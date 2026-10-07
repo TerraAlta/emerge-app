@@ -3,11 +3,27 @@
  * ALL date comparisons use local midnight, never raw UTC diffs.
  */
 
+/** Stored as a bare date (pipeline sources without a time → T00:00:00Z). */
+function isDateOnly(iso: string): boolean {
+  return /T00:00:00(\.0+)?(Z|\+00:00)$/.test(iso)
+}
+
+/**
+ * The event's calendar day as a local Date. Date-only events are read on
+ * their UTC date: midnight UTC is still the previous evening in the Americas,
+ * which showed them a day early (460 of 885 upcoming events on 2026-10-07,
+ * mostly Eventbrite).
+ */
+function calendarDay(iso: string): Date {
+  const d = new Date(iso)
+  return isDateOnly(iso) ? new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) : d
+}
+
 /** Days until an event, using local midnight for both dates */
 export function daysUntil(iso: string): number {
   const now = new Date()
   const localToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const eventDate = new Date(iso)
+  const eventDate = calendarDay(iso)
   const localEvent = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())
   return Math.round((localEvent.getTime() - localToday.getTime()) / (1000 * 60 * 60 * 24))
 }
@@ -33,7 +49,7 @@ function formatTime(d: Date, iso?: string): string | null {
  * Handles midnight gracefully (shows "time TBC" or omits time).
  */
 export function formatDate(iso: string): string {
-  const d = new Date(iso)
+  const d = calendarDay(iso)
   const days = daysUntil(iso)
   const time = formatTime(d, iso)
 
@@ -47,7 +63,7 @@ export function formatDate(iso: string): string {
  * Format a date for event detail page: "Today at 2:30 PM" / "Saturday, Mar 28 at 3:00 PM"
  */
 export function formatDateTime(iso: string): string {
-  const d = new Date(iso)
+  const d = calendarDay(iso)
   const days = daysUntil(iso)
   const time = formatTime(d, iso)
 
