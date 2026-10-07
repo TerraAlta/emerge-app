@@ -105,7 +105,7 @@ export default function ManualBriefForm({ initial, onSubmit, onBack }: Props) {
           Your project <em style={{ color: 'var(--color-amber)' }}>brief</em>
         </h2>
         <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-          Fill what you can. Everything editable — and you can always come back to refine before paying.
+          Fill what you can. Everything editable — and you can always come back to refine it before you submit.
         </p>
       </div>
 

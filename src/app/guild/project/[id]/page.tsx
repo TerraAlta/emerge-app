@@ -240,7 +240,7 @@ export default function GuildProjectPage() {
               We will draft the full doc — site reading, design principles, phased approach, and 2-6 matched practitioners with reasoning.
             </p>
             <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-              Free while we grow the Guild. The network is small today — expect a few matches, not many. Personally reviewed before delivery, usually within 2 days.
+              Free, always — like everything on Emerge. The network is small today — expect a few matches, not many. Personally reviewed before delivery, usually within 2 days.
             </p>
             <button
               onClick={submitForScoping}

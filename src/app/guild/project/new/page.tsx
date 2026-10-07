@@ -104,8 +104,8 @@ export default function GuildProjectNewPage() {
   }
 
   /** Manual form → build an extracted_brief JSONB identical to what the AI
-   *  would produce, persist it, and jump to preview. Stripe + generate-scoping
-   *  are untouched.  */
+   *  would produce, persist it, and jump to preview. Submission then goes
+   *  through the same free submit-for-scoping → generate-scoping path.  */
   async function submitManualBrief(draft: ExtractedBrief) {
     if (!projectId) return
     setError('')
@@ -250,7 +250,7 @@ export default function GuildProjectNewPage() {
 
             <div className="rounded-2xl p-5" style={{ background: 'var(--color-amber-light)', border: '0.5px solid var(--color-amber-border)' }}>
               <p className="text-[13px] italic leading-relaxed" style={{ color: 'var(--color-text)' }}>
-                Free while we grow the Guild. Honest note: the network is small today — your doc may surface only a handful of matches, sometimes just one or two. We are growing it slowly, by trust, and expect it to take at least a year to deepen. Practitioners never pay to be listed. You will never pay for placement.
+                Free, always — like everything on Emerge. Honest note: the network is small today — your doc may surface only a handful of matches, sometimes just one or two. We are growing it slowly, by trust, and expect it to take at least a year to deepen. Practitioners never pay to be listed. You will never pay for placement.
               </p>
             </div>
 
@@ -412,7 +412,7 @@ export default function GuildProjectNewPage() {
                 What <em style={{ color: 'var(--color-amber)' }}>we heard</em>
               </h1>
               <p className="text-[12px] mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-                A free preview. Edit-by-conversation only for now — if something is off, you can start over.
+                Here’s the brief we drafted from your conversation. Editing is by conversation only for now — if something is off, you can start over.
               </p>
             </div>
 
@@ -468,7 +468,7 @@ export default function GuildProjectNewPage() {
                 A structured scoping doc — site reading, regenerative design principles, phased approach, and 2-6 practitioners from the Guild matched to your project with reasoning.
               </p>
               <p className="text-[12px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                Free while we grow the Guild. The network is small today — expect a few matches, not many. Personally reviewed before delivery, usually within 2 days.
+                Free, always — like everything on Emerge. The network is small today — expect a few matches, not many. Personally reviewed before delivery, usually within 2 days.
               </p>
               <button
                 onClick={submitForScoping}

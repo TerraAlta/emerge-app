@@ -1,9 +1,8 @@
 /**
- * Submit a Guild project for scoping — FREE while the Guild is small.
- *
- * Replaces the Stripe checkout step. The Stripe routes (/api/guild/checkout,
- * /api/stripe/webhook) and lib/stripe.ts are kept in place, just not called —
- * we'll wire payment back on once we have ~100 verified practitioners.
+ * Submit a Guild project for scoping — FREE. Emerge is fully free (agreed
+ * with Pedro, Oct 2026), so this permanently replaces the old €40 Stripe
+ * checkout. The Stripe routes (/api/guild/checkout, /api/stripe/webhook) and
+ * lib/stripe.ts are still in the repo but unused — don't wire them back in.
  *
  * POST body: { projectId }
  * Returns:   { ok: true }
