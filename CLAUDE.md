@@ -101,7 +101,7 @@ src/
 ## Key principles (the soul)
 - Physical presence > online
 - Community participation > passive consumption
-- Free for users, always (no ads, no paid placement)
+- **Emerge is fully free — every feature, including the Guild** (agreed with Pedro, Oct 2026). No ads, no paid placement, no paywalled features. Don't propose or build paid tiers or charges.
 - Hard reject: religious content, new-age pseudoscience, corporate wellness
 - Multilingual matching
 - Human judgment stays in the loop — AI helps, people decide
@@ -221,22 +221,24 @@ Regenerative practitioner network. Free listing, no bidding, no commission.
 - **Manual verification**: Pedro flips `verified = true` in Supabase after review
 - **Cost**: ~€0.02 per practitioner onboarding, €2/day global cap
 
-### Phase 2 (clients — scoping doc, €40)
+### Phase 2 (clients — scoping doc, FREE)
 - Routes: `/guild/project/new` (intake), `/guild/project/[id]` (status-aware view), `/admin/guild` (review queue)
 - AI: `/api/guild/intake` → `/api/guild/extract-brief` → `/api/guild/generate-scoping`
-- Payment: Stripe Checkout (€40). Webhook `/api/stripe/webhook` triggers scoping generation
-- **Human-in-the-loop**: AI drafts → `status='matched'` (invisible to client via RLS) → Pedro reviews at `/admin/guild` → approve (email + delivered) or reject (auto-refund via Stripe)
+- **Free** — `/api/guild/submit-for-scoping` moves the project to `scoping` and triggers generation (since 2026-04-29). It used to be a €40 Stripe Checkout; that's gone because Emerge is fully free.
+- **Human-in-the-loop**: AI drafts → `status='matched'` (invisible to client via RLS) → Pedro reviews at `/admin/guild` → approve (email + delivered) or reject
 - State machine: `intake → scoping → matched → delivered → closed`
 - Matching: top 30 verified practitioners ranked by petal overlap + country + language; AI picks 2-6 with reasoning
 
 ### Guild env vars (Vercel)
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `INTERNAL_TRIGGER_KEY`, `NEXT_PUBLIC_APP_URL=https://emerge.terralta.org`
+- `INTERNAL_TRIGGER_KEY`, `NEXT_PUBLIC_APP_URL=https://emerge.terralta.org`
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` — only for the dormant Stripe code below
 - Optional: `GUILD_ADMIN_EMAIL` (defaults to terraalta.sintra@gmail.com)
 
-### Stripe webhook
-- Endpoint: `https://emerge.terralta.org/api/stripe/webhook`
-- Event: `checkout.session.completed` only
-- Test with card `4242 4242 4242 4242` in Sandbox mode
+### Stripe (dormant — nothing calls it)
+`/api/guild/checkout`, `/api/stripe/webhook` and `src/lib/stripe.ts` are still in
+the repo but no UI calls them; the app is fully free. Don't wire them back in.
+(Webhook endpoint `https://emerge.terralta.org/api/stripe/webhook`,
+`checkout.session.completed` only, made idempotent 2026-10-07.)
 
 ## ⚠ DB grants: check them on EVERY new table (bit us twice)
 
