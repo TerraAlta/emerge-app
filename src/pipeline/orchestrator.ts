@@ -252,6 +252,11 @@ import { convergenciaPt } from './sources/convergencia-pt'
 import { biovillaPt } from './sources/biovilla-pt'
 import { regenerarPt } from './sources/regenerar-pt'
 import { aldeiasXistoPt } from './sources/aldeias-xisto-pt'
+// Portugal, added 2026-10-07 (Eventbrite carries almost nothing aligned there)
+import { viralAgendaPt } from './sources/viral-agenda-pt'
+import { agendalxPt } from './sources/agendalx-pt'
+import { quintaDaLagePt } from './sources/quinta-da-lage-pt'
+import { plantarUmaArvorePt } from './sources/plantar-uma-arvore-pt'
 // City-based scrapers (Meetup + Eventbrite across 50 cities)
 import { meetupCities } from './sources/meetup-cities'
 // eventbrite-cities + eventbrite-cultural: DISABLED here 2026-10-01. Eventbrite's
@@ -536,6 +541,10 @@ const SOURCES: SourceFetcher[] = [
   terraAltaPt,
   freixoMeioPt,
   aldeiasXistoPt,
+  quintaDaLagePt,
+  plantarUmaArvorePt,
+  viralAgendaPt,   // bulk — keyword searches, pre-filtered
+  agendalxPt,      // bulk — Lisbon municipal agenda, pre-filtered
   // City-based scrapers
   meetupCities,
   // eventbriteCities — disabled, blocked from GitHub (see import block)
@@ -704,6 +713,21 @@ export async function runPipeline(opts: OrchestratorOptions = {}): Promise<Orche
       }
     }
 
+    // 1d. Cost protection: open-catalogue (bulk) sources MUST be keyword
+    // pre-filtered before AI scoring. Otherwise a single weekly run can
+    // score 30,000+ unrelated Eventbrite events and burn $40+ in credits.
+    // Runs BEFORE geocoding: catalogues without coordinates (AgendaLx, Viral
+    // Agenda) would otherwise geocode ~1,500 off-topic events per run.
+    if (source.bulk) {
+      const before = events.length
+      events = events.filter(isPotentiallyRelevant)
+      const skipped = before - events.length
+      if (skipped > 0) {
+        result.filtered += skipped
+        console.log(`[${source.name}] Pre-filter: ${before} → ${events.length} (${skipped} skipped, no AI cost)`)
+      }
+    }
+
     // 2. Geocode events with missing coordinates
     for (const event of events) {
       if ((event.lat === 0 && event.lng === 0) && event.location_name && event.location_name !== 'See event page') {
@@ -721,19 +745,6 @@ export async function runPipeline(opts: OrchestratorOptions = {}): Promise<Orche
     if (cacheOnly) {
       results.push(result)
       continue
-    }
-
-    // 2b. Cost protection: open-catalogue (bulk) sources MUST be keyword
-    // pre-filtered before AI scoring. Otherwise a single weekly run can
-    // score 30,000+ unrelated Eventbrite events and burn $40+ in credits.
-    if (source.bulk) {
-      const before = events.length
-      events = events.filter(isPotentiallyRelevant)
-      const skipped = before - events.length
-      if (skipped > 0) {
-        result.filtered += skipped
-        console.log(`[${source.name}] Pre-filter: ${before} → ${events.length} (${skipped} skipped, no AI cost)`)
-      }
     }
 
     // 3. Score each event with AI

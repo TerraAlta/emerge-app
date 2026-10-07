@@ -151,6 +151,13 @@ connection the same searches work.
   spacing, backoff on 429. ~340 requests, ~30 min, ~$0.50 cap $2
   (`CITY_MAX_USD`). Skips events already stored before calling Haiku.
 - If the iMac is off that Sunday, only Eventbrite is skipped; nothing alarms.
+- **Eventbrite carries almost nothing aligned in Portugal** — a one-off
+  11-city deep sweep (2026-10-07) added 1 event. Portugal comes from:
+  `viral-agenda-pt` (Viral Agenda keyword searches, bulk), `agendalx-pt`
+  (Lisbon municipal JSON API, bulk), `quinta-da-lage-pt`, `plantar-uma-arvore-pt`,
+  plus the older Tamera/Terra Alta/Freixo do Meio/Aldeias do Xisto. Verified
+  reachable from GitHub runners. Researched but not yet built: Cascais 360
+  (ambiente), Vale da Lama, SPEA, LPN, Agenda Porto, Lipor.
 - Don't move it back to GitHub Actions or Vercel (AWS IPs) without a residential
   proxy — it will silently return nothing again.
 - Pre-filter: 94% rejected before AI → keeps cost at ~$3-5/week
