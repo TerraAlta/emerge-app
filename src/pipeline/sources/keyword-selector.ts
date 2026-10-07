@@ -486,6 +486,16 @@ export function getFullKeywordsForCity(city: City): string[] {
 }
 
 /**
+ * Native-language keywords only (the full per-country list, no English).
+ * For one-off deep sweeps of a single country, where the ~130-keyword
+ * combined list would be too many requests for one home IP.
+ */
+export function getNativeKeywordsForCity(city: City): string[] {
+  const native = FULL_COUNTRY_KEYWORDS[city.country]
+  return native?.length ? [...new Set(native)] : getKeywordsForCity(city)
+}
+
+/**
  * Get a rotating slice of cities for this cron run.
  * Each run processes a different batch of 20 cities, cycling through all.
  * Uses the day-of-year as the rotation index.

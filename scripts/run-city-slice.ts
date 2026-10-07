@@ -26,12 +26,15 @@
  *
  * Usage:
  *   npx tsx scripts/run-city-slice.ts [--slice 0/1] [--dry-run] [--list]
+ *   npx tsx scripts/run-city-slice.ts --country Portugal --deep
+ *     One-off boost: every CITIES entry in that country, and with --deep the
+ *     full native-language keyword list (~70) instead of the short 12.
  */
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 import { createClient } from '@supabase/supabase-js'
 import { CITIES, type City } from '../src/pipeline/sources/cities'
-import { getKeywordsForCity } from '../src/pipeline/sources/keyword-selector'
+import { getKeywordsForCity, getNativeKeywordsForCity } from '../src/pipeline/sources/keyword-selector'
 import { extractJsonLd } from '../src/pipeline/sources/utils'
 import { isPotentiallyRelevant } from '../src/pipeline/pre-filter'
 import { scoreQuest } from '../src/pipeline/score-quest'
@@ -54,6 +57,9 @@ if (existsSync(envPath)) {
 // ── Args ──
 const dryRun = process.argv.includes('--dry-run')
 const listOnly = process.argv.includes('--list')
+const deep = process.argv.includes('--deep')
+const countryAt = process.argv.indexOf('--country')
+const onlyCountry = countryAt !== -1 ? process.argv[countryAt + 1] : null
 const flagAt = process.argv.indexOf('--slice')
 const sliceArg = flagAt !== -1 ? (process.argv[flagAt + 1] ?? '') : '0/1'
 const [iRaw, nRaw] = sliceArg.split('/')
@@ -178,7 +184,13 @@ async function main() {
     ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
     : null
 
-  const priority = await getPriorityCities(db)
+  const priority = onlyCountry
+    ? CITIES.filter(c => c.country.toLowerCase() === onlyCountry.toLowerCase())
+    : await getPriorityCities(db)
+  if (onlyCountry && priority.length === 0) {
+    console.error(`No cities in CITIES for country "${onlyCountry}"`)
+    process.exit(1)
+  }
   const mine = priority.filter((_, i) => i % total === index)
 
   if (listOnly) {
@@ -204,7 +216,7 @@ async function main() {
     let cityRaw = 0
     const candidates: any[] = []
 
-    for (const keyword of getKeywordsForCity(city)) {
+    for (const keyword of (deep ? getNativeKeywordsForCity(city) : getKeywordsForCity(city))) {
       const events = await fetchSearch(city, keyword)
       for (const ev of events) {
         const key = ev.source_url || `${ev.title}|${ev.starts_at}`
