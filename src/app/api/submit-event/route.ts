@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { safeFetch, BlockedUrlError } from '@/lib/safe-fetch'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import * as cheerio from 'cheerio'
@@ -36,7 +37,8 @@ const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
 
 /** Fetch a URL and extract structured event data using cheerio + JSON-LD */
 async function extractEventFromUrl(url: string) {
-  const res = await fetch(url, {
+  // safeFetch: refuses private/internal destinations by resolved IP, per hop.
+  const res = await safeFetch(url, {
     headers: { 'User-Agent': UA, Accept: 'text/html,application/xhtml+xml' },
     signal: AbortSignal.timeout(15_000),
   })
@@ -168,7 +170,15 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Extract event data
-    const event = await extractEventFromUrl(url)
+    let event
+    try {
+      event = await extractEventFromUrl(url)
+    } catch (err) {
+      if (err instanceof BlockedUrlError) {
+        return NextResponse.json({ error: 'Private/local URLs are not allowed' }, { status: 400 })
+      }
+      throw err
+    }
     if (!event.title) {
       return NextResponse.json({ error: 'Could not find event details on this page' }, { status: 422 })
     }

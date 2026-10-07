@@ -9,11 +9,14 @@
  *
  * Safety:
  * - Only http(s) schemes
- * - Blocks localhost / RFC1918 / link-local / metadata-service IPs
+ * - Blocks private destinations by resolved IP, at every redirect hop
+ *   (safeFetch — the hostname patterns below are only a fast pre-check)
  * - 50KB per URL, 8s timeout
  * - Max 3 URLs per call
  * - No JavaScript execution (plain fetch, HTML only)
  */
+
+import { safeFetch, BlockedUrlError } from '@/lib/safe-fetch'
 
 const MAX_URLS = 3
 const MAX_BYTES_PER_URL = 50_000
@@ -98,9 +101,8 @@ async function fetchOne(raw: string): Promise<UrlIngestResult> {
 
   let res: Response
   try {
-    res = await fetch(parsed.toString(), {
+    res = await safeFetch(parsed.toString(), {
       method: 'GET',
-      redirect: 'follow',
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; Emerge-Guild/1.0; +https://emerge.terralta.org)',
         Accept: 'text/html,application/xhtml+xml',
@@ -109,6 +111,7 @@ async function fetchOne(raw: string): Promise<UrlIngestResult> {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     })
   } catch (err: any) {
+    if (err instanceof BlockedUrlError) return { url: raw, ok: false, error: 'Host not allowed' }
     return { url: raw, ok: false, error: err?.message?.includes('timeout') ? 'Timed out' : 'Fetch failed' }
   }
 
