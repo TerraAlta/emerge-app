@@ -52,9 +52,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const marker = '/storage/v1/object/public/pitch-images/'
     const idx = row.hero_image_url.indexOf(marker)
     if (idx !== -1) {
-      const path = row.hero_image_url.slice(idx + marker.length)
-      const { error: storageErr } = await supabase.storage.from('pitch-images').remove([path])
-      if (storageErr) console.error('[pitch-delete] storage remove failed:', storageErr.message)
+      const path = decodeURIComponent(row.hero_image_url.slice(idx + marker.length).split('?')[0])
+      // Uploads live under `${userId}/…` (PitchEditForm). hero_image_url is
+      // owner-editable, so only ever remove files from the owner's own folder —
+      // otherwise a pitch pointing at someone else's image would delete it.
+      if (path.startsWith(`${userId}/`) && !path.includes('..')) {
+        const { error: storageErr } = await supabase.storage.from('pitch-images').remove([path])
+        if (storageErr) console.error('[pitch-delete] storage remove failed:', storageErr.message)
+      }
     }
   }
 
