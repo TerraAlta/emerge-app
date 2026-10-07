@@ -8,7 +8,7 @@ Running from another project's dir will mix memory — see `~/.claude/projects/`
 
 On every session start, before doing other work, glance at this list and remind Pedro of anything still open. Be brief (one sentence per item). Don't nag more than once per session.
 
-- [ ] **Recruit 3-5 real verified Guild practitioners.** Right now only Pedro is verified in `guild_practitioners`, so every scoping doc will recommend only him — matching looks broken from a client's perspective. Priority before sharing the Guild publicly. Pedro is finding people manually. Ask how it's going.
+- [ ] **Grow the verified Guild practitioners.** 4 verified as of 2026-10-07 (was only Pedro), plus 2 signed up and waiting for Pedro's review in `/admin/guild`. Remind him to review the waiting ones; keep recruiting so scoping docs have more than a handful of people to match. Ask how it's going.
 - [ ] **5 ticketing scrapers are disabled** (see below). Research-backed decision — free replacements (Mobilizon, OpenAgenda) deliver 1,500+ aligned events per weekly pipeline run, which is much more than the ticketing scrapers would have. Only re-fix if paid infra ever becomes feasible. See `RESEARCH-ticketing-scrapers.md`.
 - [ ] (add more here as they come)
 
