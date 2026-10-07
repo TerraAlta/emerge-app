@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isCronAuthorized } from '@/lib/cron-auth'
 import { createClient } from '@supabase/supabase-js'
 import { meetupCities } from '@/pipeline/sources/meetup-cities'
 import { eventbriteCities } from '@/pipeline/sources/eventbrite-cities'
@@ -106,7 +107,7 @@ async function processSource(name: string, source: SourceFetcher) {
 export async function GET(request: NextRequest) {
   // Verify cron secret (Vercel sets this header)
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isCronAuthorized(authHeader)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

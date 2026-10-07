@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isCronAuthorized } from '@/lib/cron-auth'
 import { createClient } from '@supabase/supabase-js'
 import { localNetworks } from '@/pipeline/sources/local-networks'
 import { meetupCities } from '@/pipeline/sources/meetup-cities'
@@ -112,7 +113,7 @@ async function processSource(name: string, source: SourceFetcher) {
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isCronAuthorized(authHeader)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

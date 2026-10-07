@@ -9,6 +9,7 @@
  * Protected by CRON_SECRET.
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { isCronAuthorized } from '@/lib/cron-auth'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail, isEmailConfigured } from '@/lib/email'
 import { getAppUrl } from '@/lib/app-url'
@@ -25,7 +26,7 @@ const CHECK_IN_THRESHOLD_DAYS = 120
 
 export async function GET(request: NextRequest) {
   const auth = request.headers.get('authorization')
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isCronAuthorized(auth)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

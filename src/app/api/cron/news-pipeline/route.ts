@@ -7,13 +7,14 @@
  * Configured in vercel.json — runs daily.
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { isCronAuthorized } from '@/lib/cron-auth'
 import { ingestNews } from '@/news/ingest'
 
 export const maxDuration = 300 // up to 5 min — scoring 50-100 items takes ~2 min
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isCronAuthorized(authHeader)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
