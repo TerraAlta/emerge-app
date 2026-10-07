@@ -66,13 +66,29 @@ export default function OnboardingSplash() {
           onClick={dismiss}
         >
           <div
-            className="rounded-2xl p-6 max-w-md w-full my-6 max-h-[92vh] overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            aria-label="What is Emerge"
+            className="relative rounded-2xl px-6 pt-6 max-w-md w-full my-6 max-h-[92vh] overflow-y-auto"
             style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
             onClick={e => e.stopPropagation()}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-amber)' }}>
-              What is Emerge
-            </p>
+            {/* Close is reachable immediately — on a phone the card fills the
+                screen, so there's no backdrop to tap and the main button sits
+                below a long read. */}
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest pt-1" style={{ color: 'var(--color-amber)' }}>
+                What is Emerge
+              </p>
+              <button
+                onClick={dismiss}
+                aria-label="Close and start exploring"
+                className="shrink-0 -mt-1 -mr-2 w-9 h-9 rounded-full flex items-center justify-center text-[18px] leading-none"
+                style={{ color: 'var(--color-text-secondary)', background: 'var(--color-pill-bg)', border: 'none', cursor: 'pointer' }}
+              >
+                ×
+              </button>
+            </div>
 
             <h2 className="font-heading text-[26px] font-light leading-tight mb-3" style={{ color: 'var(--color-text)' }}>
               A free app for people who want to <em style={{ color: 'var(--color-amber)' }}>do</em> regenerative work <br />— not just read about it.
@@ -145,13 +161,19 @@ export default function OnboardingSplash() {
               Our compass: Vandana Shiva, Helena Norberg-Hodge, Kate Raworth, Polly Higgins, David Holmgren, Elaine Ingham, Charles Eisenstein, Satish Kumar, Joanna Macy, Fritjof Capra, E.F. Schumacher, Robin Wall Kimmerer.
             </p>
 
-            <button
-              onClick={dismiss}
-              className="w-full py-3 rounded-full text-[13px] font-semibold text-white transition-opacity active:opacity-80"
-              style={{ background: 'var(--color-amber)' }}
+            {/* Pinned to the bottom of the card while scrolling. */}
+            <div
+              className="sticky bottom-0 -mx-6 px-6 pt-3 pb-6"
+              style={{ background: 'linear-gradient(to bottom, transparent, var(--color-card) 35%)' }}
             >
-              Start exploring →
-            </button>
+              <button
+                onClick={dismiss}
+                className="w-full py-3 rounded-full text-[13px] font-semibold text-white transition-opacity active:opacity-80"
+                style={{ background: 'var(--color-amber)' }}
+              >
+                Start exploring →
+              </button>
+            </div>
           </div>
         </div>
       )}
