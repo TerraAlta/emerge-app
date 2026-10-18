@@ -62,11 +62,19 @@ export default function GuildChatScreen({
   }, [])
 
   async function post(transcript: ChatMessage[]) {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: await authHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ userId, transcript, ...(extraBody || {}) }),
-    })
+    let res: Response
+    try {
+      res = await fetch(endpoint, {
+        method: 'POST',
+        headers: await authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ userId, transcript, ...(extraBody || {}) }),
+        // A hung request used to leave the "···" bubble spinning forever.
+        signal: AbortSignal.timeout(90_000),
+      })
+    } catch (err: any) {
+      if (err?.name === 'TimeoutError') throw new Error('This is taking too long. Please try again.')
+      throw new Error('Could not reach the server. Check your connection and try again.')
+    }
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
       throw new Error(err.error || 'Request failed')
@@ -88,6 +96,7 @@ export default function GuildChatScreen({
   }
 
   async function sendMessage() {
+    const previous = messages
     const text = input.trim()
     if (!text || loading) return
 
@@ -105,6 +114,10 @@ export default function GuildChatScreen({
         setTimeout(() => onComplete(updated), 1500)
       }
     } catch (err: any) {
+      // Un-send: the answer never reached the interviewer, so take it out of
+      // the chat and give the text back instead of making them retype it.
+      setMessages(previous)
+      setInput(text)
       setError(err.message || 'Something went wrong')
     } finally {
       setLoading(false)
@@ -152,13 +165,24 @@ export default function GuildChatScreen({
         {error && (
           <div className="text-center py-2">
             <p className="text-[12px]" style={{ color: 'var(--color-error)' }}>{error}</p>
-            <button
-              onClick={() => setError('')}
-              className="text-[11px] underline mt-1"
-              style={{ color: 'var(--color-amber)', background: 'none', border: 'none', cursor: 'pointer' }}
-            >
-              Dismiss
-            </button>
+            {messages.length === 0 ? (
+              // The opening question failed — without a retry the chat was an empty dead end.
+              <button
+                onClick={() => void startChat()}
+                className="text-[11px] underline mt-1"
+                style={{ color: 'var(--color-amber)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                Try again
+              </button>
+            ) : (
+              <button
+                onClick={() => setError('')}
+                className="text-[11px] underline mt-1"
+                style={{ color: 'var(--color-amber)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                Dismiss
+              </button>
+            )}
           </div>
         )}
       </div>

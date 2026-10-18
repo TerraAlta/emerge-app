@@ -56,3 +56,11 @@
 - **Fix:** button disabled while `photoUploading`, label "Waiting for photo upload…".
 - **Files:** `src/app/guild/join/page.tsx`
 - **Test:** `tests/unit/guild-join-photo.test.tsx` (mocked Supabase; upload held open) + reusable `tests/unit/helpers/supabase-mock.ts`
+
+### 6. Guild AI interviews — failures left dead ends, lost answers, or endless spinners
+- **Area:** Guild / AI interview chat (`GuildChatScreen`, shared by practitioner onboarding and project intake)
+- **Bugs:** (a) if the opening question failed (e.g. the daily AI cap → 503) the only option was "Dismiss", leaving an empty chat with no question; (b) a failed answer was cleared from the input but stayed in the chat as if sent — the user had to retype it, and the next message was sent stuck to the failed one; (c) no request timeout, so a hung request spun "···" forever; network errors showed a raw browser message.
+- **How a user hits it:** any flaky connection or AI outage mid-interview.
+- **Fix:** "Try again" for a failed opener; a failed answer is removed from the chat and put back in the input; 90 s timeout with friendly timeout/offline messages.
+- **Files:** `src/components/GuildChatScreen.tsx`
+- **Test:** `tests/unit/guild-chat.test.tsx` (AI fully mocked; no real calls)
