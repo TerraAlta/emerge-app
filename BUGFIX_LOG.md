@@ -96,3 +96,11 @@
 - **Fix:** shared `asList()` (`src/lib/as-list.ts`): arrays pass through, a sentence becomes a one-item list, anything else is empty. Used at every render site on both pages.
 - **Files:** `src/lib/as-list.ts`, `src/app/guild/project/[id]/page.tsx`, `src/app/admin/guild/page.tsx`
 - **Test:** `tests/unit/guild-project-page.test.tsx` (reproduced `brief.values.map is not a function`), `tests/unit/as-list.test.ts`
+
+### 11. Guild project intake — same crash on the brief preview
+- **Area:** Guild / project intake (`/guild/project/new` brief preview)
+- **Bug:** `brief.values` and `brief.help_sought` (written by the AI in extract-brief) were `.map`-ed after a `.length` check — same failure as #10 if the AI returns a sentence.
+- **How a user hits it:** finishes the intake interview → blank page instead of their brief.
+- **Fix:** `asList()` at both render sites.
+- **Files:** `src/app/guild/project/new/page.tsx`
+- **Test:** covered by `tests/unit/as-list.test.ts`; failure mode reproduced in `tests/unit/guild-project-page.test.tsx` (#10).

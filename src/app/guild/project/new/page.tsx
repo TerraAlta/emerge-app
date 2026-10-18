@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { asList } from '@/lib/as-list'
 import GuildChatScreen from '@/components/GuildChatScreen'
 import UrlPrepStep from '@/components/UrlPrepStep'
 import ManualBriefForm from '@/components/ManualBriefForm'
@@ -439,22 +440,22 @@ export default function GuildProjectNewPage() {
                 </div>
               )}
 
-              {(brief.values && brief.values.length > 0) && (
+              {asList(brief.values).length > 0 && (
                 <div>
                   <div className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--color-text-muted)' }}>Values</div>
                   <div className="flex flex-wrap gap-1.5">
-                    {brief.values.map((v, i) => (
+                    {asList(brief.values).map((v: string, i: number) => (
                       <span key={i} className="rounded-full px-2.5 py-1 text-[11px]" style={{ background: 'var(--color-amber-light)', border: '0.5px solid var(--color-amber-border)', color: 'var(--color-text)' }}>{v}</span>
                     ))}
                   </div>
                 </div>
               )}
 
-              {(brief.help_sought && brief.help_sought.length > 0) && (
+              {asList(brief.help_sought).length > 0 && (
                 <div>
                   <div className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--color-text-muted)' }}>Help sought</div>
                   <ul className="text-[13px] space-y-0.5" style={{ color: 'var(--color-text)' }}>
-                    {brief.help_sought.map((h, i) => <li key={i}>· {h}</li>)}
+                    {asList(brief.help_sought).map((h: string, i: number) => <li key={i}>· {h}</li>)}
                   </ul>
                 </div>
               )}
