@@ -218,8 +218,9 @@ export default function NewsScreen() {
         return next
       })
     }
-    // If in Saved-only mode and we just unsaved, drop it from the list
-    if (savedOnly && already) {
+    // If in Saved-only mode and we just unsaved, drop it from the list —
+    // only when the un-save actually worked (it used to vanish regardless).
+    if (savedOnly && already && !err) {
       setItems(prev => prev.filter(n => n.id !== item.id))
     }
   }

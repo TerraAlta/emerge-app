@@ -160,3 +160,11 @@
 - **Fix:** submit first re-saves the brief that's on screen (checking the error), then calls submit-for-scoping; a failed save shows "We couldn't save your brief — check your connection and try again."
 - **Files:** `src/app/guild/project/new/page.tsx`
 - **Test:** `tests/unit/project-intake.test.tsx` (first save fails; server stub rejects unsaved briefs — failed on the old code)
+
+### 19. News — a failed un-save still removed the article from "Saved"
+- **Area:** Feed / News (`NewsScreen`)
+- **Bug:** in the Saved view, un-saving optimistically flipped the icon and reverted it on error, but the "drop from the Saved list" step ran regardless, so the article vanished while still saved (it reappears later, confusingly).
+- **How a user hits it:** taps "Saved" to un-save on a weak connection → article disappears, then comes back next visit.
+- **Fix:** only drop it when the delete succeeded.
+- **Files:** `src/components/NewsScreen.tsx`
+- **Test:** `tests/unit/news-saved.test.tsx`
