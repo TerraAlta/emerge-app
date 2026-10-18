@@ -48,3 +48,11 @@
 - **Fix:** three small helpers in `src/lib/practitioner-profile.ts` (merge extracted, manual draft, failed-extraction fallback) that keep existing fields; the page calls them in place of the inline replacements.
 - **Files:** `src/app/guild/join/page.tsx`, `src/lib/practitioner-profile.ts`
 - **Test:** `tests/unit/practitioner-profile-merge.test.ts`
+
+### 5. Guild profiles — submitting during a photo upload lost the photo
+- **Area:** Guild / practitioner profiles (`/guild/join` review step)
+- **Bug:** "Submit for verification" was only disabled while saving, not while a photo was uploading. Submitting mid-upload saved `profile_photo_url: null`, moved to the done screen, and the finished upload was never saved.
+- **How a user hits it:** picks a photo on a slow mobile connection and taps Submit right away → profile goes to review with no photo.
+- **Fix:** button disabled while `photoUploading`, label "Waiting for photo upload…".
+- **Files:** `src/app/guild/join/page.tsx`
+- **Test:** `tests/unit/guild-join-photo.test.tsx` (mocked Supabase; upload held open) + reusable `tests/unit/helpers/supabase-mock.ts`

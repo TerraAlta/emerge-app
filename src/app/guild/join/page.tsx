@@ -903,19 +903,21 @@ export default function GuildJoinPage() {
                   <p className="text-[12px] text-center" style={{ color: 'var(--color-error)' }}>{error}</p>
                 )}
 
+                {/* Saving mid-upload would store the profile without the photo
+                    and the finished upload would be dropped. */}
                 <button
                   onClick={saveProfile}
-                  disabled={loading}
+                  disabled={loading || photoUploading}
                   className="w-full py-3 rounded-full text-[14px] font-semibold"
                   style={{
                     background: 'var(--color-amber)',
                     color: 'var(--color-pill-active-text)',
                     border: 'none',
-                    cursor: loading ? 'default' : 'pointer',
-                    opacity: loading ? 0.5 : 1,
+                    cursor: loading || photoUploading ? 'default' : 'pointer',
+                    opacity: loading || photoUploading ? 0.5 : 1,
                   }}
                 >
-                  {loading ? 'Saving...' : 'Submit for verification'}
+                  {loading ? 'Saving...' : photoUploading ? 'Waiting for photo upload…' : 'Submit for verification'}
                 </button>
               </>
             )}
