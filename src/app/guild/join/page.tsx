@@ -7,6 +7,7 @@ import { FLOWER_PETALS, CLIMATE_ZONES, PROJECT_SCALES } from '@/lib/flower-petal
 import GuildChatScreen from '@/components/GuildChatScreen'
 import UrlPrepStep from '@/components/UrlPrepStep'
 import { authHeaders } from '@/lib/auth-headers'
+import { mergeExtractedProfile, manualDraftProfile, fallbackAfterFailedExtraction } from '@/lib/practitioner-profile'
 
 type Step = 'intro' | 'basic' | 'fork' | 'url_prep' | 'interview' | 'review' | 'done'
 
@@ -196,17 +197,8 @@ export default function GuildJoinPage() {
       .replace(/^---[^\n]*---\n?/gm, '')
       .trim()
       .slice(0, 1500)
-    setProfile(prev => ({
-      tagline: prev?.tagline || '',
-      bio: (prev?.bio && prev.bio.trim().length > 0) ? prev.bio : draftBio,
-      specialties: prev?.specialties || [],
-      climate_zones_worked: prev?.climate_zones_worked || [],
-      project_scales: prev?.project_scales || [],
-      years_experience: prev?.years_experience,
-      pdc_certified: prev?.pdc_certified,
-      advanced_certifications: prev?.advanced_certifications,
-      rate_range: prev?.rate_range,
-    }))
+    // Keeps photo + links for returning practitioners (see practitioner-profile.ts).
+    setProfile(prev => manualDraftProfile(prev, draftBio))
     setStep('review')
   }
 
@@ -297,17 +289,11 @@ export default function GuildJoinPage() {
         throw new Error(err.error || 'Extraction failed')
       }
       const { profile: extracted } = await res.json()
-      setProfile(extracted)
+      setProfile(prev => mergeExtractedProfile(prev, extracted))
     } catch (err: any) {
       setError(err.message || 'Failed to extract profile. You can still edit manually.')
-      // Provide empty profile so user can fill manually
-      setProfile({
-        tagline: '',
-        bio: '',
-        specialties: [],
-        climate_zones_worked: [],
-        project_scales: [],
-      })
+      // Keep a returning practitioner's profile; blank form only for new ones.
+      setProfile(prev => fallbackAfterFailedExtraction(prev))
     } finally {
       setExtracting(false)
     }

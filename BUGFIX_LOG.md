@@ -35,3 +35,11 @@ _Summary is written at the top when the sweep finishes._
 - **Fix:** `onError` on the avatar image falls back to the initials.
 - **Files:** `src/components/PractitionerCard.tsx`
 - **Test:** `tests/unit/practitioner-card.test.tsx` ("falls back to initials when the photo URL is broken")
+
+### 4. Guild profiles — redoing the interview erased photo, links (or the whole profile)
+- **Area:** Guild / practitioner profiles (`/guild/join`)
+- **Bug:** returning practitioners land on "review" with their saved profile and can "redo with AI / add a CV". Each redo path *replaced* the profile instead of merging: the AI extraction never returns photo/links (`setProfile(extracted)`), the manual draft listed fields without them, and a failed extraction reset the profile to blank. Saving afterwards wrote `profile_photo_url: null`, `portfolio_urls: []` — and after a failed extraction, an empty tagline/bio.
+- **How a user hits it:** a verified practitioner adds their CV to refresh their bio → their photo and website/Instagram links disappear from the directory. If the AI step errors, saving wipes their profile.
+- **Fix:** three small helpers in `src/lib/practitioner-profile.ts` (merge extracted, manual draft, failed-extraction fallback) that keep existing fields; the page calls them in place of the inline replacements.
+- **Files:** `src/app/guild/join/page.tsx`, `src/lib/practitioner-profile.ts`
+- **Test:** `tests/unit/practitioner-profile-merge.test.ts`
