@@ -112,3 +112,11 @@
 - **Fix:** negative day counts count as Today in grouping and both filters.
 - **Files:** `src/lib/dateUtils.ts`
 - **Test:** `tests/unit/date-utils.test.ts` (fake clock)
+
+### 13. Feed — a failed load said "No events near you yet"
+- **Area:** Feed (home event list)
+- **Bug:** `useNearbyEvents` set `error` on a failed RPC, but the page never rendered it, so a network/Supabase failure showed "0 events nearby · No events near you yet."
+- **How a user hits it:** opens Emerge on a bad connection → told their area is empty.
+- **Fix:** render an error with "Try again" (the hook's existing `refetch`) before the empty states.
+- **Files:** `src/app/page.tsx`
+- **Test:** `tests/e2e/feed.spec.ts` (aborts `nearby_quests`; reproduced the wrong message first)

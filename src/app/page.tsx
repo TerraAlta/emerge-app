@@ -542,7 +542,7 @@ function EventBoard({
   }, [])
   const [showRadiusPicker, setShowRadiusPicker] = useState(false)
   const [attendedCount, setAttendedCount] = useState(0)
-  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, keywordFallback, distanceFallback, setManualLocation } = useNearbyEvents({ radiusKm, searchKeyword: keywordSearch || null })
+  const { quests, loading, error, location, locationName, locationDenied, locationLoading, countryCode, keywordFallback, distanceFallback, setManualLocation, refetch } = useNearbyEvents({ radiusKm, searchKeyword: keywordSearch || null })
 
   // Fetch quests attended count
   useEffect(() => {
@@ -988,7 +988,18 @@ function EventBoard({
             </div>
           ))}
 
-          {!loading && (() => {
+          {/* A failed load used to fall through to "No events near you yet". */}
+          {!loading && error && (
+            <div role="alert" className="rounded-[14px] px-4 py-10 text-center" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
+              <p className="font-heading text-base" style={{ color: 'var(--color-text)' }}>We couldn&apos;t load events just now.</p>
+              <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Check your connection and try again.</p>
+              <button onClick={() => void refetch()} className="mt-3 text-[13px] font-medium" style={{ color: 'var(--color-amber)' }}>
+                Try again
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && (() => {
             const filtered = filterEvents(quests, timeFilter)
 
             // Empty states
