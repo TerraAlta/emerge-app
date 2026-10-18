@@ -152,3 +152,11 @@
 - **Fix:** show "Couldn't join/leave — please try again." above the button; treat `23505` (already joined) as joined.
 - **Files:** `src/components/EventDetail.tsx`
 - **Test:** `tests/unit/event-detail.test.tsx`
+
+### 18. Guild project intake — a brief that failed to save made submission impossible
+- **Area:** Guild / project intake (`/guild/project/new`)
+- **Bug:** the brief (AI-extracted or typed in the manual form) is written to `guild_projects.extracted_brief` without checking the error. If that write failed, the preview still showed the brief, but every "Submit for scoping" returned "Intake not complete yet" from the server, and nothing the client could do would fix it.
+- **How a user hits it:** a dropped connection right as the brief is saved → stuck on the preview with an error that makes no sense.
+- **Fix:** submit first re-saves the brief that's on screen (checking the error), then calls submit-for-scoping; a failed save shows "We couldn't save your brief — check your connection and try again."
+- **Files:** `src/app/guild/project/new/page.tsx`
+- **Test:** `tests/unit/project-intake.test.tsx` (first save fails; server stub rejects unsaved briefs — failed on the old code)

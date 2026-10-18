@@ -180,6 +180,16 @@ export default function GuildProjectNewPage() {
     setLoading(true)
     setError('')
     try {
+      // Earlier saves of the brief don't check for errors; if one failed, the
+      // server would answer "Intake not complete yet" forever. Save what's on
+      // screen first, and stop with a clear message if that fails too.
+      if (brief && Object.keys(brief).length > 0) {
+        const { error: saveErr } = await supabase
+          .from('guild_projects')
+          .update({ extracted_brief: brief, updated_at: new Date().toISOString() })
+          .eq('id', projectId)
+        if (saveErr) throw new Error("We couldn't save your brief — check your connection and try again.")
+      }
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/guild/submit-for-scoping', {
         method: 'POST',
