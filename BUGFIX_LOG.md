@@ -128,3 +128,11 @@
 - **Fix:** show the same "Couldn't save that — please try again." message on error/exception.
 - **Files:** `src/components/DigestSettings.tsx`
 - **Test:** `tests/unit/settings.test.tsx`
+
+### 15. Skills tab — visitors' picks never saved (and every tap hit a 400)
+- **Area:** Other tabs / Skills (`SkillsScreen`)
+- **Bug:** visitors get `userId=""`, so the screen loaded `profiles?id=eq.` and wrote `update … where id=eq.` on every tap — both 400s. Selections looked saved and vanished on reload. For signed-in users a failed save was ignored the same way.
+- **How a user hits it:** a visitor marks skills, comes back later → all gone, no explanation.
+- **Fix:** no DB calls without a user, plus a "Sign in to save your skills" line; for signed-in users a failed save is reverted with "Couldn't save that".
+- **Files:** `src/components/SkillsScreen.tsx`
+- **Test:** `tests/unit/skills.test.tsx`; found by `tests/e2e/tabs.spec.ts` (400s on the Skills tab)

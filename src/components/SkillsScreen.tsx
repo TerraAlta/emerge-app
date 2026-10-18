@@ -131,8 +131,11 @@ export default function SkillsScreen({ userId, quests, onSelectEvent }: Props) {
   const [skillsWant, setSkillsWant] = useState<string[]>([])
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null)
   const [tappedSkill, setTappedSkill] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState('')
 
   useEffect(() => {
+    // Visitors have no profile row: querying with id=eq. is a 400.
+    if (!userId) return
     async function load() {
       const { data } = await supabase
         .from('profiles')
@@ -152,14 +155,23 @@ export default function SkillsScreen({ userId, quests, onSelectEvent }: Props) {
     if (state === 'have') newHave.push(skill)
     if (state === 'want') newWant.push(skill)
 
+    const prevHave = skillsHave, prevWant = skillsWant
     setSkillsHave(newHave)
     setSkillsWant(newWant)
     setTappedSkill(null)
+    setSaveError('')
+    if (!userId) return // visitors: local only (the intro says so)
 
-    await supabase
+    // A failed save used to look saved and vanish on reload — put it back and say so.
+    const { error } = await supabase
       .from('profiles')
       .update({ skills_have: newHave, skills_want: newWant })
       .eq('id', userId)
+    if (error) {
+      setSkillsHave(prevHave)
+      setSkillsWant(prevWant)
+      setSaveError("Couldn't save that — please try again.")
+    }
   }, [skillsHave, skillsWant, userId])
 
   const handleSkillTap = useCallback((skillKey: string) => {
@@ -200,6 +212,14 @@ export default function SkillsScreen({ userId, quests, onSelectEvent }: Props) {
           <p className="text-[13px] mt-1 leading-[1.6]" style={{ color: 'var(--color-text-secondary)' }}>
             People joining the same event can see your skills. Organisers can plan better.
           </p>
+          {!userId && (
+            <p className="text-[12px] mt-1.5" style={{ color: 'var(--color-text-muted)' }}>
+              Sign in to save your skills — without an account they&apos;re only kept until you leave.
+            </p>
+          )}
+          {saveError && (
+            <p role="alert" className="text-[12px] mt-1.5" style={{ color: 'var(--color-error)' }}>{saveError}</p>
+          )}
 
           {/* Legend pills */}
           <div className="flex gap-2 mt-3 mb-1">
