@@ -28,7 +28,7 @@ export function makeSupabaseMock(opts: {
       delete: () => { state.op = 'delete'; return b },
       eq: (...a: any[]) => { state.filters.push(['eq', ...a]); return b },
       neq: (...a: any[]) => { state.filters.push(['neq', ...a]); return b },
-      in: () => b, order: () => b, limit: () => b, gte: () => b, lt: () => b, not: () => b, contains: () => b,
+      in: () => b, is: () => b, order: () => b, limit: () => b, gte: () => b, lt: () => b, not: () => b, contains: () => b, ilike: () => b, or: () => b, range: () => b,
       single: resolve, maybeSingle: resolve,
       then: (ok: any, err: any) => resolve().then(ok, err),
     }

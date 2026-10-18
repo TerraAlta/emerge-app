@@ -64,3 +64,19 @@
 - **Fix:** "Try again" for a failed opener; a failed answer is removed from the chat and put back in the input; 90 s timeout with friendly timeout/offline messages.
 - **Files:** `src/components/GuildChatScreen.tsx`
 - **Test:** `tests/unit/guild-chat.test.tsx` (AI fully mocked; no real calls)
+
+### 7. Guild AI matching — failed generations didn't count toward the daily cap
+- **Area:** Guild / AI matching (`/api/guild/generate-scoping`)
+- **Bug:** `logApiUsage` ran only after a successful parse + insert. A reply that failed to parse (up to 8,000 output tokens) was never recorded in `guild_api_usage`, so repeated failures bypassed the €2/day Guild AI cap.
+- **How a user hits it:** indirectly — a malformed AI reply, then an admin re-run, then another: real spend climbs while the cap sees nothing.
+- **Fix:** log usage immediately after the AI call, before parsing (and remove the later duplicate).
+- **Files:** `src/app/api/guild/generate-scoping/route.ts`
+- **Test:** `tests/unit/generate-scoping.test.ts` (AI, Supabase, admin auth and email mocked)
+
+### 8. Guild AI matching — a trailing sentence after the JSON failed the whole scoping doc
+- **Area:** Guild / AI matching
+- **Bug:** the reply was parsed whole; Haiku occasionally appends a sentence after the JSON ("Hope this helps!"), which failed the parse and left the project stuck in "Being drafted".
+- **How a user hits it:** submits a land project → the client page shows "Being drafted" indefinitely.
+- **Fix:** parse from the first `{` to the last `}` (same fix already applied to event scoring).
+- **Files:** `src/app/api/guild/generate-scoping/route.ts`
+- **Test:** `tests/unit/generate-scoping.test.ts`

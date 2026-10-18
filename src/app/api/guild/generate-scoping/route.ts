@@ -241,12 +241,25 @@ Please generate the scoping document as JSON following the schema you were given
       messages: [{ role: 'user', content: userMessage }],
     })
 
+    // Log spend before parsing: a reply that fails to parse still cost money,
+    // and skipping it let failed runs bypass the daily Guild AI cap.
+    const tokensInput = result.usage.input_tokens
+    const tokensOutput = result.usage.output_tokens
+    await logApiUsage({
+      userId: project.client_user_id,
+      feature: 'scoping',
+      tokensInput,
+      tokensOutput,
+    })
+
     const text = result.content[0].type === 'text' ? result.content[0].text : '{}'
     const cleaned = text.replace(/```json\s*|```\s*/g, '').trim()
 
     let docContent: any
     try {
-      docContent = JSON.parse(cleaned)
+      // Parse just the object — Haiku sometimes adds a sentence after the JSON.
+      const start = cleaned.indexOf('{'), end = cleaned.lastIndexOf('}')
+      docContent = JSON.parse(start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned)
     } catch {
       console.error('[guild-scoping] parse fail. stop_reason=', result.stop_reason, 'len=', cleaned.length, 'tail:', cleaned.slice(-400))
       // Leave project in 'scoping' — Pedro can re-trigger manually
@@ -260,8 +273,6 @@ Please generate the scoping document as JSON following the schema you were given
     docContent.practitioner_recommendations = validRecs
     const matchedIds = validRecs.map((r: any) => r.practitioner_id)
 
-    const tokensInput = result.usage.input_tokens
-    const tokensOutput = result.usage.output_tokens
     const costUsd = calculateCost(tokensInput, tokensOutput)
 
     // Insert scoping doc (unapproved — invisible to client until admin approves)
@@ -292,14 +303,6 @@ Please generate the scoping document as JSON following the schema you were given
       .from('guild_projects')
       .update({ status: 'matched', updated_at: new Date().toISOString() })
       .eq('id', projectId)
-
-    // Log AI usage
-    await logApiUsage({
-      userId: project.client_user_id,
-      feature: 'scoping',
-      tokensInput,
-      tokensOutput,
-    })
 
     // Notify admin a new doc is pending review
     try {
