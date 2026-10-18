@@ -37,8 +37,20 @@ interface Props {
   practitioner: Practitioner
 }
 
-export default function PractitionerCard({ practitioner: p }: Props) {
+export default function PractitionerCard({ practitioner: raw }: Props) {
   const [expanded, setExpanded] = useState(false)
+  const [photoFailed, setPhotoFailed] = useState(false)
+  // List columns can be null on rows saved before the profile step (or edited
+  // by hand); one null used to crash the card and with it the whole directory.
+  const p = {
+    ...raw,
+    display_name: raw.display_name || '',
+    languages: raw.languages || [],
+    flower_petals: raw.flower_petals || [],
+    specialties: raw.specialties || [],
+    climate_zones_worked: raw.climate_zones_worked || [],
+    project_scales: raw.project_scales || [],
+  }
   const availability = AVAILABILITY_OPTIONS.find(o => o.key === p.availability_status)
   const initials = p.display_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
   const petalObjects = p.flower_petals.map(k => FLOWER_PETALS.find(fp => fp.key === k)).filter(Boolean)
@@ -57,9 +69,9 @@ export default function PractitionerCard({ practitioner: p }: Props) {
           className="w-14 h-14 rounded-full flex items-center justify-center text-[16px] font-semibold shrink-0"
           style={{ background: 'var(--color-avatar-bg)', border: '1.5px solid var(--color-amber)', color: 'var(--color-amber)' }}
         >
-          {p.profile_photo_url ? (
+          {p.profile_photo_url && !photoFailed ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.profile_photo_url} alt={p.display_name} className="w-full h-full rounded-full object-cover" />
+            <img src={p.profile_photo_url} alt={p.display_name} onError={() => setPhotoFailed(true)} className="w-full h-full rounded-full object-cover" />
           ) : initials}
         </div>
 

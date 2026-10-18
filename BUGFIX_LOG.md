@@ -19,3 +19,19 @@ _Summary is written at the top when the sweep finishes._
 - **Fix:** track a load error; show "We couldn't load practitioners just now… Try again" with a retry; the empty-state and no-match messages only show when the load succeeded.
 - **Files:** `src/app/guild/page.tsx`
 - **Test:** `tests/e2e/guild-directory.spec.ts` (aborts the Supabase request and asserts the error, not the empty state)
+
+### 2. Guild directory — one incomplete profile could crash the whole page
+- **Area:** Guild / practitioner profiles (`PractitionerCard`)
+- **Bug:** the card called `.map` / `.length` / `.split` directly on `flower_petals`, `languages`, `specialties`, `project_scales`, `climate_zones_worked` and `display_name`. The join flow's first step inserts the row without `specialties`/`climate_zones_worked`/`project_scales`, and owners can edit their own row directly via RLS — any null made the card throw, and React unmounted the entire directory for every visitor. (The join page itself already guards all of these with `|| []`, which is what the card was missing.)
+- **How a user hits it:** a practitioner verified with a half-filled or hand-edited profile → everyone opening `/guild` sees a crashed page.
+- **Fix:** normalise those fields to `[]` / `''` at the top of the card.
+- **Files:** `src/components/PractitionerCard.tsx`
+- **Test:** `tests/unit/practitioner-card.test.tsx` (null lists, null name, Portuguese characters)
+
+### 3. Guild profiles — broken photo showed a broken-image icon
+- **Area:** Guild / practitioner profiles
+- **Bug:** if `profile_photo_url` pointed to a deleted/unreachable file, the avatar rendered the browser's broken-image icon.
+- **How a user hits it:** a practitioner replaces or deletes their photo in storage; their card shows a broken icon.
+- **Fix:** `onError` on the avatar image falls back to the initials.
+- **Files:** `src/components/PractitionerCard.tsx`
+- **Test:** `tests/unit/practitioner-card.test.tsx` ("falls back to initials when the photo URL is broken")
