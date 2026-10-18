@@ -88,3 +88,11 @@
 - **Fix:** log usage before parsing; parse first `{` to last `}`.
 - **Files:** `src/app/api/guild/extract/route.ts`, `src/app/api/guild/extract-brief/route.ts`
 - **Test:** `tests/unit/extract-routes.test.ts` (fails 4/4 on the old code, passes 4/4 now)
+
+### 10. Guild scoping docs — an oddly shaped AI field crashed the client page and the admin queue
+- **Area:** Guild / AI matching results (`/guild/project/[id]`, `/admin/guild`)
+- **Bug:** the pages called `.map` on AI-written fields (`design_principles`, `suggested_phases` and their `objectives`/`key_activities`/`practitioner_roles`, `risks_and_open_questions`, `practitioner_recommendations`, brief `values`) after only checking `.length`. When the AI returned a single sentence instead of a list (a string also has `.length`), React threw and the page went blank.
+- **How a user hits it:** a client opens their delivered scoping doc → blank page. On the admin side, one such doc blanks the whole review queue, blocking every approval.
+- **Fix:** shared `asList()` (`src/lib/as-list.ts`): arrays pass through, a sentence becomes a one-item list, anything else is empty. Used at every render site on both pages.
+- **Files:** `src/lib/as-list.ts`, `src/app/guild/project/[id]/page.tsx`, `src/app/admin/guild/page.tsx`
+- **Test:** `tests/unit/guild-project-page.test.tsx` (reproduced `brief.values.map is not a function`), `tests/unit/as-list.test.ts`

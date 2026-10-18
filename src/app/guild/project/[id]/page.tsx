@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
+import { asList } from '@/lib/as-list'
 
 interface ProjectRow {
   id: string
@@ -218,11 +219,11 @@ export default function GuildProjectPage() {
                   <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text)' }}>{brief.vision}</p>
                 </div>
               )}
-              {(brief.values && brief.values.length > 0) && (
+              {asList(brief.values).length > 0 && (
                 <div>
                   <div className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--color-text-muted)' }}>Values</div>
                   <div className="flex flex-wrap gap-1.5">
-                    {brief.values.map((v: string, i: number) => (
+                    {asList(brief.values).map((v: string, i: number) => (
                       <span key={i} className="rounded-full px-2.5 py-1 text-[11px]" style={{ background: 'var(--color-amber-light)', border: '0.5px solid var(--color-amber-border)', color: 'var(--color-text)' }}>{v}</span>
                     ))}
                   </div>
@@ -279,45 +280,45 @@ export default function GuildProjectPage() {
               </div>
             )}
 
-            {doc.doc_content.design_principles?.length > 0 && (
+            {asList(doc.doc_content.design_principles).length > 0 && (
               <div>
                 <h3 className="font-heading text-[16px] font-light mb-2" style={{ color: 'var(--color-text)' }}>Design principles</h3>
                 <ul className="space-y-1.5">
-                  {doc.doc_content.design_principles.map((p: string, i: number) => (
+                  {asList(doc.doc_content.design_principles).map((p: string, i: number) => (
                     <li key={i} className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text)' }}>· {p}</li>
                   ))}
                 </ul>
               </div>
             )}
 
-            {doc.doc_content.suggested_phases?.length > 0 && (
+            {asList(doc.doc_content.suggested_phases).length > 0 && (
               <div>
                 <h3 className="font-heading text-[16px] font-light mb-2" style={{ color: 'var(--color-text)' }}>Suggested phases</h3>
                 <div className="space-y-3">
-                  {doc.doc_content.suggested_phases.map((ph: any, i: number) => (
+                  {asList(doc.doc_content.suggested_phases).filter((ph: any) => ph && typeof ph === 'object').map((ph: any, i: number) => (
                     <div key={i} className="rounded-xl p-4" style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}>
                       <div className="text-[13px] font-semibold mb-1.5" style={{ color: 'var(--color-amber)' }}>{ph.phase_name}</div>
-                      {ph.objectives?.length > 0 && (
+                      {asList(ph.objectives).length > 0 && (
                         <div className="mb-2">
                           <div className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Objectives</div>
                           <ul className="text-[12px] space-y-0.5" style={{ color: 'var(--color-text)' }}>
-                            {ph.objectives.map((o: string, j: number) => <li key={j}>· {o}</li>)}
+                            {asList(ph.objectives).map((o: string, j: number) => <li key={j}>· {o}</li>)}
                           </ul>
                         </div>
                       )}
-                      {ph.key_activities?.length > 0 && (
+                      {asList(ph.key_activities).length > 0 && (
                         <div className="mb-2">
                           <div className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Activities</div>
                           <ul className="text-[12px] space-y-0.5" style={{ color: 'var(--color-text)' }}>
-                            {ph.key_activities.map((a: string, j: number) => <li key={j}>· {a}</li>)}
+                            {asList(ph.key_activities).map((a: string, j: number) => <li key={j}>· {a}</li>)}
                           </ul>
                         </div>
                       )}
-                      {ph.practitioner_roles?.length > 0 && (
+                      {asList(ph.practitioner_roles).length > 0 && (
                         <div>
                           <div className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Practitioner roles</div>
                           <div className="flex flex-wrap gap-1">
-                            {ph.practitioner_roles.map((r: string, j: number) => (
+                            {asList(ph.practitioner_roles).map((r: string, j: number) => (
                               <span key={j} className="rounded-full px-2 py-0.5 text-[10px]" style={{ background: 'var(--color-amber-light)', color: 'var(--color-text)', border: '0.5px solid var(--color-amber-border)' }}>{r}</span>
                             ))}
                           </div>
@@ -329,11 +330,11 @@ export default function GuildProjectPage() {
               </div>
             )}
 
-            {doc.doc_content.practitioner_recommendations?.length > 0 && (
+            {asList(doc.doc_content.practitioner_recommendations).length > 0 && (
               <div>
                 <h3 className="font-heading text-[16px] font-light mb-2" style={{ color: 'var(--color-text)' }}>Suggested practitioners from the Guild</h3>
                 <div className="space-y-3">
-                  {doc.doc_content.practitioner_recommendations.map((r: any, i: number) => {
+                  {asList(doc.doc_content.practitioner_recommendations).map((r: any, i: number) => {
                     const pr = practitioners[r.practitioner_id]
                     if (!pr) return null
                     return (
@@ -363,11 +364,11 @@ export default function GuildProjectPage() {
               </div>
             )}
 
-            {doc.doc_content.risks_and_open_questions?.length > 0 && (
+            {asList(doc.doc_content.risks_and_open_questions).length > 0 && (
               <div>
                 <h3 className="font-heading text-[16px] font-light mb-2" style={{ color: 'var(--color-text)' }}>Open questions</h3>
                 <ul className="space-y-1">
-                  {doc.doc_content.risks_and_open_questions.map((q: string, i: number) => (
+                  {asList(doc.doc_content.risks_and_open_questions).map((q: string, i: number) => (
                     <li key={i} className="text-[13px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>· {q}</li>
                   ))}
                 </ul>

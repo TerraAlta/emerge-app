@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { FLOWER_PETALS } from '@/lib/flower-petals'
 import { isAdminEmail } from '@/lib/admin-emails'
+import { asList } from '@/lib/as-list'
 
 interface PendingProject {
   id: string
@@ -731,11 +732,11 @@ export default function AdminGuildPage() {
                                       <p className="text-[12px] whitespace-pre-line leading-relaxed" style={{ color: 'var(--color-text)' }}>{doc.doc_content.executive_summary}</p>
                                     </div>
                                   )}
-                                  {doc.doc_content.practitioner_recommendations?.length > 0 && (
+                                  {asList(doc.doc_content.practitioner_recommendations).length > 0 && (
                                     <div>
                                       <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Matched practitioners</div>
                                       <ul className="text-[11px] space-y-0.5" style={{ color: 'var(--color-text)' }}>
-                                        {doc.doc_content.practitioner_recommendations.map((r: any, i: number) => (
+                                        {asList(doc.doc_content.practitioner_recommendations).map((r: any, i: number) => (
                                           <li key={i}>· <strong>{r.suggested_role}</strong> — {r.why_this_match}</li>
                                         ))}
                                       </ul>
@@ -834,27 +835,27 @@ export default function AdminGuildPage() {
                                         <p className="text-[12px] whitespace-pre-line leading-relaxed" style={{ color: 'var(--color-text)' }}>{doc.doc_content.site_reading}</p>
                                       </div>
                                     )}
-                                    {doc.doc_content.design_principles?.length > 0 && (
+                                    {asList(doc.doc_content.design_principles).length > 0 && (
                                       <div>
                                         <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Design principles</div>
                                         <ul className="text-[11px] space-y-0.5" style={{ color: 'var(--color-text)' }}>
-                                          {doc.doc_content.design_principles.map((d: string, i: number) => <li key={i}>· {d}</li>)}
+                                          {asList(doc.doc_content.design_principles).map((d: string, i: number) => <li key={i}>· {d}</li>)}
                                         </ul>
                                       </div>
                                     )}
-                                    {doc.doc_content.suggested_phases?.length > 0 && (
+                                    {asList(doc.doc_content.suggested_phases).length > 0 && (
                                       <div>
                                         <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Phases</div>
                                         <ul className="text-[11px] space-y-0.5" style={{ color: 'var(--color-text)' }}>
-                                          {doc.doc_content.suggested_phases.map((ph: any, i: number) => <li key={i}>· {ph.phase_name}</li>)}
+                                          {asList(doc.doc_content.suggested_phases).map((ph: any, i: number) => <li key={i}>· {ph.phase_name}</li>)}
                                         </ul>
                                       </div>
                                     )}
-                                    {doc.doc_content.practitioner_recommendations?.length > 0 && (
+                                    {asList(doc.doc_content.practitioner_recommendations).length > 0 && (
                                       <div>
                                         <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Matched practitioners</div>
                                         <ul className="text-[11px] space-y-0.5" style={{ color: 'var(--color-text)' }}>
-                                          {doc.doc_content.practitioner_recommendations.map((rec: any, i: number) => (
+                                          {asList(doc.doc_content.practitioner_recommendations).map((rec: any, i: number) => (
                                             <li key={i}>· <strong>{rec.suggested_role}</strong> — {rec.why_this_match}</li>
                                           ))}
                                         </ul>
