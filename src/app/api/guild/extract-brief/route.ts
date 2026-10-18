@@ -99,23 +99,28 @@ export async function POST(request: NextRequest) {
       messages: [{ role: 'user', content: userContent }],
     })
 
-    const text = result.content[0].type === 'text' ? result.content[0].text : '{}'
-    const cleaned = text.replace(/```json\s*|```\s*/g, '').trim()
-
-    let brief
-    try {
-      brief = JSON.parse(cleaned)
-    } catch {
-      console.error('[guild-extract-brief] parse fail:', cleaned)
-      return NextResponse.json({ error: 'Brief extraction failed. Please try again.' }, { status: 500 })
-    }
-
+    // Log spend before parsing — a reply that fails to parse still cost
+    // money and must count toward the daily Guild AI cap.
     await logApiUsage({
       userId,
       feature: 'extraction',
       tokensInput: result.usage.input_tokens,
       tokensOutput: result.usage.output_tokens,
     })
+
+    const text = result.content[0].type === 'text' ? result.content[0].text : '{}'
+    const cleaned = text.replace(/```json\s*|```\s*/g, '').trim()
+
+    let brief
+    try {
+      // Parse just the object — Haiku sometimes adds a sentence after the JSON.
+      const start = cleaned.indexOf('{'), end = cleaned.lastIndexOf('}')
+      brief = JSON.parse(start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned)
+    } catch {
+      console.error('[guild-extract-brief] parse fail:', cleaned)
+      return NextResponse.json({ error: 'Brief extraction failed. Please try again.' }, { status: 500 })
+    }
+
 
     return NextResponse.json({ brief })
   } catch (err) {

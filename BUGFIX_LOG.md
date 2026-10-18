@@ -80,3 +80,11 @@
 - **Fix:** parse from the first `{` to the last `}` (same fix already applied to event scoring).
 - **Files:** `src/app/api/guild/generate-scoping/route.ts`
 - **Test:** `tests/unit/generate-scoping.test.ts`
+
+### 9. Guild profile + brief extraction — same uncounted-spend and trailing-text bugs
+- **Area:** Guild / practitioner profiles (`/api/guild/extract`) and project intake (`/api/guild/extract-brief`)
+- **Bug:** both logged AI usage only after a successful parse (failed parses bypassed the daily caps), and both failed on a trailing sentence after the JSON — the practitioner then saw "Profile extraction failed" and had to type the whole profile by hand.
+- **How a user hits it:** finishes the 15-minute interview → "extraction failed".
+- **Fix:** log usage before parsing; parse first `{` to last `}`.
+- **Files:** `src/app/api/guild/extract/route.ts`, `src/app/api/guild/extract-brief/route.ts`
+- **Test:** `tests/unit/extract-routes.test.ts` (fails 4/4 on the old code, passes 4/4 now)
