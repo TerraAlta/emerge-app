@@ -1,6 +1,11 @@
 # Bugfix log — automated sweep (branch `bugfix/auto-sweep`)
 
-_Summary is written at the top when the sweep finishes._
+## Summary (sweep PAUSED — usage limit reached, not finished)
+- **Fixed so far: 4 bugs, all in the Guild** (directory + practitioner profiles). Build, typecheck, lint (0 errors) and all tests green at every commit.
+- **Security / privacy concerns:** none new found in this sweep yet (an earlier session's audit of 2026-10-07 already fixed the known ones).
+- **Proposed DB migrations:** none.
+- **Not yet covered:** rest of `/guild/join` (review step UI, done step), Guild AI matching / scoping flow, Feed, auth/onboarding/settings, other tabs, and the two required clean passes.
+- **Lint warnings to check later:** three `useEffect` missing-dependency warnings (admin/guild, admin/submissions, guild/project/[id]).
 
 ## Setup notes and decisions
 - **Stack is Next.js 14 (App Router), not Vite** as the brief said. Worked with what's there.
