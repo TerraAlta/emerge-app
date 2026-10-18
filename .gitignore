@@ -17,3 +17,7 @@ Emerge-PDC.pptx
 .claude/emerge-deck/
 logs/
 .planning/
+
+# test artifacts
+/test-results/
+/playwright-report/
