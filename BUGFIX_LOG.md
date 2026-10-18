@@ -120,3 +120,11 @@
 - **Fix:** render an error with "Try again" (the hook's existing `refetch`) before the empty states.
 - **Files:** `src/app/page.tsx`
 - **Test:** `tests/e2e/feed.spec.ts` (aborts `nearby_quests`; reproduced the wrong message first)
+
+### 14. Settings — a failed name change failed silently
+- **Area:** Account settings (`DigestSettings`)
+- **Bug:** `saveName` ignored Supabase's returned `error`: on failure the button just reverted to "Save" with no message, so users believed the change had saved (the digest toggles already handled this).
+- **How a user hits it:** edits their name on a flaky connection → nothing happens, no explanation.
+- **Fix:** show the same "Couldn't save that — please try again." message on error/exception.
+- **Files:** `src/components/DigestSettings.tsx`
+- **Test:** `tests/unit/settings.test.tsx`

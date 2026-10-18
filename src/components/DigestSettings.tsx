@@ -68,11 +68,14 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
     if (!trimmed || trimmed === initialFirstName) return
     setSaving(true)
     setNameSaved(false)
+    setSaveError('')
     try {
       const { error } = await supabase
         .from('profiles')
         .update({ first_name: trimmed })
         .eq('id', userId)
+      // A failed save used to do nothing at all — say so, like the toggles do.
+      if (error) setSaveError("Couldn't save that — please try again.")
       if (!error) {
         setInitialFirstName(trimmed)
         setNameSaved(true)
@@ -84,6 +87,7 @@ export default function DigestSettings({ userId, onClose }: DigestSettingsProps)
       }
     } catch (err) {
       console.error('Failed to update name:', err)
+      setSaveError("Couldn't save that — please try again.")
     }
     setSaving(false)
   }
