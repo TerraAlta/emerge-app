@@ -91,6 +91,7 @@ export default function EventDetail({
 }) {
   const [joined, setJoined] = useState(false)
   const [joining, setJoining] = useState(false)
+  const [joinError, setJoinError] = useState('')
   const [participants, setParticipants] = useState<Participant[]>([])
   const [loading, setLoading] = useState(true)
   const [animateIn, setAnimateIn] = useState(false)
@@ -128,12 +129,16 @@ export default function EventDetail({
     if (!userId) { onNeedAuth(); return }
     if (joined) return
     setJoining(true)
+    setJoinError('')
 
     const { error } = await supabase
       .from('quest_participants')
       .insert({ quest_id: quest.id, user_id: userId })
 
-    if (!error) {
+    // Failures used to do nothing visible. A duplicate (already joined, e.g.
+    // from another tab) is success, not an error.
+    if (error && error.code !== '23505') setJoinError("Couldn't join — please try again.")
+    if (!error || error.code === '23505') {
       setJoined(true)
       // Refresh participants
       const { data } = await supabase
@@ -148,12 +153,14 @@ export default function EventDetail({
   async function handleLeave() {
     if (!userId) return
     setJoining(true)
+    setJoinError('')
     const { error } = await supabase
       .from('quest_participants')
       .delete()
       .eq('quest_id', quest.id)
       .eq('user_id', userId)
 
+    if (error) setJoinError("Couldn't leave — please try again.")
     if (!error) {
       setJoined(false)
       setParticipants(prev => prev.filter(p => p.user_id !== userId))
@@ -519,6 +526,9 @@ export default function EventDetail({
           style={{ background: 'linear-gradient(var(--color-gradient-top), var(--color-gradient-bottom) 30%)' }}
         >
           <div className="w-full px-4 pb-6 pt-4" style={{ maxWidth: 390 }}>
+            {joinError && (
+              <p role="alert" className="text-[12px] text-center mb-2" style={{ color: 'var(--color-error)' }}>{joinError}</p>
+            )}
             {joined ? (
               <button
                 onClick={handleLeave}

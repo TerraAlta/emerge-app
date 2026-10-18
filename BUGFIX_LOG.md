@@ -144,3 +144,11 @@
 - **Fix:** reject a start time ≤ now with "Choose a date and time in the future."; date picker `min` = today.
 - **Files:** `src/components/PostEvent.tsx`
 - **Test:** `tests/unit/post-event.test.tsx` (old code inserted `2020-03-01T10:00`; maps stubbed)
+
+### 17. Event detail — Join / Leave failed silently
+- **Area:** Feed / event detail (`EventDetail`)
+- **Bug:** `handleJoin` / `handleLeave` ignored the returned `error`: on failure the button just reverted with no message, so users tapped repeatedly or believed they'd joined. A duplicate-key error (already joined from another tab) was also treated as failure.
+- **How a user hits it:** taps "Join event" on a flaky connection → nothing happens.
+- **Fix:** show "Couldn't join/leave — please try again." above the button; treat `23505` (already joined) as joined.
+- **Files:** `src/components/EventDetail.tsx`
+- **Test:** `tests/unit/event-detail.test.tsx`
