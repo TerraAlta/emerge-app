@@ -136,3 +136,11 @@
 - **Fix:** no DB calls without a user, plus a "Sign in to save your skills" line; for signed-in users a failed save is reverted with "Couldn't save that".
 - **Files:** `src/components/SkillsScreen.tsx`
 - **Test:** `tests/unit/skills.test.tsx`; found by `tests/e2e/tabs.spec.ts` (400s on the Skills tab)
+
+### 16. Post an event — past dates saved "successfully" and never appeared
+- **Area:** Other tabs / Post an event (`PostEvent`)
+- **Bug:** no check that the start is in the future (and no `min` on the date input). The event saved and the user got the success screen, but the feed only lists upcoming events, so it never showed anywhere.
+- **How a user hits it:** picks the wrong year/month, or posts about something that already happened → "posted", then invisible.
+- **Fix:** reject a start time ≤ now with "Choose a date and time in the future."; date picker `min` = today.
+- **Files:** `src/components/PostEvent.tsx`
+- **Test:** `tests/unit/post-event.test.tsx` (old code inserted `2020-03-01T10:00`; maps stubbed)

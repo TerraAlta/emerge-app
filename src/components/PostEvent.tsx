@@ -135,6 +135,13 @@ export default function PostEvent({ userId, onBack, onSuccess }: Props) {
     setSubmitting(true)
 
     const startsAt = new Date(`${date}T${time}`).toISOString()
+    // The feed only lists upcoming events, so a past date saved "successfully"
+    // and then never appeared anywhere.
+    if (new Date(startsAt).getTime() <= Date.now()) {
+      setError('Choose a date and time in the future.')
+      setSubmitting(false)
+      return
+    }
 
     const coords = validateCoordinates(pin.lat, pin.lng)
     if (!coords) { setError('Invalid location coordinates.'); setSubmitting(false); return }
@@ -446,6 +453,7 @@ export default function PostEvent({ userId, onBack, onSuccess }: Props) {
                   </label>
                   <input
                     type="date"
+                    min={new Date().toLocaleDateString('en-CA')}
                     value={date}
                     onChange={e => setDate(e.target.value)}
                     style={{ ...inputStyle, colorScheme: 'dark' }}
