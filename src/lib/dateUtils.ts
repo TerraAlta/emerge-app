@@ -96,8 +96,10 @@ export function proximityPill(iso: string): { text: string; bg: string; color: s
  * Filter events by time window.
  */
 export function filterEvents<T extends { starts_at: string }>(quests: T[], filter: 'today' | 'week' | 'all'): T[] {
-  if (filter === 'today') return quests.filter(q => daysUntil(q.starts_at) === 0)
-  if (filter === 'week') return quests.filter(q => { const d = daysUntil(q.starts_at); return d >= 0 && d <= 7 })
+  // The feed also lists short events that started earlier and are still on
+  // (quest_is_listable); a negative day count means "happening now".
+  if (filter === 'today') return quests.filter(q => daysUntil(q.starts_at) <= 0)
+  if (filter === 'week') return quests.filter(q => daysUntil(q.starts_at) <= 7)
   return quests
 }
 
@@ -109,7 +111,7 @@ export function groupEvents<T extends { starts_at: string }>(quests: T[]): { lab
   const today: T[] = [], week: T[] = [], month: T[] = [], later: T[] = []
   for (const q of quests) {
     const d = daysUntil(q.starts_at)
-    if (d === 0) today.push(q)
+    if (d <= 0) today.push(q)   // includes events already under way
     else if (d >= 1 && d <= 7) week.push(q)
     else if (d >= 8 && d <= 30) month.push(q)
     else later.push(q)

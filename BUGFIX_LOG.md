@@ -104,3 +104,11 @@
 - **Fix:** `asList()` at both render sites.
 - **Files:** `src/app/guild/project/new/page.tsx`
 - **Test:** covered by `tests/unit/as-list.test.ts`; failure mode reproduced in `tests/unit/guild-project-page.test.tsx` (#10).
+
+### 12. Feed — events already under way were filed under "Later" and hidden by Today/This week
+- **Area:** Feed (event list grouping and time filters, `src/lib/dateUtils.ts`)
+- **Bug:** the feed lists short events that started earlier but haven't ended (`quest_is_listable`, migration 20261007). Their day count is negative, so `groupEvents` put them in "Later" at the bottom, and the Today / This week filters (which required `>= 0`) dropped them entirely.
+- **How a user hits it:** a weekend workshop that began yesterday shows under "Later"; tapping "Today" hides it although it's on right now.
+- **Fix:** negative day counts count as Today in grouping and both filters.
+- **Files:** `src/lib/dateUtils.ts`
+- **Test:** `tests/unit/date-utils.test.ts` (fake clock)
