@@ -11,3 +11,11 @@ _Summary is written at the top when the sweep finishes._
 - "Pitch Your Dream Project" (Phase 2, in development) = everything under `/guild/pitch*` and `/api/guild/pitch/*`. Left alone unless it breaks something else.
 
 ## Fixes
+
+### 1. Guild directory — failed load claimed "no practitioners verified yet"
+- **Area:** Guild / directory (`/guild`)
+- **Bug:** the practitioner query ignored `error`; any failure (offline, flaky network, Supabase hiccup) left the list empty and showed "The Guild is just beginning. No practitioners verified yet." A rejected fetch would also leave "Loading practitioners..." forever.
+- **How a user hits it:** opens the Guild on a weak mobile connection → told the network is empty.
+- **Fix:** track a load error; show "We couldn't load practitioners just now… Try again" with a retry; the empty-state and no-match messages only show when the load succeeded.
+- **Files:** `src/app/guild/page.tsx`
+- **Test:** `tests/e2e/guild-directory.spec.ts` (aborts the Supabase request and asserts the error, not the empty state)

@@ -25,6 +25,7 @@ export default function GuildPage() {
   const router = useRouter()
   const [practitioners, setPractitioners] = useState<Practitioner[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [hasOwnProfile, setHasOwnProfile] = useState<boolean | null>(null)
   const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null)
   const [authGate, setAuthGate] = useState<null | 'practitioner' | 'land' | 'vision'>(null)
@@ -37,18 +38,26 @@ export default function GuildPage() {
   const [filterScale, setFilterScale] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 
-  useEffect(() => {
-    // Fetch verified practitioners
+  // Fetch verified practitioners. A failed load must not read as "the Guild
+  // is empty" — it shows an error with a retry instead.
+  function loadPractitioners() {
+    setLoading(true)
+    setLoadError(false)
     supabase
       .from('guild_practitioners')
       .select('*')
       .eq('verified', true)
       .neq('availability_status', 'unavailable')
       .order('updated_at', { ascending: false })
-      .then(({ data }) => {
-        setPractitioners((data as Practitioner[]) || [])
+      .then(({ data, error }) => {
+        if (error) setLoadError(true)
+        else setPractitioners((data as Practitioner[]) || [])
         setLoading(false)
-      })
+      }, () => { setLoadError(true); setLoading(false) })
+  }
+
+  useEffect(() => {
+    loadPractitioners()
 
     // Check if current user has a profile
     supabase.auth.getUser().then(({ data }) => {
@@ -390,7 +399,22 @@ export default function GuildPage() {
             </p>
           )}
 
-          {!loading && filtered.length === 0 && practitioners.length === 0 && (
+          {!loading && loadError && (
+            <div className="text-center py-10" role="alert">
+              <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
+                We couldn&apos;t load practitioners just now. Check your connection and try again.
+              </p>
+              <button
+                onClick={loadPractitioners}
+                className="mt-2 text-[12px] underline"
+                style={{ color: 'var(--color-amber)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {!loading && !loadError && filtered.length === 0 && practitioners.length === 0 && (
             <div
               className="rounded-2xl p-6 text-center"
               style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-amber-border)' }}
@@ -404,7 +428,7 @@ export default function GuildPage() {
             </div>
           )}
 
-          {!loading && filtered.length === 0 && practitioners.length > 0 && (
+          {!loading && !loadError && filtered.length === 0 && practitioners.length > 0 && (
             <div className="text-center py-10">
               <p className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
                 No practitioners match these filters.
