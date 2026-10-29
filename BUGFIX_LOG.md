@@ -233,3 +233,11 @@
 - **Fix:** `fetchAllQuests` leaves out quests that have no cards. They appear by themselves once their cards exist.
 - **Files:** `src/lib/quest-data.ts`
 - **Test:** `tests/unit/quest-data.test.ts` (fails on the old code).
+
+### 27. Post an event — Back on the pin map threw away the whole form
+- **Area:** Post an event (`src/components/PostEvent.tsx`)
+- **Bug:** the full-screen "place the pin" map sits on top of the form with no history entry of its own. After #23 gave the form one, Back on the map closed the *form* and lost everything typed. Before #23 it left the page, same loss.
+- **How a user hits it:** fills in an event, taps the map to place the pin, presses the phone's Back to leave the map. The form is gone.
+- **Fix:** the map gets its own nested `useBackToClose` entry, so Back closes only the map. The map's cancel button uses the same path.
+- **Files:** `src/components/PostEvent.tsx`
+- **Test:** `tests/unit/post-event.test.tsx`, "phone Back on the pin map closes only the map and keeps what was typed" (fails on the old code).

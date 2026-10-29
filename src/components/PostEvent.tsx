@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { sanitizeTitle, sanitizeText, validateCoordinates } from '@/lib/sanitize'
 import { authHeaders } from '@/lib/auth-headers'
+import { useBackToClose } from '@/hooks/useBackToClose'
 
 const PinMap = dynamic(() => import('./PinMap'), {
   ssr: false,
@@ -56,6 +57,8 @@ export default function PostEvent({ userId, onBack, onSuccess }: Props) {
   const [error, setError] = useState('')
   const [animateIn, setAnimateIn] = useState(false)
   const [showFullMap, setShowFullMap] = useState(false)
+  // Back on the pin map closes just the map, not the whole half-written form.
+  const closeFullMap = useBackToClose(showFullMap, () => setShowFullMap(false), 'emergePostMap')
 
   // URL mode state
   const [url, setUrl] = useState('')
@@ -622,7 +625,7 @@ export default function PostEvent({ userId, onBack, onSuccess }: Props) {
             setPin(p)
             setShowFullMap(false)
           }}
-          onCancel={() => setShowFullMap(false)}
+          onCancel={closeFullMap}
         />
       )}
     </>

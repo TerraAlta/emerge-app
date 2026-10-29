@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { makeSupabaseMock } from './helpers/supabase-mock'
 
 let mock: ReturnType<typeof makeSupabaseMock>
@@ -36,5 +36,21 @@ describe('Post an event', () => {
     expect(await screen.findByText(/future/i)).toBeInTheDocument()
     expect(mock.calls.filter(c => c.table === 'quests' && c.op === 'insert')).toHaveLength(0)
     expect(onSuccess).not.toHaveBeenCalled()
+  })
+
+  it('phone Back on the pin map closes only the map and keeps what was typed', async () => {
+    const onBack = vi.fn()
+    window.history.pushState({ before: true }, '') // where the form was opened from
+    const { container } = render(<PostEvent userId="u1" onBack={onBack} onSuccess={() => {}} />)
+    fill(/Food forest harvest/, 'Plantação de árvores', container)
+    fireEvent.click(screen.getByText('MOCK_MAP'))  // open the full-screen map
+    expect(screen.getAllByText('MOCK_MAP')).toHaveLength(2)
+    await act(async () => {
+      window.history.back()
+      await new Promise(r => setTimeout(r, 50))
+    })
+    expect(screen.getAllByText('MOCK_MAP')).toHaveLength(1)
+    expect(screen.getByPlaceholderText(/Food forest harvest/)).toHaveValue('Plantação de árvores')
+    expect(onBack).not.toHaveBeenCalled()
   })
 })
