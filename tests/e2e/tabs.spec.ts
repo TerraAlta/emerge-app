@@ -25,11 +25,12 @@ test('opening an event shows its detail and closes cleanly', async ({ page }) =>
   const errors = watchConsole(page)
   await page.goto('/')
   // Event cards are clickable divs in the list.
-  const card = page.locator('div.cursor-pointer.rounded-\\[14px\\]').first()
+  // The nearest event's card (the list marks it "Closest to you").
+  const card = page.locator('div.cursor-pointer', { has: page.getByText('Closest to you') }).first()
   await card.waitFor({ timeout: 20_000 })
   const title = (await card.locator('p, h3, div').first().innerText()).split('\n')[0]
   await card.click()
-  await expect(page.getByText(/via /).first()).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByRole('button', { name: /join event|joined|event full/i })).toBeVisible({ timeout: 10_000 })
   expect(page.url()).toContain('localhost')
   expect(errors).toEqual([])
   void title

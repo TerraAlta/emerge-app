@@ -156,6 +156,22 @@ function HomeInner() {
     return () => { cancelled = true }
   }, [searchParams])
 
+  // An open event is an overlay, not a page: without a history entry the
+  // phone's Back button left the feed entirely. Opening pushes one; Back
+  // (or the in-app back arrow) pops it and closes the event.
+  useEffect(() => {
+    if (!selectedEvent) return
+    if (!window.history.state?.emergeEvent) window.history.pushState({ ...window.history.state, emergeEvent: true }, '')
+    const onPop = () => setSelectedEvent(null)
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [selectedEvent])
+
+  function closeEvent() {
+    if (window.history.state?.emergeEvent) window.history.back()
+    else setSelectedEvent(null)
+  }
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-body" style={{ background: 'var(--color-bg)' }}>
@@ -220,7 +236,7 @@ function HomeInner() {
       <EventDetail
         quest={selectedEvent}
         userId={user?.id ?? ''}
-        onBack={() => setSelectedEvent(null)}
+        onBack={closeEvent}
         onNeedAuth={() => setShowAuthFromDetail(true)}
       />
     )

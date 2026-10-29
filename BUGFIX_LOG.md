@@ -184,3 +184,11 @@
 - **Fix:** no participant request for visitors; the counts and "who's going" card are replaced by "Sign in to see who's going (and how many spots are left)", which opens sign-in. Signed-in users unchanged.
 - **Files:** `src/components/EventDetail.tsx`
 - **Test:** `tests/unit/event-detail.test.tsx` (visitor case); found by `tests/e2e/long-content.spec.ts` (401s on event open)
+
+### 22. Feed — the phone's Back button left the feed instead of closing an event
+- **Area:** Feed / event detail navigation (`src/app/page.tsx`)
+- **Bug:** an opened event is an overlay with no browser-history entry, so Back (Android button, iOS swipe) navigated away from the feed to the previous page — on a phone it feels like the app closed.
+- **How a user hits it:** opens an event from the list, presses Back → lands on whatever page they came from.
+- **Fix:** opening an event pushes a history entry; `popstate` closes it; the in-app back arrow goes `history.back()` so there's never a leftover entry.
+- **Files:** `src/app/page.tsx`
+- **Test:** `tests/e2e/back-button.spec.ts` (fails on the old code: ended on `/privacy`; also checks the in-app arrow leaves no stale entry). While writing it I found my earlier "open an event" e2e check was too weak (a "via …" label already on the list satisfied it); both tests now wait for the event's Join button.
