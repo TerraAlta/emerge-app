@@ -55,6 +55,9 @@ export async function fetchAllQuests(): Promise<{ quests: Quest[]; offline: bool
     xpReward: q.xp_reward,
     cards: (byQuest.get(q.id) ?? []).sort((a, b) => a.orderIndex - b.orderIndex),
   }))
+    // A quest saved before its cards can't be played (the player crashed on
+    // it) and could never be completed, so its petal would never bloom.
+    .filter(q => q.cards.length > 0)
   return { quests: shaped, offline: false }
 }
 

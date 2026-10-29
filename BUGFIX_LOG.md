@@ -225,3 +225,11 @@
 - **Fix:** signed-in edits wait for a successful load. While loading, a tap says "One moment — your saved skills are still loading." A failed load says "We couldn't load your saved skills. Try again" and saves nothing. Visitors are unchanged.
 - **Files:** `src/components/SkillsScreen.tsx`
 - **Test:** `tests/unit/skills.test.tsx`, two new signed-in tests. "Never overwrites when the load failed" fails on the old code. The other checks that a save adds to the loaded list.
+
+### 26. Learning section — a quest with no cards yet would crash the page (latent)
+- **Area:** Learning section (`src/lib/quest-data.ts`)
+- **Bug:** quests and their cards come from the database (the curriculum is meant to grow there). `QuestPlayer` reads `quest.cards[0].type`, so a quest row saved before its cards crashes the page when opened. Such a quest could also never be completed, so its petal could never bloom. Checked production read-only: today all 27 quests have 3 or more cards, so nobody is hitting it yet.
+- **How a user hits it:** Pedro adds a new quest in Supabase and writes its cards later. Anyone tapping it in between gets a crashed screen.
+- **Fix:** `fetchAllQuests` leaves out quests that have no cards. They appear by themselves once their cards exist.
+- **Files:** `src/lib/quest-data.ts`
+- **Test:** `tests/unit/quest-data.test.ts` (fails on the old code).
