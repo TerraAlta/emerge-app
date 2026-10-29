@@ -271,3 +271,11 @@
 - **Fix:** both routes check each update and stop with an error, before any email, if one fails. Pedro sees the error and can press the button again.
 - **Files:** `src/app/api/guild/admin/approve/route.ts`, `src/app/api/guild/admin/reject/route.ts`
 - **Test:** `tests/unit/guild-admin-review.test.ts` (email mocked, nothing sent; both fail on the old code).
+
+### 31. Weekly digest — a failed send blocked the same-day retry
+- **Area:** Weekly email digest (`src/app/api/cron/weekly-digest/route.ts`)
+- **Bug:** the "already sent in the last 24h?" check counted every `email_digest_log` row. Failed sends are logged too, as `status: 'error: …'`.
+- **How a user hits it:** a Monday run fails, for example Gmail's app password was revoked. Pedro fixes it and re-runs the digest that day. Every subscriber whose send had failed is skipped as "already sent" and gets nothing that week.
+- **Fix:** only `status = 'sent'` rows count as sent.
+- **Files:** `src/app/api/cron/weekly-digest/route.ts`. The test helper `tests/unit/helpers/supabase-mock.ts` now also passes query filters to table stubs.
+- **Test:** `tests/unit/weekly-digest.test.ts` (email mocked, nothing sent; fails on the old code).

@@ -9,7 +9,7 @@ export type Result = { data: any; error: any }
 
 export function makeSupabaseMock(opts: {
   user?: { id: string; email?: string } | null
-  tables?: Record<string, Result | ((op: string, payload?: any) => Result | Promise<Result>)>
+  tables?: Record<string, Result | ((op: string, payload?: any, filters?: any[]) => Result | Promise<Result>)>
   upload?: () => Promise<{ error: any }>
 }) {
   const calls: Array<{ table: string; op: string; payload?: any; filters: any[] }> = []
@@ -18,7 +18,7 @@ export function makeSupabaseMock(opts: {
     const resolve = (): Promise<Result> => {
       calls.push({ table, op: state.op, payload: state.payload, filters: state.filters })
       const t = opts.tables?.[table]
-      const r = typeof t === 'function' ? t(state.op, state.payload) : t ?? { data: null, error: null }
+      const r = typeof t === 'function' ? t(state.op, state.payload, state.filters) : t ?? { data: null, error: null }
       return Promise.resolve(r)
     }
     const b: any = {

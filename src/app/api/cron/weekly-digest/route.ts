@@ -54,11 +54,14 @@ export async function GET(request: NextRequest) {
 
   for (const user of users) {
     try {
-      // 2. Check idempotency — skip if already sent in last 24h
+      // 2. Check idempotency — skip if already sent in last 24h. Only real
+      //    sends count: failed attempts are logged too, and counting them made
+      //    a same-day re-run (after fixing Gmail) skip everyone who missed out.
       const { data: recentSend } = await supabase
         .from('email_digest_log')
         .select('id')
         .eq('user_id', user.id)
+        .eq('status', 'sent')
         .gte('sent_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .limit(1)
 
