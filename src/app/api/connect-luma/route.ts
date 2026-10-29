@@ -37,11 +37,12 @@ export async function POST(request: NextRequest) {
     //    ciphertext differs every time and can't be the uniqueness check —
     //    compare decrypted keys instead (a user has at most a handful).
     const calendarName = events[0]?.event?.host?.name ?? 'Luma Organiser'
-    const { data: mine } = await supabase
+    const { data: mine, error: mineError } = await supabase
       .from('connected_calendars')
       .select('id, api_key_encrypted, rejected_event_ids')
       .eq('platform', 'luma')
       .eq('user_id', user_id)
+    if (mineError) throw new Error(`load calendars: ${mineError.message}`)
     const existing = (mine ?? []).find(c => { try { return storedKey(c) === api_key } catch { return false } })
 
     let calendarId = existing?.id as string | undefined
@@ -57,8 +58,13 @@ export async function POST(request: NextRequest) {
         organiser_name: calendarName,
         last_synced_at: new Date().toISOString(),
       }).select('id').single()
-      if (insertError) console.error('[connect-luma] DB error:', insertError.message)
-      calendarId = row?.id
+      // Unsaved, the calendar is never synced again — don't report "Connected"
+      // (or spend AI on an import) as if it were.
+      if (insertError || !row) {
+        console.error('[connect-luma] DB error:', insertError?.message)
+        return NextResponse.json({ error: "We couldn't save your calendar connection — please try again." }, { status: 500 })
+      }
+      calendarId = row.id
     }
 
     // 3. Score + store upcoming events, within the daily AI budget.

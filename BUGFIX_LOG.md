@@ -255,3 +255,11 @@
   2. Turn unparseable dates into "no date" via a small `toIso` helper.
 - **Files:** `src/app/api/submit-event/route.ts`
 - **Test:** `tests/unit/submit-event.test.ts` (fetch, AI, Supabase all mocked; both tests fail on the old code).
+
+### 29. Connect Luma — said "Connected" even when the calendar wasn't saved
+- **Area:** Connect Luma (`src/app/api/connect-luma/route.ts`)
+- **Bug:** if storing the calendar failed (for example the grants problem CLAUDE.md warns about), the error was only logged. The route still imported events (spending AI) and answered "Connected". The calendar was never stored, so the daily `sync-luma` never saw it again. Separately, a failed lookup of existing calendars was ignored, which could create a duplicate.
+- **How a user hits it:** an organiser connects their Luma calendar and sees success. Their future events never appear, with no hint why.
+- **Fix:** a failed lookup or save stops before the import and answers "We couldn't save your calendar connection — please try again."
+- **Files:** `src/app/api/connect-luma/route.ts`
+- **Test:** `tests/unit/connect-luma.test.ts` (Luma, AI, Supabase mocked). The failed-save test fails on the old code; the happy path still imports.

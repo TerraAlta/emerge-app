@@ -6,7 +6,8 @@ let mock: ReturnType<typeof makeSupabaseMock>
 let pageHtml = ''
 const aiCreate = vi.fn(async () => ({ content: [{ type: 'text', text: '{"score": 80, "reasoning": "ok"}' }], usage: { input_tokens: 1, output_tokens: 1 } }))
 
-vi.mock('@supabase/supabase-js', () => ({ createClient: () => mock.client }))
+// The route builds its client once at import: delegate to whichever mock is current.
+vi.mock('@supabase/supabase-js', () => ({ createClient: () => new Proxy({}, { get: (_, k) => (mock.client as any)[k] }) }))
 vi.mock('@anthropic-ai/sdk', () => ({ default: class { messages = { create: aiCreate } } }))
 vi.mock('@/lib/request-user', () => ({ getRequestUserId: async () => 'u1' }))
 vi.mock('@/lib/email', () => ({ sendEmail: vi.fn(async () => {}), isEmailConfigured: () => false }))
