@@ -291,7 +291,8 @@ export default function GuildPage() {
         <div className="px-5 pt-3">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-heading text-[18px] font-light" style={{ color: 'var(--color-text)' }}>
-              {filtered.length} practitioner{filtered.length !== 1 ? 's' : ''}
+              {/* No count until loaded — it read "0 practitioners" while loading. */}
+              {loading || loadError ? 'Practitioners' : `${filtered.length} practitioner${filtered.length !== 1 ? 's' : ''}`}
             </h2>
             <button
               onClick={() => setShowFilters(!showFilters)}

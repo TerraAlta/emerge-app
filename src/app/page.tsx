@@ -838,7 +838,8 @@ function EventBoard({
         {/* Pulse pills */}
         <div className="flex gap-2 px-4 pt-3 pb-4">
           {[
-            { val: quests.length.toString(), label: distanceFallback ? 'Nearest events' : 'Events nearby' },
+            // A dash until loaded — it read "0 Events nearby" while loading.
+            { val: loading || error ? '\u2014' : quests.length.toString(), label: distanceFallback ? 'Nearest events' : 'Events nearby' },
             { val: closestDist !== null ? `${closestDist.toFixed(1)}km` : '\u2014', label: 'Closest event' },
             { val: attendedCount.toString(), label: 'Events attended' },
           ].map(pill => (

@@ -168,3 +168,11 @@
 - **Fix:** only drop it when the delete succeeded.
 - **Files:** `src/components/NewsScreen.tsx`
 - **Test:** `tests/unit/news-saved.test.tsx`
+
+### 20. Guild and Feed — "0 practitioners" / "0 events nearby" shown while still loading
+- **Area:** Guild directory headline; Feed "Events nearby" counter
+- **Bug:** both counts rendered the current array length, which is 0 until data arrives, so on a slow connection visitors first read "0 practitioners" or "0 Events nearby".
+- **How a user hits it:** opens either page on mobile data → sees zero, may leave before the real number appears.
+- **Fix:** headline reads "Practitioners" and the counter shows "—" until loaded (or on error).
+- **Files:** `src/app/guild/page.tsx`, `src/app/page.tsx`
+- **Test:** `tests/e2e/slow-network.spec.ts` (every Supabase response delayed 4 s; asserts the delay really applied)

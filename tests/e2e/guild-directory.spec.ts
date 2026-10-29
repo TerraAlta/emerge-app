@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Guild directory', () => {
   test('loads verified practitioners for a visitor', async ({ page }) => {
     await page.goto('/guild')
-    await expect(page.getByRole('heading', { name: /\d+ practitioners?/ })).toBeVisible({ timeout: 20_000 })
+    await expect(page.getByRole('heading', { name: /^\d+ practitioners?$/ })).toBeVisible({ timeout: 20_000 })
     await expect(page.getByText('Loading practitioners...')).toBeHidden()
   })
 
