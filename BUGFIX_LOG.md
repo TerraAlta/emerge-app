@@ -1,11 +1,66 @@
 # Bugfix log — automated sweep (branch `bugfix/auto-sweep`)
 
-## Summary (sweep PAUSED — usage limit reached, not finished)
-- **Fixed so far: 4 bugs, all in the Guild** (directory + practitioner profiles). Build, typecheck, lint (0 errors) and all tests green at every commit.
-- **Security / privacy concerns:** none new found in this sweep yet (an earlier session's audit of 2026-10-07 already fixed the known ones).
-- **Proposed DB migrations:** none.
-- **Not yet covered:** rest of `/guild/join` (review step UI, done step), Guild AI matching / scoping flow, Feed, auth/onboarding/settings, other tabs, and the two required clean passes.
-- **Lint warnings to check later:** three `useEffect` missing-dependency warnings (admin/guild, admin/submissions, guild/project/[id]).
+## Final report (sweep finished 2026-10-29)
+
+**Result: 31 bugs fixed, each with a regression test.** Twelve passes, the last two in a row turned up nothing new. Every commit passed typecheck, lint (0 errors), 45 unit tests, the production build and 58 browser tests (29 tests × desktop + Pixel 7). Nothing pushed, nothing deployed, no migrations run, no real emails sent; AI calls were mocked in every test.
+
+### 1. Security / privacy concerns
+- **None new found.** Checked during the sweep:
+  - Ownership checks on Guild AI routes.
+  - Account deletion: it removes every upload, which is stored flat per user.
+  - Grants on `support_tickets`.
+  - The visitor "who's going" query, which now matches the 2026-10-07 privacy migration (fix #21).
+  - Unsubscribe token checks.
+  - SSRF guard on submit-by-link.
+  - `.env.local` stays untracked.
+
+### 2. Bugs fixed, by area
+| Area | Fixes | # |
+|---|---|---|
+| **Guild**: directory, profiles, AI interview, scoping, intake, admin review | 1–11, 18, 30, (20) | 13 + shared |
+| **Feed & events**: list, event detail, post an event, submit by link, Luma | 12, 13, 16, 17, 21, 22, 27, 28, 29, (20, 23) | 9 + shared |
+| **Auth & settings** | 14, 24 | 2 |
+| **Other tabs**: Skills, News, learning section | 15, 19, 23, 25, 26 | 5 |
+| **Email**: weekly digest | 31 | 1 |
+
+The most serious, in plain words:
+- **#25:** one tap in Skills could erase all saved skills.
+- **#24:** new members never saw "check your email" after signing up.
+- **#2:** one half-filled practitioner profile could crash the whole Guild page.
+- **#4:** refreshing a profile with a CV erased the photo and links.
+- **#23 / #27:** the phone's Back button threw away a half-written event.
+- **#28:** Eventbrite links were refused as "no date found".
+- **#31:** after a failed digest, a same-day re-send skipped everyone.
+
+### 3. Found but not safely fixable here (left as is)
+- **Returning practitioners can't change their name, country, languages or areas of practice.** The review screen only edits the rest, and those four drive Guild matching. Fixing it needs a new path back to the first step, which is a feature, not a bug fix. **Worth doing soon.**
+- **A city picked by hand is replaced by GPS on every visit.** That also moves the digest location. The code says it's deliberate ("Always try geolocation first"), so this is your call.
+- **Phone Back inside the Guild join wizard and the project intake leaves the page.** An interview in progress is lost. What Back should mean in a multi-step form is a design choice.
+- **Phone Back on small popups** (share, report, settings, support, filters) closes the screen underneath too. Nothing typed is lost.
+- **Stale-pipeline alarm can be fooled.** It looks at the newest event of any kind, so daily Luma or member events could hide a dead Sunday sweep. Last sweep (26 Oct) was fine.
+- **Minor:**
+  - If loading an existing practitioner profile fails, `/guild/join` treats them as new; the database's duplicate check limits the damage.
+  - A journal edit whose cloud save failed can be replaced by the older cloud copy on the next sign-in.
+  - `sync-luma` doesn't check its "rejected events" save, so it could pay to re-score a few events.
+  - Admin pages show a technical message if the server times out.
+  - The archival copy of an interview transcript ignores save errors.
+- **Out of scope ("Pitch Your Dream Project"):** several ignored save errors in the Pitch pages. Untouched, as instructed.
+- **Lint:** the three missing-dependency warnings (admin/guild, admin/submissions, guild/project/[id]) are intentional one-time loads.
+
+### 4. Proposed database migrations
+- **None.** No fix needed a schema, RLS or grant change; `supabase/proposed/` was not created.
+
+### 5. UX suggestions (not implemented)
+- Event cards are clickable boxes, not buttons, so keyboard and screen-reader users can't open them.
+- News shows raw technical error text when loading fails.
+- News "resonate" counts can briefly disagree when the signed-out and signed-in loads race.
+- The sign-in screen has no visible close button (phone Back now works, #24).
+- The practitioner basics edit and the wizard Back behaviour above.
+
+### How to review / ship
+- Branch `bugfix/auto-sweep` lives in the worktree `../emerge-app-bugfix`, 32 commits ahead of `main`.
+- Run the checks with `npm test` and `npm run test:e2e`.
+- Deploy only after review, the usual way: from a clean worktree with `vercel --prod`.
 
 ## Setup notes and decisions
 - **Stack is Next.js 14 (App Router), not Vite** as the brief said. Worked with what's there.
