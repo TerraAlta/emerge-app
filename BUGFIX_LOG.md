@@ -176,3 +176,11 @@
 - **Fix:** headline reads "Practitioners" and the counter shows "—" until loaded (or on error).
 - **Files:** `src/app/guild/page.tsx`, `src/app/page.tsx`
 - **Test:** `tests/e2e/slow-network.spec.ts` (every Supabase response delayed 4 s; asserts the delay really applied)
+
+### 21. Event detail — visitors were told "0 going" and shown wrong spot counts
+- **Area:** Feed / event detail (`EventDetail`)
+- **Bug:** visitors aren't allowed to read `quest_participants_public` (deliberate privacy rule, migration `20261007_participants_privacy_and_match_view`), so the request 401'd on every event open and was treated as "nobody". Visitors saw "0 going", "Be the first to join this event", and "N spots left" computed as if no one had joined — an event that was actually full looked open.
+- **How a user hits it:** a visitor opens a popular capped workshop → sees free spots, signs up, finds it full.
+- **Fix:** no participant request for visitors; the counts and "who's going" card are replaced by "Sign in to see who's going (and how many spots are left)", which opens sign-in. Signed-in users unchanged.
+- **Files:** `src/components/EventDetail.tsx`
+- **Test:** `tests/unit/event-detail.test.tsx` (visitor case); found by `tests/e2e/long-content.spec.ts` (401s on event open)

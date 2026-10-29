@@ -108,6 +108,10 @@ export default function EventDetail({
 
   // Fetch participants + check if user joined
   useEffect(() => {
+    // Visitors can't read the participant list (privacy rule, 401). Asking
+    // anyway showed "0 going", "Be the first to join" and full spot counts on
+    // events people had joined — don't ask, and say why below.
+    if (!userId) { setParticipants([]); setLoading(false); return }
     async function load() {
       const { data } = await supabase
         .from('quest_participants_public')
@@ -375,8 +379,24 @@ export default function EventDetail({
             </div>
           )}
 
+          {/* Visitors: no participant data to show (see effect above). */}
+          {!loading && !userId && (
+            <div
+              className="rounded-[12px] px-3.5 py-3 mb-2.5"
+              style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
+            >
+              <button
+                onClick={onNeedAuth}
+                className="text-[12px] underline"
+                style={{ color: 'var(--color-text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                Sign in to see who&apos;s going{maxSpots ? ' and how many spots are left' : ''}
+              </button>
+            </div>
+          )}
+
           {/* Spots + progress */}
-          {!loading && (
+          {!loading && userId && (
             <div
               className="rounded-[12px] px-3.5 py-3 mb-2.5"
               style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}
@@ -402,7 +422,7 @@ export default function EventDetail({
           )}
 
           {/* Who's going */}
-          {!loading && (
+          {!loading && userId && (
             <div
               className="rounded-[12px] px-3.5 py-3 mb-2.5"
               style={{ background: 'var(--color-card)', border: '0.5px solid var(--color-border)' }}

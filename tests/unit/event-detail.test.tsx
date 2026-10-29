@@ -32,3 +32,21 @@ describe('Event detail — joining', () => {
     expect(await screen.findByText(/couldn.t join/i)).toBeInTheDocument()
   })
 })
+
+describe('Event detail — visitor (no account)', () => {
+  beforeEach(() => {
+    mock = makeSupabaseMock({ user: null, tables: {
+      // Visitors aren't allowed to read the participant list (privacy rule) — the API answers 401.
+      quest_participants_public: { data: null, error: { code: '42501', message: 'permission denied' } },
+    } })
+  })
+
+  it('does not request the participant list or claim nobody is going', async () => {
+    render(<EventDetail quest={{ ...quest, max_participants: 10 } as any} userId="" onBack={() => {}} onNeedAuth={() => {}} />)
+    expect(await screen.findByText(/sign in to see who.s going/i)).toBeInTheDocument()
+    expect(screen.queryByText(/0 going/)).toBeNull()
+    expect(screen.queryByText(/be the first to join/i)).toBeNull()
+    expect(screen.queryByText(/spots? left/)).toBeNull()
+    expect(mock.calls.filter(c => c.table === 'quest_participants_public')).toHaveLength(0)
+  })
+})
