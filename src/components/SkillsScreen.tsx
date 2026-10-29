@@ -132,23 +132,35 @@ export default function SkillsScreen({ userId, quests, onSelectEvent }: Props) {
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null)
   const [tappedSkill, setTappedSkill] = useState<string | null>(null)
   const [saveError, setSaveError] = useState('')
+  // Until the saved skills arrive, a tap would save just that one skill over
+  // everything stored — so signed-in edits wait for a successful load.
+  const [loadState, setLoadState] = useState<'loading' | 'ok' | 'failed'>('loading')
+  const [loadAttempt, setLoadAttempt] = useState(0)
 
   useEffect(() => {
     // Visitors have no profile row: querying with id=eq. is a 400.
     if (!userId) return
     async function load() {
-      const { data } = await supabase
+      setLoadState('loading')
+      const { data, error } = await supabase
         .from('profiles')
         .select('skills_have, skills_want')
         .eq('id', userId)
         .single()
+      if (error) { setLoadState('failed'); return }
       if (data?.skills_have && Array.isArray(data.skills_have)) setSkillsHave(data.skills_have)
       if (data?.skills_want && Array.isArray(data.skills_want)) setSkillsWant(data.skills_want)
+      setLoadState('ok')
     }
     load()
-  }, [userId])
+  }, [userId, loadAttempt])
 
   const setSkillState = useCallback(async (skill: string, state: SkillState | null) => {
+    if (userId && loadState !== 'ok') {
+      setTappedSkill(null)
+      setSaveError(loadState === 'loading' ? 'One moment — your saved skills are still loading.' : '')
+      return
+    }
     let newHave = skillsHave.filter(s => s !== skill)
     let newWant = skillsWant.filter(s => s !== skill)
 
@@ -172,7 +184,7 @@ export default function SkillsScreen({ userId, quests, onSelectEvent }: Props) {
       setSkillsWant(prevWant)
       setSaveError("Couldn't save that — please try again.")
     }
-  }, [skillsHave, skillsWant, userId])
+  }, [skillsHave, skillsWant, userId, loadState])
 
   const handleSkillTap = useCallback((skillKey: string) => {
     const isHave = skillsHave.includes(skillKey)
@@ -215,6 +227,12 @@ export default function SkillsScreen({ userId, quests, onSelectEvent }: Props) {
           {!userId && (
             <p className="text-[12px] mt-1.5" style={{ color: 'var(--color-text-muted)' }}>
               Sign in to save your skills — without an account they&apos;re only kept until you leave.
+            </p>
+          )}
+          {userId && loadState === 'failed' && (
+            <p role="alert" className="text-[12px] mt-1.5" style={{ color: 'var(--color-error)' }}>
+              We couldn&apos;t load your saved skills.{' '}
+              <button onClick={() => setLoadAttempt(n => n + 1)} className="underline" style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}>Try again</button>
             </p>
           )}
           {saveError && (

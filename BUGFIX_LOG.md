@@ -217,3 +217,11 @@
   3. `useBackToClose` (from #23) now covers the sign-in screen too.
 - **Files:** `src/app/page.tsx`, `src/components/AuthScreen.tsx`
 - **Test:** `tests/e2e/auth-screen.spec.ts`, 3 tests, all failing on the old code. The sign-up test mocks Supabase's `/auth/v1/signup` answer, so no account is created and no email is sent.
+
+### 25. Skills — one tap could wipe every saved skill
+- **Area:** Skills tab (`src/components/SkillsScreen.tsx`)
+- **Bug:** the saved skills load in the background, and a failed load was ignored. Each save writes the *whole* list. So if the load failed, or simply hadn't finished, the screen showed no skills, and choosing one saved a list of just that skill over everything stored.
+- **How a user hits it:** on weak mobile signal, opens Skills, taps "Teach → I have this". Their ten saved skills are replaced by one.
+- **Fix:** signed-in edits wait for a successful load. While loading, a tap says "One moment — your saved skills are still loading." A failed load says "We couldn't load your saved skills. Try again" and saves nothing. Visitors are unchanged.
+- **Files:** `src/components/SkillsScreen.tsx`
+- **Test:** `tests/unit/skills.test.tsx`, two new signed-in tests. "Never overwrites when the load failed" fails on the old code. The other checks that a save adds to the loaded list.
