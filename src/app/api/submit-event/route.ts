@@ -62,6 +62,13 @@ async function extractEventFromUrl(url: string) {
   return extractFromMeta($, url)
 }
 
+/** ISO string, or null for a missing/unparseable date (toISOString throws on those). */
+function toIso(d: unknown): string | null {
+  if (!d) return null
+  const t = new Date(String(d))
+  return isNaN(t.getTime()) ? null : t.toISOString()
+}
+
 function extractJsonLdEvent($: cheerio.CheerioAPI) {
   const scripts = $('script[type="application/ld+json"]')
   for (let i = 0; i < scripts.length; i++) {
@@ -75,8 +82,8 @@ function extractJsonLdEvent($: cheerio.CheerioAPI) {
         return {
           title: ev.name ?? '',
           description: (ev.description ?? '').slice(0, 1000),
-          starts_at: ev.startDate ? new Date(ev.startDate).toISOString() : null,
-          ends_at: ev.endDate ? new Date(ev.endDate).toISOString() : null,
+          starts_at: toIso(ev.startDate),
+          ends_at: toIso(ev.endDate),
           location_name: loc.name ?? loc.address?.addressLocality ?? '',
           lat: parseFloat(geo.latitude ?? '0'),
           lng: parseFloat(geo.longitude ?? '0'),
@@ -90,11 +97,17 @@ function extractJsonLdEvent($: cheerio.CheerioAPI) {
   return null
 }
 
+// schema.org event subtypes (EducationEvent, SocialEvent, Festival…) are what
+// Eventbrite and many venues publish; only an exact "Event" used to match.
+function isEventType(t: unknown): boolean {
+  return (Array.isArray(t) ? t : [t]).some(x => /Event$|^Festival$/.test(String(x ?? '')))
+}
+
 function findEvents(data: any): any[] {
   if (!data || typeof data !== 'object') return []
-  if (data['@type'] === 'Event') return [data]
+  if (isEventType(data['@type'])) return [data]
   if (data['@type'] === 'ItemList' && Array.isArray(data.itemListElement)) {
-    return data.itemListElement.map((li: any) => li.item ?? li).filter((i: any) => i['@type'] === 'Event')
+    return data.itemListElement.map((li: any) => li.item ?? li).filter((i: any) => isEventType(i?.['@type']))
   }
   if (Array.isArray(data)) return data.flatMap(findEvents)
   if (data['@graph']) return findEvents(data['@graph'])
@@ -109,7 +122,7 @@ function extractFromMeta($: cheerio.CheerioAPI, url: string) {
 
   // Try to find date from common patterns
   const dateEl = $('time[datetime]').first().attr('datetime')
-  const starts_at = dateEl ? new Date(dateEl).toISOString() : null
+  const starts_at = toIso(dateEl)
 
   // Try to find location
   const location_name =

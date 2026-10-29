@@ -241,3 +241,17 @@
 - **Fix:** the map gets its own nested `useBackToClose` entry, so Back closes only the map. The map's cancel button uses the same path.
 - **Files:** `src/components/PostEvent.tsx`
 - **Test:** `tests/unit/post-event.test.tsx`, "phone Back on the pin map closes only the map and keeps what was typed" (fails on the old code).
+
+### 28. Submit by link — Eventbrite-style pages weren't recognised; a bad date crashed the submission
+- **Area:** Post an event → "paste a link" (`src/app/api/submit-event/route.ts`)
+- **Bug:** two problems.
+  1. The page reader only accepted structured data typed exactly `"@type": "Event"`. Eventbrite and many venues publish schema.org subtypes (`EducationEvent`, `SocialEvent`, `Festival`, or an array of types). Those were skipped, and the fallback rarely finds a date, so a perfectly good workshop link came back with "We couldn't find a date on that page, so it wasn't added."
+  2. An unparseable date (in the structured data or a `<time datetime>`) made `toISOString()` throw. That either threw away the whole structured event or turned the submission into a 500 "something went wrong".
+- **How a user hits it:**
+  1. Pastes an Eventbrite workshop link and is told there's no date.
+  2. Or pastes a page whose date markup is sloppy and gets a generic error.
+- **Fix:**
+  1. Accept any `…Event` type, `Festival`, and arrays of types. The pipeline's own scrapers already use the same `/Event$/` rule.
+  2. Turn unparseable dates into "no date" via a small `toIso` helper.
+- **Files:** `src/app/api/submit-event/route.ts`
+- **Test:** `tests/unit/submit-event.test.ts` (fetch, AI, Supabase all mocked; both tests fail on the old code).
