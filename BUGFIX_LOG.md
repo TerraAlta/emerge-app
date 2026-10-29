@@ -263,3 +263,11 @@
 - **Fix:** a failed lookup or save stops before the import and answers "We couldn't save your calendar connection — please try again."
 - **Files:** `src/app/api/connect-luma/route.ts`
 - **Test:** `tests/unit/connect-luma.test.ts` (Luma, AI, Supabase mocked). The failed-save test fails on the old code; the happy path still imports.
+
+### 30. Guild review (admin) — the client could be emailed "ready" while the project wasn't updated
+- **Area:** Guild scoping review (`src/app/api/guild/admin/approve/route.ts`, `reject/route.ts`)
+- **Bug:** after approving a doc, the project's move to `delivered` was never checked, and the client was emailed "Your scoping doc is ready" regardless. Reject likewise ignored both of its updates before emailing.
+- **How a user hits it:** on a database hiccup during approval, the client follows the email link and the project still shows as in review. Pedro's screen says it worked.
+- **Fix:** both routes check each update and stop with an error, before any email, if one fails. Pedro sees the error and can press the button again.
+- **Files:** `src/app/api/guild/admin/approve/route.ts`, `src/app/api/guild/admin/reject/route.ts`
+- **Test:** `tests/unit/guild-admin-review.test.ts` (email mocked, nothing sent; both fail on the old code).

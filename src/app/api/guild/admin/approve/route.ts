@@ -47,11 +47,13 @@ export async function POST(request: NextRequest) {
 
   if (docErr) return NextResponse.json({ error: docErr.message }, { status: 500 })
 
-  // Move project to delivered
-  await supabase
+  // Move project to delivered — before emailing, or the client is told it's
+  // ready while the project still reads as in review.
+  const { error: projErr } = await supabase
     .from('guild_projects')
     .update({ status: 'delivered', updated_at: new Date().toISOString() })
     .eq('id', projectId)
+  if (projErr) return NextResponse.json({ error: projErr.message }, { status: 500 })
 
   // Email client — fetch their email from auth.users via admin API
   try {

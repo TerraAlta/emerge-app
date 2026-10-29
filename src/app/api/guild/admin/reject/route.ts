@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Mark doc rejected
-  await supabase
+  const { error: docErr } = await supabase
     .from('guild_scoping_docs')
     .update({
       rejected_at: new Date().toISOString(),
@@ -65,11 +65,14 @@ export async function POST(request: NextRequest) {
     })
     .eq('project_id', projectId)
 
+  if (docErr) return NextResponse.json({ error: docErr.message }, { status: 500 })
+
   // Close project
-  await supabase
+  const { error: projErr } = await supabase
     .from('guild_projects')
     .update({ status: 'closed', updated_at: new Date().toISOString() })
     .eq('id', projectId)
+  if (projErr) return NextResponse.json({ error: projErr.message }, { status: 500 })
 
   // Email client
   try {
