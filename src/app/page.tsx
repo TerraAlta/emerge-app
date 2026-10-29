@@ -122,6 +122,7 @@ function HomeInner() {
   const [selectedEvent, setSelectedEvent] = useState<any>(null)
   const [showAuthFromDetail, setShowAuthFromDetail] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
+  const [authNotice, setAuthNotice] = useState('')
   const [showPostEvent, setShowPostEvent] = useState(false)
   const [showConnectLuma, setShowConnectLuma] = useState(false)
   const [activeTab, setActiveTab] = useState<TabKey>('events')
@@ -137,6 +138,17 @@ function HomeInner() {
       router.replace('/')
     }
   }, [searchParams, router])
+
+  // An expired or already-used email link (confirm signup, magic link) lands
+  // here as #error=…&error_description=… — it used to show nothing at all.
+  useEffect(() => {
+    const hash = new URLSearchParams(window.location.hash.slice(1))
+    if (!hash.get('error') && !hash.get('error_code')) return
+    window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search)
+    setAuthNotice("That email link has expired or was already used. If you've confirmed your email, just log in below.")
+    setAuthMode('login')
+    setShowAuthFromDetail(true)
+  }, [])
 
   // Shared links (EventDetail / SharePopup build ?quest=<id>) open that event.
   useEffect(() => {
@@ -162,6 +174,8 @@ function HomeInner() {
   const closeEvent = useBackToClose(!!selectedEvent, () => setSelectedEvent(null), 'emergeEvent')
   const closePostEvent = useBackToClose(showPostEvent, () => setShowPostEvent(false), 'emergePost')
   const closeConnectLuma = useBackToClose(showConnectLuma, () => setShowConnectLuma(false), 'emergeLuma')
+  // The sign-in screen has no close button: Back is the way out to keep browsing.
+  useBackToClose(showAuthFromDetail, () => { setShowAuthFromDetail(false); setAuthNotice('') }, 'emergeAuth')
 
   if (authLoading) {
     return (
@@ -181,14 +195,18 @@ function HomeInner() {
     return (
       <AuthScreen
         defaultMode={authMode}
+        initialError={authNotice}
         onSignIn={async (email, pw) => {
           const data = await signIn(email, pw)
           setShowAuthFromDetail(false)
+          setAuthNotice('')
           return data
         }}
         onSignUp={async (email, pw, name) => {
           const data = await signUp(email, pw, name)
-          setShowAuthFromDetail(false)
+          // Without a session the account still needs email confirmation: stay
+          // on this screen so its "Check your email" message is actually seen.
+          if (data?.session) { setShowAuthFromDetail(false); setAuthNotice('') }
           return data
         }}
       />

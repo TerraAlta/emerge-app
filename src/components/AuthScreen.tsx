@@ -7,6 +7,8 @@ interface Props {
   onSignIn: (email: string, password: string) => Promise<any>
   onSignUp: (email: string, password: string, firstName: string) => Promise<any>
   defaultMode?: 'login' | 'signup'
+  /** Shown above the form on arrival (e.g. an expired email link). */
+  initialError?: string
 }
 
 function SeedlingIcon({ size = 34 }: { size?: number }) {
@@ -20,13 +22,13 @@ function SeedlingIcon({ size = 34 }: { size?: number }) {
   )
 }
 
-export default function AuthScreen({ onSignIn, onSignUp, defaultMode = 'login' }: Props) {
+export default function AuthScreen({ onSignIn, onSignUp, defaultMode = 'login', initialError = '' }: Props) {
   const [mode, setMode] = useState<'login' | 'signup'>(defaultMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [firstName, setFirstName] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState(initialError)
   const [submitting, setSubmitting] = useState(false)
   const [confirmMessage, setConfirmMessage] = useState('')
   const [showForgot, setShowForgot] = useState(false)

@@ -200,3 +200,20 @@
 - **Fix:** moved #22's history logic into one small hook, `useBackToClose`, and used it for the event, post form, Luma screen, petal list, quest player and journal. Nested steps each own one entry, so one Back closes only the top step.
 - **Files:** `src/hooks/useBackToClose.ts` (new), `src/app/page.tsx`, `src/app/quests/page.tsx`
 - **Test:** `tests/e2e/back-button.spec.ts` gets a learning-section test (fails on the old code: ended on `/privacy`). `tests/unit/back-to-close.test.tsx` covers the hook itself, because the post form needs a signed-in account the e2e suite doesn't have.
+
+### 24. Sign-up / sign-in screen — new members never saw "check your email"; expired links said nothing; no way out
+- **Area:** Auth (`src/app/page.tsx`, `src/components/AuthScreen.tsx`)
+- **Bug:** three problems on the same screen.
+  1. After "Create account" the page closed the sign-in screen at once, even when the account still needed email confirmation. The "Check your email to confirm your account." message was set, but the screen had already gone.
+  2. An expired or already-used confirmation link (email scanners often "click" links first) lands on `/#error=…otp_expired…`, and nothing read it.
+  3. The sign-in screen has no close button, and phone Back left the site.
+- **How a user hits it:**
+  1. A new member signs up and is dropped back on the feed, not signed in and with no hint to check their inbox.
+  2. Or they click an old confirmation email and see the normal home page as if nothing happened.
+  3. Or a visitor taps "Join", decides to keep browsing, presses Back and lands outside Emerge.
+- **Fix:**
+  1. The screen now closes after sign-up only when a session came back.
+  2. An expired-link `#error` opens the log-in screen with a plain-language note and cleans the address bar. This needed a small `initialError` prop on AuthScreen.
+  3. `useBackToClose` (from #23) now covers the sign-in screen too.
+- **Files:** `src/app/page.tsx`, `src/components/AuthScreen.tsx`
+- **Test:** `tests/e2e/auth-screen.spec.ts`, 3 tests, all failing on the old code. The sign-up test mocks Supabase's `/auth/v1/signup` answer, so no account is created and no email is sent.
