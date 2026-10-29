@@ -12,6 +12,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useBackToClose } from '@/hooks/useBackToClose'
 import { supabase } from '@/lib/supabase'
 import FlowerOfPermaculture from '@/components/quests/FlowerOfPermaculture'
 import PetalQuestList from '@/components/quests/PetalQuestList'
@@ -134,6 +135,12 @@ export default function QuestsPage() {
     if (userId && activeQuest) saveJournalDb(userId, cardId, activeQuest.id, text)
   }
 
+  // Petal, quest and journal are steps inside /quests, not routes: Back used
+  // to leave the whole section. Each level owns a history entry instead.
+  const closePetal = useBackToClose(view === 'petal' || view === 'quest', () => { setActiveQuest(null); setPetalKey(null); setView('flower') }, 'questsPetal')
+  const closeQuest = useBackToClose(view === 'quest', () => { setActiveQuest(null); setView('petal') }, 'questsQuest')
+  const closeJournal = useBackToClose(view === 'journal', () => setView('flower'), 'questsJournal')
+
   // ── QUEST PLAYER ──
   if (view === 'quest' && activeQuest && petalKey) {
     const petal = QUEST_PETAL_MAP[petalKey]
@@ -145,14 +152,14 @@ export default function QuestsPage() {
         journal={journal}
         onSaveReflection={saveReflection}
         onComplete={completeQuest}
-        onExit={() => { setActiveQuest(null); setView('petal') }}
+        onExit={closeQuest}
       />
     )
   }
 
   // ── JOURNAL ──
   if (view === 'journal') {
-    return <JournalView entries={journalEntries} onBack={() => setView('flower')} />
+    return <JournalView entries={journalEntries} onBack={closeJournal} />
   }
 
   // ── PETAL QUEST LIST ──
@@ -164,7 +171,7 @@ export default function QuestsPage() {
         quests={questsForPetalIn(allQuests, petalKey)}
         completed={completed}
         onOpenQuest={q => { setActiveQuest(q); setView('quest') }}
-        onBack={() => { setPetalKey(null); setView('flower') }}
+        onBack={closePetal}
       />
     )
   }

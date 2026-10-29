@@ -192,3 +192,11 @@
 - **Fix:** opening an event pushes a history entry; `popstate` closes it; the in-app back arrow goes `history.back()` so there's never a leftover entry.
 - **Files:** `src/app/page.tsx`
 - **Test:** `tests/e2e/back-button.spec.ts` (fails on the old code: ended on `/privacy`; also checks the in-app arrow leaves no stale entry). While writing it I found my earlier "open an event" e2e check was too weak (a "via …" label already on the list satisfied it); both tests now wait for the event's Join button.
+
+### 23. Post form, Luma and learning section — Back left the page (and threw away a half-written event)
+- **Area:** Feed overlays + Learning section (`/quests`)
+- **Bug:** same root cause as #22 in three more places. The "Post an event" form and "Connect Luma" screen are overlays; the petal quest list, quest player and journal are steps inside `/quests`. None had a history entry, so Back left the page entirely.
+- **How a user hits it:** types half an event, presses Back → form and everything typed are gone. Or opens Foundations → Begin quests, presses Back → leaves the learning section instead of returning to the flower.
+- **Fix:** moved #22's history logic into one small hook, `useBackToClose`, and used it for the event, post form, Luma screen, petal list, quest player and journal. Nested steps each own one entry, so one Back closes only the top step.
+- **Files:** `src/hooks/useBackToClose.ts` (new), `src/app/page.tsx`, `src/app/quests/page.tsx`
+- **Test:** `tests/e2e/back-button.spec.ts` gets a learning-section test (fails on the old code: ended on `/privacy`). `tests/unit/back-to-close.test.tsx` covers the hook itself, because the post form needs a signed-in account the e2e suite doesn't have.

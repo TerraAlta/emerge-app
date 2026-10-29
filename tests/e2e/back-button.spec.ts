@@ -37,3 +37,22 @@ test('the in-app back arrow closes the event without leaving a stale history ste
   await page.waitForTimeout(800)
   expect(new URL(page.url()).pathname).toBe('/privacy')
 })
+
+test('phone Back inside the learning section steps back instead of leaving /quests', async ({ page }) => {
+  await page.goto('/privacy')
+  await page.goto('/quests')
+  await page.getByRole('button', { name: /^Foundations/ }).first().click()
+  await page.getByRole('button', { name: /Begin quests|Revisit quests/ }).click()
+  await expect(page.getByRole('button', { name: 'Journal' })).toHaveCount(0) // on the petal's quest list
+  await page.goBack()
+  await page.waitForTimeout(800)
+  expect(new URL(page.url()).pathname, 'still in the learning section').toBe('/quests')
+  await expect(page.getByRole('button', { name: 'Journal' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Journal' }).click()
+  await expect(page.getByRole('button', { name: 'Journal' })).toHaveCount(0)
+  await page.goBack()
+  await page.waitForTimeout(800)
+  expect(new URL(page.url()).pathname).toBe('/quests')
+  await expect(page.getByRole('button', { name: 'Journal' })).toBeVisible()
+})

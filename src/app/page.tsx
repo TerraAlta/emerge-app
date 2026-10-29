@@ -12,6 +12,7 @@ import { toggleTheme, getTheme } from '@/lib/theme'
 import type { Theme } from '@/lib/theme'
 import AuthScreen from '@/components/AuthScreen'
 import EventDetail from '@/components/EventDetail'
+import { useBackToClose } from '@/hooks/useBackToClose'
 import PostEvent from '@/components/PostEvent'
 import SkillsScreen from '@/components/SkillsScreen'
 import NewsScreen from '@/components/NewsScreen'
@@ -156,21 +157,11 @@ function HomeInner() {
     return () => { cancelled = true }
   }, [searchParams])
 
-  // An open event is an overlay, not a page: without a history entry the
-  // phone's Back button left the feed entirely. Opening pushes one; Back
-  // (or the in-app back arrow) pops it and closes the event.
-  useEffect(() => {
-    if (!selectedEvent) return
-    if (!window.history.state?.emergeEvent) window.history.pushState({ ...window.history.state, emergeEvent: true }, '')
-    const onPop = () => setSelectedEvent(null)
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
-  }, [selectedEvent])
-
-  function closeEvent() {
-    if (window.history.state?.emergeEvent) window.history.back()
-    else setSelectedEvent(null)
-  }
+  // Overlays (event, post form, Luma) aren't routes: without a history entry
+  // the phone's Back button left the feed — and threw away a half-written post.
+  const closeEvent = useBackToClose(!!selectedEvent, () => setSelectedEvent(null), 'emergeEvent')
+  const closePostEvent = useBackToClose(showPostEvent, () => setShowPostEvent(false), 'emergePost')
+  const closeConnectLuma = useBackToClose(showConnectLuma, () => setShowConnectLuma(false), 'emergeLuma')
 
   if (authLoading) {
     return (
@@ -211,7 +202,7 @@ function HomeInner() {
   // Connect Luma screen — signed-in only
   if (showConnectLuma) {
     if (isAnon) { setShowAuthFromDetail(true); setShowConnectLuma(false); return null }
-    return <ConnectLuma userId={user!.id} onBack={() => setShowConnectLuma(false)} />
+    return <ConnectLuma userId={user!.id} onBack={closeConnectLuma} />
   }
 
   // Post event screen — signed-in only
@@ -224,7 +215,7 @@ function HomeInner() {
     return (
       <PostEvent
         userId={user!.id}
-        onBack={() => setShowPostEvent(false)}
+        onBack={closePostEvent}
         onSuccess={() => setShowPostEvent(false)}
       />
     )
